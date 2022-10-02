@@ -1,35 +1,31 @@
-package unicon.metro.kharkiv.view
+package kotleni.ukrainemetro.view
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
+import kotleni.ukrainemetro.*
 import unicon.metro.kharkiv.*
-import unicon.metro.kharkiv.types.Point
-import unicon.metro.kharkiv.types.Size
-import unicon.metro.kharkiv.types.Vector
-import unicon.metro.kharkiv.types.elements.BaseElement
-import unicon.metro.kharkiv.types.elements.BranchElement
-import unicon.metro.kharkiv.types.elements.TransElement
-
+import kotleni.ukrainemetro.types.*
+import kotleni.ukrainemetro.types.Point
+import kotleni.ukrainemetro.types.elements.*
 
 class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
-    private var data = ArrayList<BaseElement>() // данные для отображения
+    private var data = ArrayList<Element>()
 
     private val size = Size(240, 320)
     private val paint = Paint()
     private val textPaint = TextPaint()
 
-    // цвета
-    private val colorTextA = ctx.getColorByAttr(R.attr.colorAccent) // text rect
+    // colors
+    private val colorTextA = ctx.getColorByAttr(R.attr.colorAccent)    // text rect
     private val colorTextB = ctx.getColorByAttr(R.attr.colorOnPrimary) // text color
     private val colorTrans = Color.parseColor(COLOR_TRANS)
 
-    // настройки отрисовки
+    // drawing
     private val padding = 32f
     private var scale = 2f
 
@@ -37,7 +33,7 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
     private var scrollX = 0f
     private var scrollY = 0f
 
-    // временные координаты
+    // temporary coordinates
     private var dX = 0f
     private var dY = 0f
 
@@ -46,23 +42,18 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
     private var lock = false
     private var mod = false
 
-    // лямба для слушателя
     private var onItemClickListener: ((st: Point) -> Unit)? = null
-
-    /* подготовить к работе */
+    
     fun prepare() {
         val thiz = this
 
-        // настраиваем пеинт для текста
         textPaint.color = colorTextB
         textPaint.strokeWidth = 3f
         textPaint.textAlign = Paint.Align.CENTER
 
-        // настраиваем детектор зума
         mScaleGestureDetector = MyScaleGestureDetector(ctx, ScaleListener(this))
         mScaleGestureDetector!!.isQuickScaleEnabled = SCALE_QUICK_ENABLE
 
-        // обрабатываем нажатия
         this.setOnTouchListener(object : OnTouchListener {
             @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(v: View?, event: MotionEvent?): Boolean {
@@ -91,7 +82,7 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
                                 dX = event.rawX
                                 dY = event.rawY
 
-                                invalidate() // перерисовываем
+                                invalidate()
                             }
                         }
                         MotionEvent.ACTION_UP -> {
@@ -115,12 +106,10 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
         })
     }
 
-    /* установить данные для карты */
-    fun setData(arr: ArrayList<BaseElement>) {
+    fun setData(arr: ArrayList<Element>) {
         this.data = arr
     }
 
-    /* установить слушатель */
     fun setOnItemClickListener(func: (st: Point) -> Unit) {
         onItemClickListener = func
     }
@@ -172,7 +161,7 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
     private var lastBranchVec = defVector
 
     override fun onDraw(canvas: Canvas?) {
-        // отрисовка линий
+        // draw lines
         data.forEach {
             if (it is BranchElement) {
                 lastBranchVec = defVector
@@ -192,7 +181,7 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
             }
         }
 
-        // отрисовка пересадок
+        // draw trans
         data.forEach { el ->
             if (el is TransElement) {
                 paint.style = Paint.Style.FILL
@@ -200,15 +189,15 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
                 paint.strokeWidth = LINE_WIDTH
 
                 canvas!!.drawLine(
-                    scrollX + (padding + el.posA.x.toFloat()) * scale,
-                    scrollY + (padding + el.posA.y.toFloat()) * scale,
-                    scrollX + (padding + el.posB.x.toFloat()) * scale,
-                    scrollY + (padding + el.posB.y.toFloat()) * scale,
+                    scrollX + (padding + el.from.x.toFloat()) * scale,
+                    scrollY + (padding + el.from.y.toFloat()) * scale,
+                    scrollX + (padding + el.to.x.toFloat()) * scale,
+                    scrollY + (padding + el.to.y.toFloat()) * scale,
                     paint)
             }
         }
 
-        // отрисовка станций
+        // draw stations
         data.forEach {
             if (it is BranchElement) {
                 it.points.forEach { p: Point ->

@@ -1,3 +1,3 @@
-package unicon.metro.kharkiv.types
+package kotleni.ukrainemetro.types
 
 class Vector(var x: Int, var y: Int)

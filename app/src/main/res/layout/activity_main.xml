@@ -7,7 +7,7 @@
     android:id="@+id/linear"
     android:fitsSystemWindows="true">
 
-    <unicon.metro.kharkiv.view.MetroView
+    <kotleni.ukrainemetro.view.MetroView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/metroView"/>

@@ -1,11 +1,16 @@
 <resources>
-    <string name="app_name">Харкiв Метро</string>
-    <string name="google_play">Додаток в Google Play</string>
-    <string name="about_m">Про додаток</string>
-    <string name="about_text">Додаток для перегляду карти Харкiвського метро, а також отримання додаткової iнформацiї.</string>
-    <string name="close">Закрити</string>
+    <string name="app_name">Метро України</string>
 
-    <!-- названия станций -->
+    <string name="btn_googleplay">Додаток в Google Play</string>
+    <string name="btn_github">Код додатку на Github</string>
+    <string name="about_m">Про додаток</string>
+    <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
+    <string name="close">Закрити</string>
+    <string name="version_str">Версiя {}</string>
+
+    <!-- Харків -->
+
+    <!-- назви станций -->
     <string name="name_peremoga">Перемога</string>
     <string name="name_olecsiivka">Олексiївська</string>
     <string name="name_23serpnya">23 Серпня</string>
@@ -15,7 +20,6 @@
     <string name="name_arh_beketova">Архiтектора Бекетова</string>
     <string name="name_zah_ukr">Захистникiв України</string>
     <string name="name_metrobud">Метробудiвникiв</string>
-
 
     <string name="name_holodnagora">Холодна гора</string>
     <string name="name_pivdvokzal">Пiвденний вокзал</string>
@@ -31,7 +35,6 @@
     <string name="name_traktorzavod">Тракторний завод</string>
     <string name="name_industrial">Iндустрiальна</string>
 
-
     <string name="name_garoivwork">Героїв Працi</string>
     <string name="name_studenstka">Студентська</string>
     <string name="name_akadempavl">Академiка Павлова</string>
@@ -41,42 +44,89 @@
     <string name="name_univer">Унiверситет</string>
     <string name="name_istormisei">Iсторичний музей</string>
 
-    <!-- зеленая ветка -->
-    <string name="desc_peremoga">30 станція Харківського метрополітену. Розташована на Олексіївській лінії метро за станцією «Олексіївська». Біля станції планується спорудження автовокзалу північного напрямку.</string>
-    <string name="desc_olecsiivka">29 станція Харківського метрополітену. Розташована на Олексіївській лінії метро, між станціями «23 Серпня» і «Перемога». Відкрита 21 грудня 2010 року. Служила тимчасової кінцевою станцією лінії до 25 серпня 2016 року.</string>
-    <string name="desc_23serpnya">28 станція Харківського метрополітену. Розташована в історичній місцевості Павлово Поле на Олексіївській лінії метро, між станціями «Ботанічний Сад» і «Олексіївська».</string>
-    <string name="desc_botanichniysad">27 станція Харківського метрополітену. Розташована на Олексіївській лінії метро між станціями «Наукова» і «23 серпня». Знаходиться в місці перетину проспектом Науки Саржиного яру - зеленої зони на кордоні Павлова Поля.</string>
-    <string name="desc_naukova">26 станція харківського метрополітену. Розташована на Олексіївській лінії метро між станціями «Держпром» і «Ботанічний сад». Знаходиться на проспекті Науки.</string>
-    <string name="desc_dergprom">25 станція Харківського метрополітену, розташована під площею Свободи, між станціями «Наукова» і «Архітектора Бекетова» на Олексіївській лінії.</string>
-    <string name="desc_arh_beketova">24 станція Харківського метрополітену. Розташована на Олексіївській лінії між станціями Держпром і Захисників України. Названа на честь українського і радянського архітектора і художника-пейзажиста Бекетова Олексія Миколайовича.</string>
-    <string name="desc_zah_ukr">23 станція Харківського метрополітену. Розташована на Олексіївській лінії між станціями «Метробудівників» та «Архітектора Бекетова». Знаходиться під площею Захисників України.</string>
-    <string name="desc_metrobud">22 станция Харьковского метрополитена. Расположена рядом с пересечением улиц Плехановской, Державинской и Храмовой. </string>
+    <!-- Харків кінець -->
 
-    <!-- красная ветка -->
-    <string name="desc_holodnagora">1 станція Харківського метрополітену. Кінцева станція Холодногірсько-Заводської лінії, розташована після станції «Південний вокзал». Названа на честь однойменного району. Станція відкрита в складі першої пускової дільниці Харківського метрополітену під назвою «Вулиця Свердлова».</string>
-    <string name="desc_pivdvokzal">2 станція Харківського метрополітену. Свою назву отримала від знаходиться поруч великого вокзалу, від якого йдуть поїзда приміських і міжнародних маршрутів.</string>
-    <string name="desc_centrarinok">3 станція Харківського метрополітену. Проміжна станція Холодногірсько-Заводської лінії, розташована між станціями «Південний вокзал» і «Площа Конституції». Названа на честь однойменного будівлі.</string>
-    <string name="desc_maydankonst">4 станція Харківського метрополітену. До 20 листопада 2015 року «Радянська». Розташована на Холодногірсько-Заводській лінії метро, між станціями «Центральний ринок» і «Проспект Гагаріна». Має перехід на станцію «Історичний музей» Салтівської лінії. Названа на честь однойменної площі</string>
-    <string name="desc_prospect_gagarnina">5 станція Харківського метрополітену. Розташована на Холодногірсько-Заводській лінії метро між станціями «Площа Конституції» і «Спортивна».</string>
-    <string name="desc_sportivna">6 станція Харківського метрополітену. Розташована на Холодногірсько-Заводській лінії метро між станціями «Проспект Гагаріна» та «Завод імені Малишева». Знаходиться біля центрального стадіону «Металіст», що визначило її назву і архітектурне оформлення у вигляді величезного спортивного залу.</string>
-    <string name="desc_zavimenimalisheva">7 станція Харківського метрополітену. Назву отримала через безпосередній близькості до центральної прохідної найбільшого промислового підприємства Харкова «ХЗТМ імені В. А. Малишева».</string>
-    <string name="desc_turboatom">8 станція Харківського метрополітену. До 16 жовтня 2019 року мала назву «Московський проспект». Нинішню назву отримала через безпосередній близькості до заводу «Турбоатом».</string>
-    <string name="desc_palacsporta">9 станція Харківського метрополітену. Знаходиться на Холодногірсько-Заводській лінії метро між станціями «Турбоатом» і «Армійська»</string>
-    <string name="desc_armiyska">10 станція Харківського метрополітену. Знаходиться на Холодногірсько-Заводській лінії метро між станціями «Палац спорту» та «Імені А. С. Масельського». Переходи станції виходять на Московський проспект і вулицю Ощепкова, а також в сторону вулиць Маршала Рибалко та Харківських Дивізій.</string>
-    <string name="desc_imosmaselscogo">11 станція Харківського метрополітену, знаходиться на Холодногірсько-Заводській лінії метро між станціями «Армійська» і «Тракторний завод». Розташована на перетині Московського проспекту до проспекту Тракторобудівників, що веде до житлового масиву Салтівка.</string>
-    <string name="desc_traktorzavod">12 станція Харківського метрополітену. Знаходиться на Холодногірсько-Заводській лінії метро між станціями «Імені А. С. Масельського» і «Індустріальна».</string>
-    <string name="desc_industrial">13 станція Харківського метрополітену. Кінцева станція Холодногірсько-Заводської лінії, розташована після станції «Тракторний завод». Має колонний тип. Пущена в експлуатацію 11 серпня 1978 року.</string>
+    <!-- Київ -->
+    <string name="name_akademistechko">Академмістечко</string>
+    <string name="name_zhytomyr">Житомирська</string>
+    <string name="name_svyatoshyn">Святошин</string>
+    <string name="name_nykvy">Нивки</string>
+    <string name="name_beresteyska">Берестейська</string>
+    <string name="name_shulyavska">Шулявська</string>
+    <string name="name_polytechnic_institute">Політехнічний інститут</string>
+    <string name="name_station">Вокзальна</string>
+    <string name="name_university">Унiверситет</string>
+    <string name="name_theatrical">Театральна</string>
+    <string name="name_khreshchatyk">Хрещатик</string>
+    <string name="name_arsenal">Арсенальна</string>
+    <string name="name_dnipro">Дніпро</string>
+    <string name="name_hydropark">Гідропарк</string>
+    <string name="name_leftbank">Лівобережна</string>
+    <string name="name_darnytsy">Дарниця</string>
+    <string name="name_chernihivska">Чернігівська</string>
+    <string name="name_lisova">Лісова</string>
 
-    <!-- синяя ветка -->
-    <string name="desc_garoivwork">21 станція Харківського метрополітену, кінцева на Салтівській лінії. Знаходиться на перетині вулиці Героїв Праці та вулиці Академіка Павлова між 522, 521, 524 мікрорайонами і торговим комплексом, що складається з ТРЦ «Караван», ТРЦ «Дафі», будівельного гіпермаркету «Епіцентр», меблевого гіпермаркету «Меблевий лабіринт», радіоринку «Аракс» і ринку «Кутузовський».</string>
-    <string name="desc_studenstka">20 станція Харківського метрополітену. Розташована на Салтівській лінії між станціями «Героїв праці» і «Академіка Павлова». Колонна трёхпролётная станція мілкого закладення. Відкрита 24 жовтня 1986 року в складі другої пускової ділянки другої лінії «Барабашова» - «Героїв праці».</string>
-    <string name="desc_akadempavl">19 станція Харківського метрополітену. Розташована на Салтівській лінії, між станціями «Студентська» і «Академіка Барабашова».</string>
-    <string name="desc_barabashova">18 станція Харківського метрополітену. Розташована на Салтівській лінії, між станціями «Академіка Павлова» і «Київська».</string>
-    <string name="desc_kievska">17 станція Харківського метрополітену. Розташована між станціями «Академіка Барабашова» та «Пушкінська» Салтівської лінії. Знаходиться на перетині вулиць Шевченка та Матюшенко.</string>
-    <string name="desc_pushkinska">16 станція Харківського метрополітену. Розташована між станціями «Київська» і «Університет» Салтівської лінії. Знаходиться в Нагірному районі під площею Ярослава Мудрого на перетині вулиць Пушкінської, Ярослава Мудрого і Гуданова.</string>
-    <string name="desc_univer">15 станція Харківського метрополітену, розташована під площею Свободи на Салтівській лінії між станціями Історичний музей і Пушкінська. З\'єднана переходом зі станцією «Держпром» Олексіївської лінії. Виходи до вулиці Сумської, проспекту Незалежності та площі Свободи.</string>
-    <string name="desc_istormisei">14 станція Харківського метрополітену, кінцева на Салтівській лінії. Наступна станція на лінії - «Університет». Над станцією розташована площа Конституції.</string>
-    <string name="googleplay">Додаток в Google Play</string>
-    <string name="github">Код додатку на Github</string>
-    <string name="version_str">Версiя {}</string>
+    <string name="name_heroes_dnipro">Героїв Дніпра</string>
+    <string name="name_minsk">Мінська</string>
+    <string name="name_obolon">Оболонь</string>
+    <string name="name_petrivka">Петрівка</string>
+    <string name="name_taras_sxhevchenko">Тараса Шевченка</string>
+    <string name="name_contract_area">Контрактова площа</string>
+    <string name="name_postal_square">Поштова площа</string>
+    <string name="name_independence_square">Майдан Незалежності</string>
+    <string name="name_leotolstoysquare">Площа Льва Толстого</string>
+    <string name="name_olympic">Олімпійська</string>
+    <string name="name_palaceukraine">Палац Україна</string>
+    <string name="name_lybidska">Либідська</string>
+    <string name="name_demiivska">Деміївська</string>
+    <string name="name_holosiivska">Голосіївська</string>
+    <string name="name_vasylkivska">Васильківська</string>
+    <string name="name_exhibitioncenter">Виставковий центр</string>
+    <string name="name_racetrack">Іподром</string>
+    <string name="name_teremka">Теремки</string>
+
+    <string name="name_syrets">Сирець</string>
+    <string name="name_dorohozhychi">Дорогожичі</string>
+    <string name="name_lukyanivska">Лук\'янівська</string>
+    <string name="name_zolotiVorota">Золоті Ворота</string>
+    <string name="name_palatssportu">Палац спорту</string>
+    <string name="name_klovska">Кловська</string>
+    <string name="name_pecherska">Печерська</string>
+    <string name="name_druzhbynarodiv">Дружби народів</string>
+    <string name="name_vydubychi">Видубичі</string>
+    <string name="name_slavutych">Славутич</string>
+    <string name="name_mushrooms">Осокорки</string>
+    <string name="name_poznyaks">Позняки</string>
+    <string name="name_kharkivska">Харківська</string>
+    <string name="name_vyrlitsa">Вирлиця</string>
+    <string name="name_boryspilska">Бориспільська</string>
+    <string name="name_chervonyykhutir">Червоний Хутір</string>
+    <!-- Київ кінець -->
+
+    <!-- Кривий ріг -->
+    <string name="name_zarichna">Зарічна</string>
+    <string name="name_elektrozavodska">Електрозаводська</string>
+    <string name="name_industrialna">Індустріальна</string>
+    <string name="name_soniachna">Сонячна</string>
+    <string name="name_miskaLiakrnia">Міська Лікарня</string>
+    <string name="name_vechirniybulvar">Вечірній бульвар</string>
+    <string name="name_mudriona">Мудрьона</string>
+    <string name="name_budynokrad">Будинок Рад</string>
+    <string name="name_prospektmetalurhiv">Проспект Металургів</string>
+    <string name="name_universytet">Університет</string>
+    <string name="name_vulytsiavitcyzny">Вул. Вітчизни</string>
+    <string name="name_tretiadilnytsia">3-тя Дільниця</string>
+    <string name="name_kiltseamkr">Кільце АМКР</string>
+    <string name="name_maidanPratsi">Майдан Праці</string>
+    <string name="name_kiltseva">Кільцева</string>
+    <!-- Кривий ріг кінець -->
+
+    <!-- Дніпро -->
+    <string name="name_pokrovska">Покровська</string>
+    <string name="name_prospektSvobody">Проспект Свободи</string>
+    <string name="name_zavodska">Заводська</string>
+    <string name="name_metalurhiv">Металургів</string>
+    <string name="name_metrobudivnykiv">Метробудiвникiв</string>
+    <string name="name_vokzalna">Вокзальна</string>
+    <!-- Дніпро кінець -->
 </resources>

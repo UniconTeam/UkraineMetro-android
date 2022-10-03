@@ -6,7 +6,6 @@ const val DEBUG = false
 // strs
 const val MARKET_URL = "https://play.google.com/store/apps/details?id=unicon.metro.kharkiv"
 const val GITHUB_URL = "https://github.com/kotleni/UkraineMetro-android"
-const val PREFS_MAIN = "new"
 
 // colors
 const val COLOR_TEXT_A = "#626262"

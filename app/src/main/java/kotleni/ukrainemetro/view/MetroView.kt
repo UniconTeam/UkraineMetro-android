@@ -106,8 +106,9 @@ class MetroView(var ctx: Context, attr: AttributeSet) : View(ctx, attr) {
         })
     }
 
-    fun setData(arr: ArrayList<Element>) {
-        this.data = arr
+    fun setData(arr: List<Element>) {
+        data.clear()
+        data.addAll(arr)
     }
 
     fun setOnItemClickListener(func: (st: Point) -> Unit) {

@@ -8,9 +8,9 @@ class MapsRepository {
     fun getMap(city: City): List<Element> {
         return when(city) {
             City.Kharkiv -> MapsData.kharkiv
-            City.Kyiv -> MapsData.kharkiv
-            City.KriviyRig -> MapsData.kharkiv
-            City.Dnipro -> MapsData.kharkiv
+            City.Kyiv -> MapsData.kyiv
+            City.KriviyRig -> MapsData.kriviyrog
+            City.Dnipro -> MapsData.dnipro
         }
     }
 }

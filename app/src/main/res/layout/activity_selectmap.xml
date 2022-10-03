@@ -40,11 +40,11 @@
         <com.google.android.material.radiobutton.MaterialRadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Дніпро"/>
+                android:text="Кривий Ріг"/>
         <com.google.android.material.radiobutton.MaterialRadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Кривий Ріг"/>
+                android:text="Дніпро"/>
     </RadioGroup>
 
     <com.google.android.material.button.MaterialButton

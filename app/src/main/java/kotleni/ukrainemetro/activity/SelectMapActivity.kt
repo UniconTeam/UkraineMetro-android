@@ -21,6 +21,12 @@ class SelectMapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_selectmap)
 
+        if(viewModel.isHasCity()) {
+            val intent = Intent(this, MapActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
+
         nextButton.setOnClickListener {
             val radioBtn = findViewById<MaterialRadioButton>(radioGroup.checkedRadioButtonId)
             City.values().forEach {

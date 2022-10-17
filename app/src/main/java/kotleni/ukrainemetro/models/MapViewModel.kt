@@ -22,4 +22,8 @@ class MapViewModel(
             mapData.value = repositoriesContainer.getMapsRepository().getMap(city)
         }
     }
+
+    fun resetCity() {
+        repositoriesContainer.getPrefsRepository().resetCity()
+    }
 }

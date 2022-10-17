@@ -27,4 +27,10 @@ class PrefsRepository(private val context: Context) {
             putInt(Keys.cityId, city.id)
         }
     }
+
+    fun resetCity() {
+        sharedPreferences.edit {
+            remove(Keys.cityId)
+        }
+    }
 }

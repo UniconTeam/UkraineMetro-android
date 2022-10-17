@@ -11,4 +11,9 @@ class SelectMapViewModel(
     fun setCity(city: City) {
         repositoriesContainer.getPrefsRepository().setCity(city)
     }
+
+    fun isHasCity(): Boolean {
+        val city = repositoriesContainer.getPrefsRepository().getCity()
+        return  city != null
+    }
 }

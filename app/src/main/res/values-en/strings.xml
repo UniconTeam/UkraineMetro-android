@@ -1,10 +1,9 @@
 <resources>
-    <string name="btn_googleplay">Додаток в Google Play</string>
-    <string name="btn_github">Код додатку на Github</string>
-    <string name="about_m">Про додаток</string>
-    <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
-    <string name="close">Закрити</string>
-    <string name="version_str">Версiя {}</string>
+    <string name="btn_googleplay">Application in Google Play</string>
+    <string name="btn_github">Source code in Github</string>
+    <string name="btn_resetcity">Change city</string>
+    <string name="about_text">Application for viewing maps of the Kharkiv, Kyiv, Dnipro and Kryvorizky subways</string>
+    <string name="close">Close</string>
 
     <!-- Kharkiv -->
     <string name="name_peremoga">Pobeda</string>

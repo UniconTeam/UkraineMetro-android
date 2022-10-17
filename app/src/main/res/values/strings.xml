@@ -3,10 +3,9 @@
 
     <string name="btn_googleplay">Додаток в Google Play</string>
     <string name="btn_github">Код додатку на Github</string>
-    <string name="about_m">Про додаток</string>
+    <string name="btn_resetcity">Змiнити мiсто</string>
     <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
     <string name="close">Закрити</string>
-    <string name="version_str">Версiя {}</string>
 
     <!-- Харків -->
 

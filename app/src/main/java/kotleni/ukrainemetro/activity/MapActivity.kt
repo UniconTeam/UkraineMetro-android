@@ -16,7 +16,6 @@ import kotleni.ukrainemetro.models.MapViewModel
 import kotleni.ukrainemetro.view.MetroView
 import unicon.metro.kharkiv.R
 
-
 class MapActivity : AppCompatActivity() {
     private val metroView: MetroView by lazy { findViewById(R.id.metroView) }
     private val fab: FloatingActionButton by lazy { findViewById(R.id.fab) }

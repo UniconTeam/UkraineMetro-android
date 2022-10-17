@@ -93,7 +93,7 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
     private val colorTrans = Color.parseColor(COLOR_TRANS)
 
     // drawing
-    private val padding = 0f//32f
+    private val padding = 0f // todo: remove
     private var scale = 2f
 
     // scroll
@@ -179,7 +179,6 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
     }
 
     override fun onDraw(canvas: Canvas?) {
-        var scale = 1f
         // draw lines
         data.forEach {
             if (it is BranchElement) {
@@ -193,13 +192,17 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
                     paint.strokeCap = Paint.Cap.ROUND
 
                     if(lastBranchVec.x > 0)
-                        canvas?.drawLine(scale * (lastBranchVec.x.toFloat() + scrollX), scale * (lastBranchVec.y.toFloat() + scrollY), scale * (p.pos.x.toFloat() + scrollX), scale * (p.pos.y.toFloat() + scrollY), paint)
+                        canvas?.drawLine(
+                            scale * (lastBranchVec.x.toFloat() + scrollX),
+                            scale * (lastBranchVec.y.toFloat() + scrollY),
+                            scale * (p.pos.x.toFloat() + scrollX),
+                            scale * (p.pos.y.toFloat() + scrollY),
+                            paint)
 
                     lastBranchVec = p.pos
                 }
             }
         }
-        return
         // draw trans
         data.forEach { el ->
             if (el is TransElement) {
@@ -207,11 +210,11 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
                 paint.color = colorTrans
                 paint.strokeWidth = LINE_WIDTH
 
-                canvas!!.drawLine(
-                    scrollX + (padding + el.from.x.toFloat()) * scale,
-                    scrollY + (padding + el.from.y.toFloat()) * scale,
-                    scrollX + (padding + el.to.x.toFloat()) * scale,
-                    scrollY + (padding + el.to.y.toFloat()) * scale,
+                canvas?.drawLine(
+                    scale * (scrollX + el.from.x.toFloat()),
+                    scale * (scrollY + el.from.y.toFloat()),
+                    scale * (scrollX + el.to.x.toFloat()),
+                    scale * (scrollY + el.to.y.toFloat()),
                     paint)
             }
         }
@@ -222,10 +225,9 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
                 it.points.forEach { p: Point ->
                     if(p.name != null) {
                         paint.color = colorTextA
-
                         paint.style = Paint.Style.FILL
 
-                        val rect = getTextBackgroundSize(scrollX + (padding + p.pos.x + 0f) * scale, scrollY + (padding + p.pos.y + 0f) * scale, resources.getString(p.name!!), textPaint)
+                        val rect = getTextBackgroundSize((scrollX + p.pos.x + 0f) * scale, (scrollY + p.pos.y + 0f) * scale, resources.getString(p.name!!), textPaint)
                         canvas!!.drawRoundRect(
                             RectF(rect.left.toFloat() - BUBLE_SCALE,
                                 rect.top.toFloat() - BUBLE_SCALE,
@@ -233,7 +235,7 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
                                 rect.bottom.toFloat() + BUBLE_SCALE
                             ),
                             28f, 28f, paint)
-                        canvas.drawText(resources.getString(p.name!!), scrollX + (padding + p.pos.x + 0f) * scale, scrollY + (padding + p.pos.y + 0f) * scale, textPaint)
+                        canvas.drawText(resources.getString(p.name!!), (scrollX + p.pos.x + 0f) * scale, (scrollY + p.pos.y + 0f) * scale, textPaint)
                     }
                 }
             }

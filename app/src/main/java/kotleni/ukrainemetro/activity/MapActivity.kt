@@ -22,10 +22,10 @@ class MapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_map)
 
+        initAds()
+
         viewModel.getMapData().observe(this) {
-            if(it != null) {
-                metroView.updateData(it)
-            }
+            it?.let { metroView.updateData(it) }
         }
         viewModel.loadMapData()
     }

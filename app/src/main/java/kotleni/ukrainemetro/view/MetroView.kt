@@ -171,14 +171,18 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
         size.h = h
 
         mathMapVectors().also {
-            scrollX = (w / 2) - ((it.maxVector.x + it.minVector.x) / 2)
-            scrollY = (h / 2) - ((it.maxVector.y + it.minVector.y) / 2)
+            scrollX = (w / 2) - (((it.maxVector.x + it.minVector.x) / 2))
+            scrollY = (h / 2) - (((it.maxVector.y + it.minVector.y) / 2))
+
+//            scrollX /= 2
+//            scrollY /= 2
         }
 
         super.onSizeChanged(w, h, oldw, oldh)
     }
 
     override fun onDraw(canvas: Canvas?) {
+        var scale = 1
         // draw lines
         data.forEach {
             if (it is BranchElement) {
@@ -226,6 +230,7 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
                     if(p.name != null) {
                         paint.color = colorTextA
                         paint.style = Paint.Style.FILL
+                        paint.textSize = 5f
 
                         val rect = getTextBackgroundSize((scrollX + p.pos.x + 0f) * scale, (scrollY + p.pos.y + 0f) * scale, resources.getString(p.name!!), textPaint)
                         canvas!!.drawRoundRect(

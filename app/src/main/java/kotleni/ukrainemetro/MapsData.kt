@@ -89,7 +89,6 @@ object MapsData {
                 Point(Vector(824, 457), R.string.name_darnytsy),
                 Point(Vector(853, 428), R.string.name_chernihivska),
                 Point(Vector(884, 399), R.string.name_lisova),
-               /*  Point(Vector(, ), R.string.),*/
             ),
             Color.parseColor("#f22718")
         ),
@@ -103,7 +102,8 @@ object MapsData {
                 Point(Vector(540, 293), R.string.name_contract_area),
                 Point(Vector(540, 339), R.string.name_postal_square),
                 Point(Vector(540, 395), R.string.name_independence_square),
-                Point(Vector(478, 516), R.string.name_leotolstoysquare),
+                Point(Vector(478, 516-10), R.string.name_leotolstoysquare),
+                Point(Vector(478,526-10 ), null), // for trans
                 Point(Vector(450, 568), R.string.name_olympic),
                 Point(Vector(450, 609), R.string.name_palaceukraine),
                 Point(Vector(450, 649), R.string.name_lybidska),
@@ -113,9 +113,8 @@ object MapsData {
                 Point(Vector(321, 801), R.string.name_exhibitioncenter),
                 Point(Vector(266, 822), R.string.name_racetrack),
                 Point(Vector(195, 822), R.string.name_teremka),
-               /*  Point(Vector(, ), R.string.),*/
             ),
-            Color.parseColor("#1261ff")//blue
+            Color.parseColor("#1261ff")
         ),
         BranchElement(
             listOf(
@@ -124,6 +123,7 @@ object MapsData {
                 Point(Vector(401,332 ), R.string.name_lukyanivska),
                 Point(Vector(448,395 ), R.string.name_zolotiVorota),
                 Point(Vector(508,516 ), R.string.name_palatssportu),
+                Point(Vector(508,526 ), null), // for trans
                 Point(Vector(540,569 ), R.string.name_klovska),
                 Point(Vector(540,609 ), R.string.name_pecherska),
                 Point(Vector(540,649 ), R.string.name_druzhbynarodiv),
@@ -136,9 +136,11 @@ object MapsData {
                 Point(Vector(850,774 ), R.string.name_boryspilska),
                 Point(Vector(881,743 ), R.string.name_chervonyykhutir),
             ),
-            Color.parseColor("#379926")//green
+            Color.parseColor("#379926")
         ),
-        // TransElement
+        TransElement(Vector(448,395 ), Vector(469, 416)),
+        TransElement(Vector(540, 395), Vector(560, 416)),
+        TransElement(Vector(508,526 ), Vector(478, 526-10))
     )
     val dnipro: List<Element> = listOf(
         BranchElement(
@@ -149,9 +151,8 @@ object MapsData {
                 Point(Vector(967,270 ), R.string.name_metalurhiv),
                 Point(Vector(1162,310 ), R.string.name_metrobudivnykiv),
                 Point(Vector(1370, 310), R.string.name_vokzalna),
-               /*  Point(Vector(, ), R.string.),*/
             ),
-            Color.parseColor("#f22718")//red
+            Color.parseColor("#f22718")
         ),
     )
      val kriviyrog: List<Element> = listOf(
@@ -169,10 +170,9 @@ object MapsData {
                 Point(Vector(77,236 ), R.string.name_universytet),
                 Point(Vector(81,250 ), R.string.name_vulytsiavitcyzny),
                 Point(Vector(94,266 ), R.string.name_tretiadilnytsia),
-                Point(Vector(111,266 ), R.string.name_kiltseamkr),
-                Point(Vector(123,280 ), R.string.name_maidanPratsi),
-                Point(Vector(67, 237), R.string.name_kiltseva),
-               /*  Point(Vector(, ), R.string.),*/
+                Point(Vector(111,280 ), R.string.name_kiltseamkr),
+                Point(Vector(123,300 ), R.string.name_maidanPratsi),
+                Point(Vector(123, 320), R.string.name_kiltseva),
             ),
             Color.parseColor("#f22718")
         ),

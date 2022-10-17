@@ -13,10 +13,10 @@ const val COLOR_TEXT_B = "#ffffff"
 const val COLOR_TRANS = "#ff00ff"
 
 // drawing
-const val BUBLE_SCALE = 4f
-const val LINE_WIDTH = 8f
+const val BUBLE_SCALE = 3f
+const val LINE_WIDTH = 4f
 
 // gestures
-const val SCALE_FACTOR_MIN = 1f
+const val SCALE_FACTOR_MIN = 0.8f
 const val SCALE_FACTOR_MAX = 3.2f
 const val SCALE_QUICK_ENABLE = true

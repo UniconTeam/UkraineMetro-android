@@ -2,7 +2,9 @@ package kotleni.ukrainemetro.activity
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.MobileAds
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotleni.ukrainemetro.createViewModel
 import kotleni.ukrainemetro.models.MapViewModel
@@ -22,11 +24,15 @@ class MapActivity : AppCompatActivity() {
 
         viewModel.getMapData().observe(this) {
             if(it != null) {
-                metroView.setData(it)
-                metroView.prepare()
-                metroView.invalidate()
+                metroView.updateData(it)
             }
         }
         viewModel.loadMapData()
+    }
+
+    private fun initAds() {
+        MobileAds.initialize(this) { }
+        val adRequest = AdRequest.Builder()
+        adView.loadAd(adRequest.build())
     }
 }

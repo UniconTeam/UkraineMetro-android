@@ -22,7 +22,7 @@ object MapsData {
                 Point(Vector(278, 231), R.string.name_zah_ukr),
                 Point(Vector(302, 267), R.string.name_metrobud)
             ),
-            Color.parseColor("#379926")//green
+            Color.parseColor("#379926")
         ),
         BranchElement(
             listOf(

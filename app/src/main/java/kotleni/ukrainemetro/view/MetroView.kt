@@ -1,15 +1,11 @@
 package kotleni.ukrainemetro.view
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
 import android.text.TextPaint
 import android.util.AttributeSet
-import android.view.MotionEvent
-import android.view.View
 import kotleni.ukrainemetro.*
 import kotleni.ukrainemetro.types.*
 import kotleni.ukrainemetro.types.elements.BranchElement
@@ -27,12 +23,12 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
     private val paint = Paint()
     private val textPaint = TextPaint()
 
-    // colors
+    // Colors
     private val colorTextA = context.getColorByAttr(R.attr.colorAccent)    // text rect
     private val colorTextB = context.getColorByAttr(R.attr.colorOnPrimary) // text color
     private val colorTrans = Color.parseColor(COLOR_TRANS)
 
-    // for draw
+    // For draw
     private var defVector = Vector(-1, -1)
     private var lastBranchVec = defVector
 
@@ -54,17 +50,17 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
         val vectorMin = VectorF(9999f, 9999f)
 
         // Find max x and y
-        data.forEach {
-            if(it is BranchElement) {
-                it.points.forEach {
-                    if(it.pos.x > vectorMax.x) {
-                        vectorMax.x = it.pos.x.toFloat()
-                    } else if(it.pos.x < vectorMin.x) {
-                        vectorMin.x = it.pos.x.toFloat()
-                    } else if(it.pos.y > vectorMax.y) {
-                        vectorMax.y = it.pos.y.toFloat()
-                    } else if(it.pos.y < vectorMin.y) {
-                        vectorMin.y = it.pos.y.toFloat()
+        data.forEach { element ->
+            if(element is BranchElement) {
+                element.points.forEach { point ->
+                    if(point.pos.x > vectorMax.x) {
+                        vectorMax.x = point.pos.x.toFloat()
+                    } else if(point.pos.x < vectorMin.x) {
+                        vectorMin.x = point.pos.x.toFloat()
+                    } else if(point.pos.y > vectorMax.y) {
+                        vectorMax.y = point.pos.y.toFloat()
+                    } else if(point.pos.y < vectorMin.y) {
+                        vectorMin.y = point.pos.y.toFloat()
                     }
                 }
             }

@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.KharkivMetro" parent="@style/Theme.Material3.Light.NoActionBar">
+    <style name="Theme.KharkivMetro" parent="@style/Theme.Material3.DayNight.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>

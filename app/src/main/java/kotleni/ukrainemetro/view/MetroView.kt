@@ -21,13 +21,16 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
     private class MyOnTouchListener(
         private val gestureTouchEvent: (event: MotionEvent) -> Unit,
         private val updateGestureScrollEvent: (x: Float, y: Float) -> Unit,
-        private val updateCanvas: () -> Unit
+        private val updateCanvas: () -> Unit,
+        private val metroView: MetroView
     ): OnTouchListener {
         private var lock = false
         private var mod = false
 
         private var dX = 0f
         private var dY = 0f
+
+        private var lastActionDownTime = 0L
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(p0: View, event: MotionEvent): Boolean {
@@ -38,6 +41,16 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
             } else {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> {
+                        // check double tap
+                        if(System.currentTimeMillis() - lastActionDownTime < 400) {
+                            if(metroView.mScaleFactor == SCALE_FACTOR_MAX)
+                                metroView.forceUpdateScale(false)
+                            else
+                                metroView.forceUpdateScale(true)
+                        }
+
+                        lastActionDownTime = System.currentTimeMillis()
+
                         dX = event.rawX
                         dY = event.rawY
                     }
@@ -71,11 +84,9 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
 
     private class ScaleListener(var metroView: MetroView) : MyScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: MyScaleGestureDetector?): Boolean {
-            metroView.mScaleFactor *= detector!!.getScaleFactor()
-            metroView.mScaleFactor = Math.max(SCALE_FACTOR_MIN, Math.min(metroView.mScaleFactor, SCALE_FACTOR_MAX))
-
-            metroView.scaleX = metroView.mScaleFactor
-            metroView.scaleY = metroView.mScaleFactor
+            detector?.getScaleFactor()?.let {
+                metroView.updateScale(it)
+            }
 
             return super.onScale(detector)
         }
@@ -125,8 +136,24 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
             updateGestureScrollEvent = { x, y ->
                 scrollX += x / mScaleFactor
                 scrollY += y / mScaleFactor
-            }
+            },
+            metroView = this
         ).also { setOnTouchListener(it) }
+    }
+
+    private fun updateScale(factor: Float) {
+        mScaleFactor *= factor
+        mScaleFactor = Math.max(SCALE_FACTOR_MIN, Math.min(mScaleFactor, SCALE_FACTOR_MAX))
+
+        scaleX = mScaleFactor
+        scaleY = mScaleFactor
+    }
+
+    private fun forceUpdateScale(isMaximal: Boolean) {
+        mScaleFactor = if (isMaximal) SCALE_FACTOR_MAX else SCALE_FACTOR_MIN
+
+        scaleX = mScaleFactor
+        scaleY = mScaleFactor
     }
 
     fun updateData(arr: List<Element>) {

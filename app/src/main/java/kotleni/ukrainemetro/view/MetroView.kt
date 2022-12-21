@@ -104,8 +104,8 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
     private val colorTrans = Color.parseColor(COLOR_TRANS)
 
     // drawing
-    private val padding = 0f // todo: remove
-    private var scale = 2f
+//    private val padding = 0f // todo: remove
+//    private var scale = 2f
 
     // scroll
     private var scrollX = 0f

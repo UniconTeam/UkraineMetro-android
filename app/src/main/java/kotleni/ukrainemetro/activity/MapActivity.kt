@@ -11,6 +11,8 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotleni.ukrainemetro.GITHUB_URL
+import kotleni.ukrainemetro.MARKET_URL
 import kotleni.ukrainemetro.createViewModel
 import kotleni.ukrainemetro.models.MapViewModel
 import kotleni.ukrainemetro.view.MetroView
@@ -40,20 +42,23 @@ class MapActivity : AppCompatActivity() {
                 cornerRadius(16f)
                 listItems(items = listOf(getString(R.string.btn_resetcity), getString(R.string.btn_googleplay), getString(R.string.btn_github)), selection = object: ItemListener {
                     override fun invoke(dialog: MaterialDialog, index: Int, text: CharSequence) {
-                        if(index == 0) {
-                            viewModel.resetCity()
-                            val intent = Intent(this@MapActivity, SelectMapActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                        } else if(index == 1) {
-                            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=unicon.metro.kharkiv&hl=en&gl=US"))
-                            startActivity(browserIntent)
-                        } else if(index == 2) {
-                            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/kotleni/UkraineMetro-android"))
-                            startActivity(browserIntent)
+                        when(index) {
+                            0 -> {
+                                viewModel.resetCity()
+                                metroView.updateData(viewModel.getMapData().value!!)
+                            }
+                            1 -> {
+                                val intent = Intent(Intent.ACTION_VIEW)
+                                intent.data = Uri.parse(MARKET_URL)
+                                startActivity(intent)
+                            }
+                            2 -> {
+                                val intent = Intent(Intent.ACTION_VIEW)
+                                intent.data = Uri.parse(GITHUB_URL)
+                                startActivity(intent)
+                            }
                         }
                     }
-
                 })
             }
         }

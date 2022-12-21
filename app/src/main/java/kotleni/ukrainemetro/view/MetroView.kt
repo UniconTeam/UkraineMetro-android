@@ -46,27 +46,22 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
         invalidate()
     }
 
-    // todo: move to background
+    // TODO: move to background
     private fun mathMapVectors(): MinMaxVectorF {
         val vectorMax = VectorF(0f, 0f)
         val vectorMin = VectorF(9999f, 9999f)
 
-        // find max x and y
+        // Find max x and y
         data.forEach {
             if(it is BranchElement) {
                 it.points.forEach {
                     if(it.pos.x > vectorMax.x) {
                         vectorMax.x = it.pos.x.toFloat()
-                    }
-                    if(it.pos.x < vectorMin.x) {
+                    } else if(it.pos.x < vectorMin.x) {
                         vectorMin.x = it.pos.x.toFloat()
-                    }
-
-                    if(it.pos.y > vectorMax.y) {
+                    } else if(it.pos.y > vectorMax.y) {
                         vectorMax.y = it.pos.y.toFloat()
-                    }
-
-                    if(it.pos.y < vectorMin.y) {
+                    } else if(it.pos.y < vectorMin.y) {
                         vectorMin.y = it.pos.y.toFloat()
                     }
                 }

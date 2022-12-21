@@ -1,13 +1,11 @@
 package kotleni.ukrainemetro.view
 
 import android.content.Context
-import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import kotleni.ukrainemetro.SCALE_FACTOR_MAX
 import kotleni.ukrainemetro.SCALE_FACTOR_MIN
-import kotleni.ukrainemetro.SCALE_QUICK_ENABLE
 
 open class TouchControllableView(context: Context, attrs: AttributeSet) : View(context, attrs), View.OnTouchListener {
     private var lock = false

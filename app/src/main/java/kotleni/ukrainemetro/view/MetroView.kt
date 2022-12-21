@@ -15,6 +15,9 @@ import kotleni.ukrainemetro.types.*
 import kotleni.ukrainemetro.types.elements.BranchElement
 import kotleni.ukrainemetro.types.elements.Element
 import kotleni.ukrainemetro.types.elements.TransElement
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import unicon.metro.kharkiv.R
 
 class MetroView(context: Context, attr: AttributeSet): TouchControllableView(context, attr) {
@@ -46,8 +49,7 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
         invalidate()
     }
 
-    // TODO: move to background
-    private fun mathMapVectors(): MinMaxVectorF {
+    private fun updateMapVectors() = CoroutineScope(Dispatchers.IO).launch {
         val vectorMax = VectorF(0f, 0f)
         val vectorMin = VectorF(9999f, 9999f)
 
@@ -68,17 +70,15 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
             }
         }
 
-        return MinMaxVectorF(vectorMin, vectorMax)
+        scrollX = (size.w / 2) - (((vectorMax.x + vectorMin.x) / 2))
+        scrollY = (size.h / 2) - (((vectorMax.y + vectorMin.y) / 2))
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         size.w = w
         size.h = h
 
-        mathMapVectors().also {
-            scrollX = (w / 2) - (((it.maxVector.x + it.minVector.x) / 2))
-            scrollY = (h / 2) - (((it.maxVector.y + it.minVector.y) / 2))
-        }
+        updateMapVectors()
 
         super.onSizeChanged(w, h, oldw, oldh)
     }

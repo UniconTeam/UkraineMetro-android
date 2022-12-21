@@ -6,6 +6,8 @@ import android.view.MotionEvent
 import android.view.View
 import kotleni.ukrainemetro.SCALE_FACTOR_MAX
 import kotleni.ukrainemetro.SCALE_FACTOR_MIN
+import kotlin.math.max
+import kotlin.math.min
 
 open class TouchControllableView(context: Context, attrs: AttributeSet) : View(context, attrs), View.OnTouchListener {
     private var lock = false
@@ -31,7 +33,7 @@ open class TouchControllableView(context: Context, attrs: AttributeSet) : View(c
 
     private fun updateScale(factor: Float) {
         mScaleFactor *= factor
-        mScaleFactor = Math.max(SCALE_FACTOR_MIN, Math.min(mScaleFactor, SCALE_FACTOR_MAX))
+        mScaleFactor = max(SCALE_FACTOR_MIN, min(mScaleFactor, SCALE_FACTOR_MAX))
 
         scaleX = mScaleFactor
         scaleY = mScaleFactor

@@ -18,7 +18,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:title="Оберіть місто"/>
+                app:title="@string/label_select_city"/>
 
     </com.google.android.material.appbar.AppBarLayout>
     
@@ -32,19 +32,19 @@
         <com.google.android.material.radiobutton.MaterialRadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Харків"/>
+                android:text="@string/city_kharkiv"/>
         <com.google.android.material.radiobutton.MaterialRadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Київ"/>
+                android:text="@string/city_kyiv"/>
         <com.google.android.material.radiobutton.MaterialRadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Кривий Ріг"/>
+                android:text="@string/city_kriviyrig"/>
         <com.google.android.material.radiobutton.MaterialRadioButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Дніпро"/>
+                android:text="@string/city_dnipro"/>
     </RadioGroup>
 
     <com.google.android.material.button.MaterialButton
@@ -52,7 +52,7 @@
             android:layout_margin="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Далі"
+            android:text="@string/btn_next"
             app:layout_constraintTop_toBottomOf="@id/radio_group"
             app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

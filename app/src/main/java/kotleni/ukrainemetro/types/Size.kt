@@ -1,3 +1,7 @@
 package kotleni.ukrainemetro.types
 
+/** Size
+ * @param w Width
+ * @param h Height
+ */
 class Size(var w: Int, var h: Int)

@@ -2,6 +2,10 @@ package kotleni.ukrainemetro.types.elements
 
 import kotleni.ukrainemetro.types.Vector
 
+/** Trans element of map
+ * @param from Vector of first point
+ * @param to Vector of second point
+ */
 class TransElement(
     var from: Vector,
     var to: Vector

@@ -13,6 +13,13 @@ import androidx.lifecycle.get
 import kotleni.ukrainemetro.repository.MapsRepository
 import kotleni.ukrainemetro.repository.PrefsRepository
 
+/** Get background rect of pos and text+textPaint
+ * @param x X position
+ * @param y Y position
+ * @param text String of text
+ * @param paint Text paint from canvas
+ * @return Rect of text background
+ */
 fun getTextBackgroundSize(
     x: Float,
     y: Float,
@@ -29,13 +36,21 @@ fun getTextBackgroundSize(
     )
 }
 
+/** Get color by attribute
+ * @param id Attribute resource
+ * @return Rgb color in int
+ */
 fun Context.getColorByAttr(@AttrRes id: Int): Int {
     val typedValue: TypedValue = TypedValue()
     theme.resolveAttribute(id, typedValue, true)
     return typedValue.data
 }
 
-// create viewmodel for viewmodelstoreowner
+/** Create viewmodel for viewmodelstoreowner
+ * @param context Activity context
+ * @param clazz Viewmodel class
+ * @return Initialized viewmodel
+ */
 fun <T: ViewModel> ViewModelStoreOwner.createViewModel(context: Context, clazz: Class<T>): T {
     // get constructor and initialize
     val constructor = clazz.getConstructor(RepositoriesContainer::class.java)

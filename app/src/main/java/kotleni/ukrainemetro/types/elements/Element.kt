@@ -1,5 +1,4 @@
 package kotleni.ukrainemetro.types.elements
 
-interface Element {
-
-}
+/** Element of map interface */
+interface Element

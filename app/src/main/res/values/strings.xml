@@ -7,9 +7,14 @@
     <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
     <string name="close">Закрити</string>
 
-    <!-- Харків -->
+    <!-- міста -->
+    <string name="city_kharkiv">Харків</string>
+    <string name="city_kyiv">Київ</string>
+    <string name="city_kriviyrig">Кривий Ріг</string>
+    <string name="city_dnipro">Дніпро</string>
+    <string name="btn_next">Далі</string>
 
-    <!-- назви станций -->
+    <!-- Харків -->
     <string name="name_peremoga">Перемога</string>
     <string name="name_olecsiivka">Олексiївська</string>
     <string name="name_23serpnya">23 Серпня</string>
@@ -42,7 +47,6 @@
     <string name="name_pushkinska">Пушкiнська</string>
     <string name="name_univer">Унiверситет</string>
     <string name="name_istormisei">Iсторичний музей</string>
-
     <!-- Харків кінець -->
 
     <!-- Київ -->

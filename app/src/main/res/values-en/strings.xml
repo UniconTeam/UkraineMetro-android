@@ -1,9 +1,18 @@
 <resources>
+    <string name="app_name">Ukraine Metro</string>
+
     <string name="btn_googleplay">Application in Google Play</string>
     <string name="btn_github">Source code in Github</string>
     <string name="btn_resetcity">Change city</string>
     <string name="about_text">Application for viewing maps of the Kharkiv, Kyiv, Dnipro and Kryvorizky subways</string>
     <string name="close">Close</string>
+
+    <!-- cities -->
+    <string name="city_kharkiv">Kharkiv</string>
+    <string name="city_kyiv">Kyiv</string>
+    <string name="city_kriviyrig">Kryvyi Rih</string>
+    <string name="city_dnipro">Dnipro</string>
+    <string name="btn_next">Next</string>
 
     <!-- Kharkiv -->
     <string name="name_peremoga">Pobeda</string>

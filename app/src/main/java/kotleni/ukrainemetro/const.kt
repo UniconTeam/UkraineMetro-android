@@ -17,6 +17,6 @@ const val BUBLE_SCALE = 3f
 const val LINE_WIDTH = 4f
 
 // gestures
-const val SCALE_FACTOR_MIN = 0.8f
+const val SCALE_FACTOR_MIN = 1.0f
 const val SCALE_FACTOR_MAX = 3.2f
 const val SCALE_QUICK_ENABLE = true

@@ -17,81 +17,7 @@ import kotleni.ukrainemetro.types.elements.Element
 import kotleni.ukrainemetro.types.elements.TransElement
 import unicon.metro.kharkiv.R
 
-class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
-    private class MyOnTouchListener(
-        private val gestureTouchEvent: (event: MotionEvent) -> Unit,
-        private val updateGestureScrollEvent: (x: Float, y: Float) -> Unit,
-        private val updateCanvas: () -> Unit,
-        private val metroView: MetroView
-    ): OnTouchListener {
-        private var lock = false
-        private var mod = false
-
-        private var dX = 0f
-        private var dY = 0f
-
-        private var lastActionDownTime = 0L
-
-        @SuppressLint("ClickableViewAccessibility")
-        override fun onTouch(p0: View, event: MotionEvent): Boolean {
-            if (event.pointerCount > 1) {
-                gestureTouchEvent.invoke(event)
-                lock = true
-                return true
-            } else {
-                when (event.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        // check double tap
-                        if(System.currentTimeMillis() - lastActionDownTime < 400) {
-                            if(metroView.mScaleFactor == SCALE_FACTOR_MAX)
-                                metroView.forceUpdateScale(false)
-                            else
-                                metroView.forceUpdateScale(true)
-                        }
-
-                        lastActionDownTime = System.currentTimeMillis()
-
-                        dX = event.rawX
-                        dY = event.rawY
-                    }
-                    MotionEvent.ACTION_MOVE -> {
-                        if (!lock) {
-                            mod = true
-
-                            val x = -(dX - event.rawX)
-                            val y = -(dY - event.rawY)
-
-                            updateGestureScrollEvent.invoke(x, y)
-
-                            dX = event.rawX
-                            dY = event.rawY
-
-                            updateCanvas.invoke() // invalidate
-                        }
-                    }
-                    MotionEvent.ACTION_UP -> {
-                        // reset
-                        lock = false
-                        mod = false
-                    }
-                    else -> return false
-                }
-            }
-
-            return true
-        }
-    }
-
-    private class ScaleListener(var metroView: MetroView) : MyScaleGestureDetector.SimpleOnScaleGestureListener() {
-        override fun onScale(detector: MyScaleGestureDetector?): Boolean {
-            detector?.getScaleFactor()?.let {
-                metroView.updateScale(it)
-            }
-
-            return super.onScale(detector)
-        }
-    }
-
+class MetroView(context: Context, attr: AttributeSet): TouchControllableView(context, attr) {
     private var data = ArrayList<Element>()
 
     private val size = Size(240, 320)
@@ -103,17 +29,6 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
     private val colorTextB = context.getColorByAttr(R.attr.colorOnPrimary) // text color
     private val colorTrans = Color.parseColor(COLOR_TRANS)
 
-    // drawing
-//    private val padding = 0f // todo: remove
-//    private var scale = 2f
-
-    // scroll
-    private var scrollX = 0f
-    private var scrollY = 0f
-
-    private var mScaleGestureDetector: MyScaleGestureDetector? = null
-    private var mScaleFactor = 1.0f
-
     // for draw
     private var defVector = Vector(-1, -1)
     private var lastBranchVec = defVector
@@ -122,38 +37,6 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
         textPaint.color = colorTextB
         textPaint.strokeWidth = 3f
         textPaint.textAlign = Paint.Align.CENTER
-
-        mScaleGestureDetector = MyScaleGestureDetector(context, ScaleListener(this))
-        mScaleGestureDetector?.isQuickScaleEnabled = SCALE_QUICK_ENABLE
-
-        MyOnTouchListener(
-            gestureTouchEvent = {
-                mScaleGestureDetector?.onTouchEvent(it)
-            },
-            updateCanvas = {
-                invalidate()
-            },
-            updateGestureScrollEvent = { x, y ->
-                scrollX += x / mScaleFactor
-                scrollY += y / mScaleFactor
-            },
-            metroView = this
-        ).also { setOnTouchListener(it) }
-    }
-
-    private fun updateScale(factor: Float) {
-        mScaleFactor *= factor
-        mScaleFactor = Math.max(SCALE_FACTOR_MIN, Math.min(mScaleFactor, SCALE_FACTOR_MAX))
-
-        scaleX = mScaleFactor
-        scaleY = mScaleFactor
-    }
-
-    private fun forceUpdateScale(isMaximal: Boolean) {
-        mScaleFactor = if (isMaximal) SCALE_FACTOR_MAX else SCALE_FACTOR_MIN
-
-        scaleX = mScaleFactor
-        scaleY = mScaleFactor
     }
 
     fun updateData(arr: List<Element>) {
@@ -200,17 +83,13 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
         mathMapVectors().also {
             scrollX = (w / 2) - (((it.maxVector.x + it.minVector.x) / 2))
             scrollY = (h / 2) - (((it.maxVector.y + it.minVector.y) / 2))
-
-//            scrollX /= 2
-//            scrollY /= 2
         }
 
         super.onSizeChanged(w, h, oldw, oldh)
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        var scale = 1
-        // draw lines
+    override fun onDraw(canvas: Canvas) {
+        // Draw lines
         data.forEach {
             if (it is BranchElement) {
                 lastBranchVec = defVector
@@ -223,34 +102,35 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
                     paint.strokeCap = Paint.Cap.ROUND
 
                     if(lastBranchVec.x > 0)
-                        canvas?.drawLine(
-                            scale * (lastBranchVec.x.toFloat() + scrollX),
-                            scale * (lastBranchVec.y.toFloat() + scrollY),
-                            scale * (p.pos.x.toFloat() + scrollX),
-                            scale * (p.pos.y.toFloat() + scrollY),
+                        canvas.drawLine(
+                            (lastBranchVec.x.toFloat() + scrollX),
+                            (lastBranchVec.y.toFloat() + scrollY),
+                            (p.pos.x.toFloat() + scrollX),
+                            (p.pos.y.toFloat() + scrollY),
                             paint)
 
                     lastBranchVec = p.pos
                 }
             }
         }
-        // draw trans
+
+        // Draw trans
         data.forEach { el ->
             if (el is TransElement) {
                 paint.style = Paint.Style.FILL
                 paint.color = colorTrans
                 paint.strokeWidth = LINE_WIDTH
 
-                canvas?.drawLine(
-                    scale * (scrollX + el.from.x.toFloat()),
-                    scale * (scrollY + el.from.y.toFloat()),
-                    scale * (scrollX + el.to.x.toFloat()),
-                    scale * (scrollY + el.to.y.toFloat()),
+                canvas.drawLine(
+                    (scrollX + el.from.x.toFloat()),
+                    (scrollY + el.from.y.toFloat()),
+                    (scrollX + el.to.x.toFloat()),
+                    (scrollY + el.to.y.toFloat()),
                     paint)
             }
         }
 
-        // draw stations
+        // Draw stations
         data.forEach {
             if (it is BranchElement) {
                 it.points.forEach { p: Point ->
@@ -259,18 +139,20 @@ class MetroView(context: Context, attr: AttributeSet): View(context, attr) {
                         paint.style = Paint.Style.FILL
                         paint.textSize = 5f
 
-                        val rect = getTextBackgroundSize((scrollX + p.pos.x + 0f) * scale, (scrollY + p.pos.y + 0f) * scale, resources.getString(p.name!!), textPaint)
-                        canvas!!.drawRoundRect(
+                        val rect = getTextBackgroundSize((scrollX + p.pos.x + 0f), (scrollY + p.pos.y + 0f), resources.getString(p.name!!), textPaint)
+                        canvas.drawRoundRect(
                             RectF(rect.left.toFloat() - BUBLE_SCALE,
                                 rect.top.toFloat() - BUBLE_SCALE,
                                 rect.right.toFloat() + BUBLE_SCALE,
                                 rect.bottom.toFloat() + BUBLE_SCALE
                             ),
                             28f, 28f, paint)
-                        canvas.drawText(resources.getString(p.name!!), (scrollX + p.pos.x + 0f) * scale, (scrollY + p.pos.y + 0f) * scale, textPaint)
+                        canvas.drawText(resources.getString(p.name!!), (scrollX + p.pos.x + 0f), (scrollY + p.pos.y + 0f), textPaint)
                     }
                 }
             }
         }
+
+        invalidate()
     }
 }

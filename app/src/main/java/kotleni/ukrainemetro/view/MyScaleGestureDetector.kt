@@ -36,7 +36,7 @@ class MyScaleGestureDetector @JvmOverloads constructor(
 
     private var mFocusX = 0f
     private var mFocusY = 0f
-    private var mQuickScaleEnabled = false
+    private var mQuickScaleEnabled = true
 
     var isStylusScaleEnabled = false
     private var mCurrSpan = 0f
@@ -72,7 +72,7 @@ class MyScaleGestureDetector @JvmOverloads constructor(
 
         // Forward the event to check for double tap gesture
         if (mQuickScaleEnabled) {
-            mGestureDetector!!.onTouchEvent(event)
+            mGestureDetector?.onTouchEvent(event)
         }
         val count = event.pointerCount
         val isStylusButtonDown =

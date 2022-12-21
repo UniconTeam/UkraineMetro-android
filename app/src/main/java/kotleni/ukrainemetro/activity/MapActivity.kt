@@ -36,11 +36,11 @@ class MapActivity : AppCompatActivity() {
         viewModel.loadMapData()
 
         fab.setOnClickListener {
-            MaterialDialog(this).show {
-                title(R.string.app_name)
-                message(R.string.about_text)
-                cornerRadius(16f)
-                listItems(items = listOf(getString(R.string.btn_resetcity), getString(R.string.btn_googleplay), getString(R.string.btn_github)), selection = object: ItemListener {
+            MaterialDialog(this)
+                .title(R.string.app_name)
+                .message(R.string.about_text)
+                .cornerRadius(16f)
+                .listItems(items = listOf(getString(R.string.btn_resetcity), getString(R.string.btn_googleplay), getString(R.string.btn_github)), selection = object: ItemListener {
                     override fun invoke(dialog: MaterialDialog, index: Int, text: CharSequence) {
                         when(index) {
                             0 -> {
@@ -60,7 +60,7 @@ class MapActivity : AppCompatActivity() {
                         }
                     }
                 })
-            }
+                .show()
         }
     }
 

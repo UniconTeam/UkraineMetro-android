@@ -3,7 +3,7 @@
 
 <!-- todo update app -->
 <a href="https://play.google.com/store/apps/details?id=unicon.metro.kharkiv">⬇️️ Заватнажити додаток</a><br>
-<a href="https://github.com/kotleni/Kharkiv-Metro">📒 Старий додаток </a><
+<a href="https://github.com/kotleni/Kharkiv-Metro">📒 Старий додаток </a>
 
 ### Мотивація
 Цей додаток спочатку був створенний для особистого використовування, <br>

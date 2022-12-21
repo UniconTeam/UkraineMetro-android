@@ -7,6 +7,8 @@
     <string name="about_text">Application for viewing maps of the Kharkiv, Kyiv, Dnipro and Kryvorizky subways</string>
     <string name="close">Close</string>
 
+    <string name="label_select_city">Select city</string>
+
     <!-- cities -->
     <string name="city_kharkiv">Kharkiv</string>
     <string name="city_kyiv">Kyiv</string>

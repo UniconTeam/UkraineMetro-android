@@ -7,6 +7,8 @@
     <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
     <string name="close">Закрити</string>
 
+    <string name="label_select_city">Оберіть місто</string>
+
     <!-- міста -->
     <string name="city_kharkiv">Харків</string>
     <string name="city_kyiv">Київ</string>

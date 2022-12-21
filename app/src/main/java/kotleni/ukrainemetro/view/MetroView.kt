@@ -135,12 +135,12 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
                         paint.textSize = 5f
 
                         val rect = getTextBackgroundSize((scrollX + p.pos.x + 0f), (scrollY + p.pos.y + 0f), resources.getString(p.name!!), textPaint)
+                        rect.set(
+                            rect.left - BUBLE_SCALE, rect.top - BUBLE_SCALE,
+                            rect.right + BUBLE_SCALE, rect.bottom + BUBLE_SCALE
+                        )
                         canvas.drawRoundRect(
-                            RectF(rect.left - BUBLE_SCALE,
-                                rect.top - BUBLE_SCALE,
-                                rect.right + BUBLE_SCALE,
-                                rect.bottom + BUBLE_SCALE
-                            ),
+                            rect,
                             28f, 28f, paint)
                         canvas.drawText(resources.getString(p.name!!), (scrollX + p.pos.x + 0f), (scrollY + p.pos.y + 0f), textPaint)
                     }

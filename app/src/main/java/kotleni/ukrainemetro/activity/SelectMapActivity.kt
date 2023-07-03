@@ -21,6 +21,11 @@ class SelectMapActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_selectmap)
 
+        if(savedInstanceState != null) {
+            val index = savedInstanceState.getInt("selected_city_index")
+            radioGroup.check(radioGroup.getChildAt(index).id)
+        }
+
         if(viewModel.isHasCity()) {
             val intent = Intent(this, MapActivity::class.java)
             startActivity(intent)
@@ -37,5 +42,10 @@ class SelectMapActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("selected_city_index", radioGroup.indexOfChild(findViewById<MaterialRadioButton>(radioGroup.checkedRadioButtonId)))
+        super.onSaveInstanceState(outState)
     }
 }

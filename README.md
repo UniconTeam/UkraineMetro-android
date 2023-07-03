@@ -1,15 +1,12 @@
-## Метро України
-Це новий додаток для перегляду мап всіх метро України.
+## Ukraine Metro
+Application for viewing maps of all subways of Ukraine.
 
 <!-- todo update app -->
-<a href="https://play.google.com/store/apps/details?id=unicon.metro.kharkiv">⬇️️ Заватнажити додаток</a><br>
-<a href="https://github.com/kotleni/Kharkiv-Metro">📒 Старий додаток </a>
+<a href="https://play.google.com/store/apps/details?id=unicon.metro.kharkiv">⬇️️ Google Play</a><br>
+<a href="https://github.com/kotleni/Kharkiv-Metro">📒 Old project </a>
 
-### Мотивація
-Цей додаток спочатку був створенний для особистого використовування, <br>
-але відтепер коли активних юзерів стало більше 600 (а також більше <br>
-двух тисяч завантажень) я маю дуже велику мотивацію робити його ще <br>
-кращим та більш корисним. <br>
-
-### Скріншоти
-Див. у Google Play
+### Motivation
+This application was originally created for personal use, <br>
+but from now on, when there are more than 600 active users (as well as more <br>
+two thousand downloads) I have a very strong motivation to make it more <br>
+better and more useful.<br>

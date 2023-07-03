@@ -46,6 +46,10 @@ class MapActivity : AppCompatActivity() {
                             0 -> {
                                 viewModel.resetCity()
                                 metroView.updateData(viewModel.getMapData().value!!)
+
+                                val intent = Intent(this@MapActivity, SelectMapActivity::class.java)
+                                startActivity(intent)
+                                finishAffinity()
                             }
                             1 -> {
                                 val intent = Intent(Intent.ACTION_VIEW)

@@ -10,6 +10,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 open class TouchControllableView(context: Context, attrs: AttributeSet) : View(context, attrs), View.OnTouchListener {
+    private val doubleTapTime = 300
+
     private var lock = false
     private var mod = false
 
@@ -55,7 +57,7 @@ open class TouchControllableView(context: Context, attrs: AttributeSet) : View(c
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     // Check double tap
-                    if(System.currentTimeMillis() - lastActionDownTime < 400) {
+                    if(System.currentTimeMillis() - lastActionDownTime < doubleTapTime) {
                         if(mScaleFactor == SCALE_FACTOR_MAX)
                             forceUpdateScale(false)
                         else

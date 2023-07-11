@@ -13,8 +13,8 @@ android {
         minSdkVersion 23
         targetSdkVersion 33
 
-        versionCode 32
-        versionName '3.0.2'
+        versionCode 33
+        versionName '3.1.0'
         resConfigs 'en', 'ua'
 
     }

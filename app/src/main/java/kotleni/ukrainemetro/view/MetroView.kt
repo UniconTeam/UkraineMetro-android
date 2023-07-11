@@ -49,6 +49,12 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
         val vectorMax = VectorF(0f, 0f)
         val vectorMin = VectorF(9999f, 9999f)
 
+        // FIXME: stupid code for fix bug
+        // If map have only one branch
+        // Map not showing anything
+        if(data.size == 1)
+            data.addAll(data)
+
         // Find max x and y
         data.forEach { element ->
             if(element is BranchElement) {

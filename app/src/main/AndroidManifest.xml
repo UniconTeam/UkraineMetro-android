@@ -10,12 +10,12 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.KharkivMetro"
-        android:name="kotleni.ukrainemetro.App">
+        android:name="uniconteam.ukrainemetro.App">
         <activity
-                android:name="kotleni.ukrainemetro.activity.MapActivity"
+                android:name="uniconteam.ukrainemetro.activity.MapActivity"
                 android:exported="true"/>
         <activity
-                android:name="kotleni.ukrainemetro.activity.SelectMapActivity"
+                android:name="uniconteam.ukrainemetro.activity.SelectMapActivity"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

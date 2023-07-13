@@ -21,18 +21,18 @@ abstract class BaseFragment : Fragment() {
 
     internal fun firstTimeCreated(savedInstanceState: Bundle?) = savedInstanceState == null
 
-    // TODO: impl, if needed
-//    internal fun notify(@StringRes message: Int) =
-//        Snackbar.make(viewContainer, message, Snackbar.LENGTH_SHORT).show()
-//
-//    internal fun notifyWithAction(
-//        @StringRes message: Int,
-//        @StringRes actionText: Int,
-//        action: () -> Any
-//    ) {
-//        val snackBar = Snackbar.make(viewContainer, message, Snackbar.LENGTH_INDEFINITE)
-//        snackBar.setAction(actionText) { _ -> action.invoke() }
-//        //snackBar.setActionTextColor(ContextCompat.getColor(appContext, color.colorTextPrimary))
-//        snackBar.show()
-//    }
+    internal fun notify(viewContainer: View, @StringRes message: Int) =
+        Snackbar.make(viewContainer, message, Snackbar.LENGTH_SHORT).show()
+
+    internal fun notifyWithAction(
+        viewContainer: View,
+        @StringRes message: Int,
+        @StringRes actionText: Int,
+        action: () -> Unit
+    ) {
+        val snackBar = Snackbar.make(viewContainer, message, Snackbar.LENGTH_INDEFINITE)
+        snackBar.setAction(actionText) { _ -> action.invoke() }
+        //snackBar.setActionTextColor(ContextCompat.getColor(appContext, color.colorTextPrimary))
+        snackBar.show()
+    }
 }

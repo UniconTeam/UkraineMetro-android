@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -52,11 +53,18 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
 
+    // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
-    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
+    // Ads
     implementation 'com.google.android.gms:play-services-ads:21.4.0'
     implementation "com.android.billingclient:billing:5.1.0"
+
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
+
     implementation project(path: ':metroview')
 }

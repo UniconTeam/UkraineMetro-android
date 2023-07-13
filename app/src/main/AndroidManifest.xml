@@ -13,7 +13,10 @@
         android:name="uniconteam.ukrainemetro.App">
         <activity
                 android:name="uniconteam.ukrainemetro.features.selecting.SelectMapActivity"
-                android:exported="true"/>
+                android:exported="false"/>
+        <activity
+                android:name="uniconteam.ukrainemetro.features.map.MapActivity"
+                android:exported="false"/>
         <activity
                 android:name="uniconteam.ukrainemetro.core.navigation.RouteActivity"
                 android:exported="true">

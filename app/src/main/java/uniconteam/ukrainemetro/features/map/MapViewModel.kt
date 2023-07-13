@@ -3,14 +3,17 @@ package uniconteam.ukrainemetro.features.map
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import uniconteam.ukrainemetro.core.platform.BaseViewModel
 import uniconteam.ukrainemetro.core.repositories.MapsRepository
 import uniconteam.ukrainemetro.core.repositories.PrefsRepository
 import uniconteam.ukrainemetro.mapview.entities.City
-
-class MapViewModel(
+import javax.inject.Inject
+@HiltViewModel
+class MapViewModel @Inject constructor(
     private val mapsRepository: MapsRepository,
     private val prefsRepository: PrefsRepository
-): ViewModel() {
+): BaseViewModel() {
     private val _city: MutableLiveData<City> = MutableLiveData()
     val city: LiveData<City> = _city
 

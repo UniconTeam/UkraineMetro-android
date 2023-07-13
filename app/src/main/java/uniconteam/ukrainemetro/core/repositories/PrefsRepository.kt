@@ -3,12 +3,13 @@ package uniconteam.ukrainemetro.core.repositories
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import javax.inject.Inject
 
 class PrefsRepository(context: Context) {
     object Keys {
         const val CITY_ID = "CITY_ID"
     }
-    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("prefs2", Context.MODE_PRIVATE)
 
     var cityId: String?
         get() {

@@ -25,6 +25,6 @@ class MapActivity : BaseActivity() {
 
     companion object {
         fun callingIntent(context: Context): Intent =
-            Intent(context, SelectMapActivity::class.java)
+            Intent(context, MapActivity::class.java)
     }
 }

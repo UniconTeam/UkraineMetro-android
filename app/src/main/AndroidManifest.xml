@@ -8,16 +8,18 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
-            android:screenOrientation="landscape"
             android:theme="@style/Theme.KharkivMetro"
         android:name="uniconteam.ukrainemetro.App">
         <activity
+                android:screenOrientation="sensor"
                 android:name="uniconteam.ukrainemetro.features.selecting.SelectMapActivity"
                 android:exported="false"/>
         <activity
+                android:screenOrientation="sensor"
                 android:name="uniconteam.ukrainemetro.features.map.MapActivity"
                 android:exported="false"/>
         <activity
+                android:screenOrientation="sensor"
                 android:name="uniconteam.ukrainemetro.core.navigation.RouteActivity"
                 android:exported="true">
             <intent-filter>

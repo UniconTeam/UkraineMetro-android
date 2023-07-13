@@ -33,7 +33,7 @@ class SelectMapFragment: BaseFragment() {
 
         // TODO: migrate logic to VM
         if(viewModel.isHasCity()) {
-            navigator.showMap(requireContext())
+            navigator.showMap()
         }
 
         viewModel.cities.observe(viewLifecycleOwner) { cities ->
@@ -57,12 +57,11 @@ class SelectMapFragment: BaseFragment() {
             val cityId = radioBtn.tag.toString()
             viewModel.setCity(cityId)
 
-            navigator.showMap(requireContext())
+            navigator.showMap()
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        // FIXME: broken,
         outState.putString("selected_city_id", binding.root.findViewById<MaterialRadioButton>(binding.radioGroup.checkedRadioButtonId).tag.toString())
         super.onSaveInstanceState(outState)
     }

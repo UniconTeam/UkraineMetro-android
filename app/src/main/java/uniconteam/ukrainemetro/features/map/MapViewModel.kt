@@ -2,29 +2,30 @@ package uniconteam.ukrainemetro.features.map
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import uniconteam.ukrainemetro.core.interactor.UseCase
 import uniconteam.ukrainemetro.core.platform.BaseViewModel
-import uniconteam.ukrainemetro.core.repositories.MapsRepository
-import uniconteam.ukrainemetro.core.repositories.PrefsRepository
+import uniconteam.ukrainemetro.features.map.usecases.GetCity
+import uniconteam.ukrainemetro.features.map.usecases.ResetCity
 import uniconteam.ukrainemetro.mapview.entities.City
 import javax.inject.Inject
 @HiltViewModel
 class MapViewModel @Inject constructor(
-    private val mapsRepository: MapsRepository,
-    private val prefsRepository: PrefsRepository
+    private val getCity: GetCity,
+    private val resetCity: ResetCity
 ): BaseViewModel() {
     private val _city: MutableLiveData<City> = MutableLiveData()
     val city: LiveData<City> = _city
 
+    private fun handleCity(city: City) {
+        _city.value = city
+    }
+
     fun fetchCityMap() {
-        if(prefsRepository.isHasCityId) {
-            val cityId = prefsRepository.cityId!!
-            _city.value = mapsRepository.fetchCityById(cityId)
-        }
+        getCity(UseCase.None()) { it.fold(::handleFailure, ::handleCity) }
     }
 
     fun resetCity() {
-        prefsRepository.cityId = null
+        resetCity(UseCase.None())
     }
 }

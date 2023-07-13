@@ -1,18 +1,34 @@
 package uniconteam.ukrainemetro.core.navigation
 
 import android.content.Context
-import uniconteam.ukrainemetro.features.map.MapActivity
-import uniconteam.ukrainemetro.features.selecting.SelectMapActivity
+import android.content.Intent
+import android.net.Uri
+import uniconteam.ukrainemetro.Const
+import uniconteam.ukrainemetro.features.map.MapRoute
+import uniconteam.ukrainemetro.features.selecting.SelectMapRoute
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class Navigator
 @Inject constructor() {
+    private var routeActivity: RouteActivity? = null
 
-    fun showSelectMap(context: Context) =
-        context.startActivity(SelectMapActivity.callingIntent(context))
+    fun setRouteActivity(routeActivity: RouteActivity) {
+        this.routeActivity = routeActivity
+    }
 
-    fun showMap(context: Context) =
-        context.startActivity(MapActivity.callingIntent(context))
+    fun showSelectMap() = routeActivity?.routeTo(SelectMapRoute())
+
+    fun showMap() = routeActivity?.routeTo(MapRoute())
+
+    fun openGithubLink(context: Context) =
+        context.startActivity(Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse(Const.GITHUB_URL)
+        })
+
+    fun openMarketLink(context: Context) =
+        context.startActivity(Intent(Intent.ACTION_VIEW).apply {
+            data = Uri.parse(Const.MARKET_URL)
+        })
 }

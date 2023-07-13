@@ -1,7 +1,5 @@
 package uniconteam.ukrainemetro.features.map
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +12,8 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.AndroidEntryPoint
 import unicon.metro.kharkiv.R
-import uniconteam.ukrainemetro.Const
 import uniconteam.ukrainemetro.core.navigation.Navigator
 import uniconteam.ukrainemetro.core.platform.BaseFragment
-import uniconteam.ukrainemetro.features.selecting.SelectMapActivity
-import uniconteam.ukrainemetro.features.selecting.SelectMapViewModel
 import javax.inject.Inject
 import unicon.metro.kharkiv.databinding.FragmentMapBinding
 
@@ -58,19 +53,10 @@ class MapFragment: BaseFragment() {
                         when(index) {
                             0 -> {
                                 viewModel.resetCity()
-
-                                navigator.showSelectMap(requireContext())
+                                navigator.showSelectMap()
                             }
-                            1 -> {
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.data = Uri.parse(Const.MARKET_URL)
-                                startActivity(intent)
-                            }
-                            2 -> {
-                                val intent = Intent(Intent.ACTION_VIEW)
-                                intent.data = Uri.parse(Const.GITHUB_URL)
-                                startActivity(intent)
-                            }
+                            1 -> { navigator.openMarketLink(requireContext()) }
+                            2 -> { navigator.openGithubLink(requireContext()) }
                         }
                     }
                 })

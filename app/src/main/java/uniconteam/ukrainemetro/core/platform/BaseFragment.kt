@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import uniconteam.ukrainemetro.core.extensions.appContext
-import uniconteam.ukrainemetro.core.extensions.viewContainer
 
 /**
  * Base Fragment class with helper methods for handling views and back button events.
@@ -22,17 +21,18 @@ abstract class BaseFragment : Fragment() {
 
     internal fun firstTimeCreated(savedInstanceState: Bundle?) = savedInstanceState == null
 
-    internal fun notify(@StringRes message: Int) =
-        Snackbar.make(viewContainer, message, Snackbar.LENGTH_SHORT).show()
-
-    internal fun notifyWithAction(
-        @StringRes message: Int,
-        @StringRes actionText: Int,
-        action: () -> Any
-    ) {
-        val snackBar = Snackbar.make(viewContainer, message, Snackbar.LENGTH_INDEFINITE)
-        snackBar.setAction(actionText) { _ -> action.invoke() }
-        //snackBar.setActionTextColor(ContextCompat.getColor(appContext, color.colorTextPrimary))
-        snackBar.show()
-    }
+    // TODO: impl, if needed
+//    internal fun notify(@StringRes message: Int) =
+//        Snackbar.make(viewContainer, message, Snackbar.LENGTH_SHORT).show()
+//
+//    internal fun notifyWithAction(
+//        @StringRes message: Int,
+//        @StringRes actionText: Int,
+//        action: () -> Any
+//    ) {
+//        val snackBar = Snackbar.make(viewContainer, message, Snackbar.LENGTH_INDEFINITE)
+//        snackBar.setAction(actionText) { _ -> action.invoke() }
+//        //snackBar.setActionTextColor(ContextCompat.getColor(appContext, color.colorTextPrimary))
+//        snackBar.show()
+//    }
 }

@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
 }
 
 android {
@@ -46,6 +47,10 @@ android {
         abortOnError false
         checkReleaseBuilds false
     }
+
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
@@ -67,4 +72,9 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:2.44")
 
     implementation project(path: ':metroview')
+}
+
+// Allow references to generated code
+kapt {
+    correctErrorTypes true
 }

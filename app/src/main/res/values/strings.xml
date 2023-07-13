@@ -19,16 +19,16 @@
     <!-- Kharkiv -->
     <string name="name_peremoga">Pobeda</string>
     <string name="name_olecsiivka">Oleksievska</string>
-    <string name="name_23serpnya">23 Avgusta</string>
+    <string name="name_23serpnya">23 Serpnya</string>
     <string name="name_botanichniysad">Botanichniy sad</string>
     <string name="name_naukova">Naukova</string>
     <string name="name_dergprom">Dergprom</string>
     <string name="name_arh_beketova">Architectora beketova</string>
-    <string name="name_zah_ukr">Zastnikov Ukraine</string>
+    <string name="name_zah_ukr">Zahistnikiv Ukraine</string>
     <string name="name_metrobud">Metrobudivnikiv</string>
 
     <string name="name_holodnagora">Holodna gora</string>
-    <string name="name_pivdvokzal">Uzniy vokzal</string>
+    <string name="name_pivdvokzal">Pivdenniy vokzal</string>
     <string name="name_centrarinok">Central rinok</string>
     <string name="name_maydankonst">Maydan konstitucii</string>
     <string name="name_prospect_gagarnina">Prospect Gagarina</string>
@@ -42,10 +42,10 @@
     <string name="name_industrial">Industialna</string>
 
     <string name="name_garoivwork">Geroyev truda</string>
-    <string name="name_studenstka">Studencheskaya</string>
+    <string name="name_studenstka">Studencheska</string>
     <string name="name_akadempavl">Akademika Pavlova</string>
     <string name="name_barabashova">Akademika Barabashova</string>
-    <string name="name_kievska">Kiyvskaya</string>
+    <string name="name_kievska">Kiyvska</string>
     <string name="name_pushkinska">Pushkinska</string>
     <string name="name_univer">Universitet</string>
     <string name="name_istormisei">History musey</string>
@@ -119,18 +119,18 @@
     <string name="name_budynokrad">House of Councils</string>
     <string name="name_prospektmetalurhiv">Prospect of Metallurgists</string>
     <string name="name_universytet">University</string>
-    <string name="name_vulytsiavitcyzny">Str. Fatherland</string>
-    <string name="name_tretiadilnytsia">3rd Precinct</string>
-    <string name="name_kiltseamkr">AMKR Ring</string>
+    <string name="name_vulytsiavitcyzny">Str. Vitchizni</string>
+    <string name="name_tretiadilnytsia">3rd Dilnica</string>
+    <string name="name_kiltseamkr">AMKR Cilce</string>
     <string name="name_maidanPratsi">Maidan Pratsi</string>
     <string name="name_kiltseva">Kiltseva</string>
     <!-- Kriviy rog end -->
 
     <!-- Dnipro -->
     <string name="name_pokrovska">Pokrovska</string>
-    <string name="name_prospektSvobody">Prospect of Freedom</string>
+    <string name="name_prospektSvobody">Prospect svobodi</string>
     <string name="name_zavodska">Zavodska</string>
-    <string name="name_metalurhiv">Metallurgists</string>
+    <string name="name_metalurhiv">Metallurgiv</string>
     <string name="name_metrobudivnykiv">Metrobudivnykiv</string>
     <string name="name_vokzalna">Vokzalna</string>
     <!-- Dnipro end -->

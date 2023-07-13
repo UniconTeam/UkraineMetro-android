@@ -15,7 +15,6 @@ import javax.inject.Singleton
 class ApplicationModule {
 
     @Provides
-    @Singleton
     fun providePrefsRepository(@ApplicationContext context: Context): PrefsRepository = PrefsRepository(context)
     @Provides
     @Singleton

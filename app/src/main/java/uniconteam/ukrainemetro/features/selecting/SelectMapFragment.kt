@@ -62,7 +62,8 @@ class SelectMapFragment: BaseFragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        // FIXME: broken, outState.putString("selected_city_id", binding.root.findViewById<MaterialRadioButton>(binding.radioGroup.checkedRadioButtonId).tag.toString())
+        // FIXME: broken,
+        outState.putString("selected_city_id", binding.root.findViewById<MaterialRadioButton>(binding.radioGroup.checkedRadioButtonId).tag.toString())
         super.onSaveInstanceState(outState)
     }
 

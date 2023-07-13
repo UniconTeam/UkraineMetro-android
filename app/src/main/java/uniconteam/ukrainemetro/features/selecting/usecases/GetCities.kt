@@ -13,6 +13,5 @@ class GetCities
     override suspend fun run(params: None): Either<Failure, List<City>> {
         val cities = mapsRepository.fetchAllCities()
         return Either.Right(cities)
-        // cant: return Either.Left(Failure.UnknownFailure)
     }
 }

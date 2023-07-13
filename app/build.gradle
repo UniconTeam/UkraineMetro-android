@@ -1,29 +1,30 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'com.google.dagger.hilt.android'
 }
 
 android {
     namespace 'unicon.metro.kharkiv'
-    compileSdkVersion 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "unicon.metro.kharkiv"
 
-        minSdkVersion 23
-        targetSdkVersion 33
+        minSdk 23
+        targetSdk 34
 
         versionCode 33
         versionName '3.1.0'
-        resConfigs 'en', 'ua'
 
+        resConfigs 'en', 'ua'
     }
     packagingOptions {
         resources {
             excludes += ['META-INF/*.kotlin_module', '**.kotlin_builtins', '**.kotlin_metadata']
         }
     }
-
 
     buildTypes {
         release {
@@ -45,6 +46,10 @@ android {
         abortOnError false
         checkReleaseBuilds false
     }
+
+    buildFeatures {
+        viewBinding true
+    }
 }
 
 dependencies {
@@ -52,10 +57,30 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
 
+    // Lifecycle
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
+    implementation 'androidx.fragment:fragment-ktx:1.6.0'
+
+    // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 
-    implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
-    implementation 'com.google.android.gms:play-services-ads:21.4.0'
-    implementation "com.android.billingclient:billing:5.1.0"
+    // Ads
+    implementation 'com.google.android.gms:play-services-ads:22.2.0'
+    implementation "com.android.billingclient:billing:6.0.1"
+
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.44")
+    kapt("com.google.dagger:hilt-android-compiler:2.44")
+
+    implementation project(path: ':metroview')
+}
+
+// Allow references to generated code
+kapt {
+    correctErrorTypes true
 }

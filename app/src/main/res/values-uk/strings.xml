@@ -1,0 +1,141 @@
+<resources>
+    <string name="app_name">Метро України</string>
+
+    <string name="btn_googleplay">Додаток в Google Play</string>
+    <string name="btn_github">Код додатку на Github</string>
+    <string name="btn_resetcity">Змiнити мiсто</string>
+    <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
+    <string name="close">Закрити</string>
+
+    <string name="label_select_city">Оберіть місто</string>
+
+    <!-- міста -->
+    <string name="city_kharkiv">Харків</string>
+    <string name="city_kyiv">Київ</string>
+    <string name="city_kriviyrig">Кривий Ріг</string>
+    <string name="city_dnipro">Дніпро</string>
+    <string name="btn_next">Далі</string>
+
+    <!-- Харків -->
+    <string name="name_peremoga">Перемога</string>
+    <string name="name_olecsiivka">Олексiївська</string>
+    <string name="name_23serpnya">23 Серпня</string>
+    <string name="name_botanichniysad">Ботанiчний сад</string>
+    <string name="name_naukova">Наукова</string>
+    <string name="name_dergprom">Держпром</string>
+    <string name="name_arh_beketova">Архiтектора Бекетова</string>
+    <string name="name_zah_ukr">Захистникiв України</string>
+    <string name="name_metrobud">Метробудiвникiв</string>
+
+    <string name="name_holodnagora">Холодна гора</string>
+    <string name="name_pivdvokzal">Пiвденний вокзал</string>
+    <string name="name_centrarinok">Центральний ринок</string>
+    <string name="name_maydankonst">Майдан Коституцiї</string>
+    <string name="name_prospect_gagarnina">Проспект Гагарiна</string>
+    <string name="name_sportivna">Спортивна</string>
+    <string name="name_zavimenimalisheva">Завод iменi Малишева</string>
+    <string name="name_turboatom">Турбоатом</string>
+    <string name="name_palacsporta">Палац Спорту</string>
+    <string name="name_armiyska">Армiйська</string>
+    <string name="name_imosmaselscogo">Iм. О. С. Масельского</string>
+    <string name="name_traktorzavod">Тракторний завод</string>
+    <string name="name_industrial">Iндустрiальна</string>
+
+    <string name="name_garoivwork">Героїв Працi</string>
+    <string name="name_studenstka">Студентська</string>
+    <string name="name_akadempavl">Академiка Павлова</string>
+    <string name="name_barabashova">Академiка Барабашова</string>
+    <string name="name_kievska">Київська</string>
+    <string name="name_pushkinska">Пушкiнська</string>
+    <string name="name_univer">Унiверситет</string>
+    <string name="name_istormisei">Iсторичний музей</string>
+    <!-- Харків кінець -->
+
+    <!-- Київ -->
+    <string name="name_akademistechko">Академмістечко</string>
+    <string name="name_zhytomyr">Житомирська</string>
+    <string name="name_svyatoshyn">Святошин</string>
+    <string name="name_nykvy">Нивки</string>
+    <string name="name_beresteyska">Берестейська</string>
+    <string name="name_shulyavska">Шулявська</string>
+    <string name="name_polytechnic_institute">Політехнічний інститут</string>
+    <string name="name_station">Вокзальна</string>
+    <string name="name_university">Унiверситет</string>
+    <string name="name_theatrical">Театральна</string>
+    <string name="name_khreshchatyk">Хрещатик</string>
+    <string name="name_arsenal">Арсенальна</string>
+    <string name="name_dnipro">Дніпро</string>
+    <string name="name_hydropark">Гідропарк</string>
+    <string name="name_leftbank">Лівобережна</string>
+    <string name="name_darnytsy">Дарниця</string>
+    <string name="name_chernihivska">Чернігівська</string>
+    <string name="name_lisova">Лісова</string>
+
+    <string name="name_heroes_dnipro">Героїв Дніпра</string>
+    <string name="name_minsk">Мінська</string>
+    <string name="name_obolon">Оболонь</string>
+    <string name="name_petrivka">Петрівка</string>
+    <string name="name_taras_sxhevchenko">Тараса Шевченка</string>
+    <string name="name_contract_area">Контрактова площа</string>
+    <string name="name_postal_square">Поштова площа</string>
+    <string name="name_independence_square">Майдан Незалежності</string>
+    <string name="name_leotolstoysquare">Площа Льва Толстого</string>
+    <string name="name_olympic">Олімпійська</string>
+    <string name="name_palaceukraine">Палац Україна</string>
+    <string name="name_lybidska">Либідська</string>
+    <string name="name_demiivska">Деміївська</string>
+    <string name="name_holosiivska">Голосіївська</string>
+    <string name="name_vasylkivska">Васильківська</string>
+    <string name="name_exhibitioncenter">Виставковий центр</string>
+    <string name="name_racetrack">Іподром</string>
+    <string name="name_teremka">Теремки</string>
+
+    <string name="name_syrets">Сирець</string>
+    <string name="name_dorohozhychi">Дорогожичі</string>
+    <string name="name_lukyanivska">Лук\'янівська</string>
+    <string name="name_zolotiVorota">Золоті Ворота</string>
+    <string name="name_palatssportu">Палац спорту</string>
+    <string name="name_klovska">Кловська</string>
+    <string name="name_pecherska">Печерська</string>
+    <string name="name_druzhbynarodiv">Дружби народів</string>
+    <string name="name_vydubychi">Видубичі</string>
+    <string name="name_slavutych">Славутич</string>
+    <string name="name_mushrooms">Осокорки</string>
+    <string name="name_poznyaks">Позняки</string>
+    <string name="name_kharkivska">Харківська</string>
+    <string name="name_vyrlitsa">Вирлиця</string>
+    <string name="name_boryspilska">Бориспільська</string>
+    <string name="name_chervonyykhutir">Червоний Хутір</string>
+    <!-- Київ кінець -->
+
+    <!-- Кривий ріг -->
+    <string name="name_zarichna">Зарічна</string>
+    <string name="name_elektrozavodska">Електрозаводська</string>
+    <string name="name_industrialna">Індустріальна</string>
+    <string name="name_soniachna">Сонячна</string>
+    <string name="name_miskaLiakrnia">Міська Лікарня</string>
+    <string name="name_vechirniybulvar">Вечірній бульвар</string>
+    <string name="name_mudriona">Мудрьона</string>
+    <string name="name_budynokrad">Будинок Рад</string>
+    <string name="name_prospektmetalurhiv">Проспект Металургів</string>
+    <string name="name_universytet">Університет</string>
+    <string name="name_vulytsiavitcyzny">Вул. Вітчизни</string>
+    <string name="name_tretiadilnytsia">3-тя Дільниця</string>
+    <string name="name_kiltseamkr">Кільце АМКР</string>
+    <string name="name_maidanPratsi">Майдан Праці</string>
+    <string name="name_kiltseva">Кільцева</string>
+    <!-- Кривий ріг кінець -->
+
+    <!-- Дніпро -->
+    <string name="name_pokrovska">Покровська</string>
+    <string name="name_prospektSvobody">Проспект Свободи</string>
+    <string name="name_zavodska">Заводська</string>
+    <string name="name_metalurhiv">Металургів</string>
+    <string name="name_metrobudivnykiv">Метробудiвникiв</string>
+    <string name="name_vokzalna">Вокзальна</string>
+    <!-- Дніпро кінець -->
+
+    <string name="failure_unknown">Невідома помилка</string>
+    <string name="failure_map_notselected">Помилка. Місто не обране</string>
+    <string name="action_select">Обрати</string>
+</resources>

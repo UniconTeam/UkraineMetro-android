@@ -31,6 +31,7 @@ class SelectMapFragment: BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // TODO: migrate logic to VM
         if(viewModel.isHasCity()) {
             navigator.showMap(requireContext())
         }
@@ -54,7 +55,6 @@ class SelectMapFragment: BaseFragment() {
 
             val radioBtn = binding.root.findViewById<MaterialRadioButton>(binding.radioGroup.checkedRadioButtonId)
             val cityId = radioBtn.tag.toString()
-
             viewModel.setCity(cityId)
 
             navigator.showMap(requireContext())

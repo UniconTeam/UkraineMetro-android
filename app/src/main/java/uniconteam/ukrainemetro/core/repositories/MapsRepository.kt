@@ -5,6 +5,7 @@ import uniconteam.ukrainemetro.core.cities.KharkivCity
 import uniconteam.ukrainemetro.core.cities.KriviyRogCity
 import uniconteam.ukrainemetro.core.cities.KyivCity
 import uniconteam.ukrainemetro.mapview.entities.City
+import javax.inject.Singleton
 
 class MapsRepository {
     private val cities = listOf(

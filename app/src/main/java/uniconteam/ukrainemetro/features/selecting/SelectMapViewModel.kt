@@ -2,7 +2,6 @@ package uniconteam.ukrainemetro.features.selecting
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import uniconteam.ukrainemetro.core.platform.BaseViewModel
 import uniconteam.ukrainemetro.core.repositories.MapsRepository

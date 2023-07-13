@@ -16,6 +16,10 @@ import uniconteam.ukrainemetro.core.navigation.Navigator
 import uniconteam.ukrainemetro.core.platform.BaseFragment
 import javax.inject.Inject
 import unicon.metro.kharkiv.databinding.FragmentMapBinding
+import uniconteam.ukrainemetro.core.exceptions.Failure
+import uniconteam.ukrainemetro.core.extensions.failure
+import uniconteam.ukrainemetro.core.extensions.observe
+import uniconteam.ukrainemetro.mapview.entities.City
 
 @AndroidEntryPoint
 class MapFragment: BaseFragment() {
@@ -37,9 +41,11 @@ class MapFragment: BaseFragment() {
 
         initAds()
 
-        viewModel.city.observe(viewLifecycleOwner) {
-            it?.let { binding.metroView.updateData(it.mapElements) }
+        with(viewModel) {
+            observe(city, ::handleCity)
+            failure(failure, ::handleFailure)
         }
+
         viewModel.fetchCityMap()
 
         binding.fab.setOnClickListener {
@@ -61,6 +67,23 @@ class MapFragment: BaseFragment() {
                     }
                 })
                 .show()
+        }
+    }
+
+    private fun handleCity(city: City?) {
+        binding.metroView.updateData(city!!.mapElements)
+    }
+
+    private fun handleFailure(failure: Failure?) {
+        when (failure) {
+            is MapFailure.CityNotSelected -> {
+                notifyWithAction(binding.root, R.string.failure_map_notselected, R.string.action_select) {
+                    navigator.showSelectMap()
+                }
+            }
+            else -> {
+                notify(binding.root, R.string.failure_unknown)
+            }
         }
     }
 

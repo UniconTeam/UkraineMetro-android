@@ -134,4 +134,8 @@
     <string name="name_metrobudivnykiv">Metrobudivnykiv</string>
     <string name="name_vokzalna">Vokzalna</string>
     <!-- Dnipro end -->
+
+    <string name="failure_unknown">Unknown error</string>
+    <string name="failure_map_notselected">Error. Map not selected</string>
+    <string name="action_select">Select</string>
 </resources>

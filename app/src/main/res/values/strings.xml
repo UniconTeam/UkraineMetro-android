@@ -134,4 +134,8 @@
     <string name="name_metrobudivnykiv">Метробудiвникiв</string>
     <string name="name_vokzalna">Вокзальна</string>
     <!-- Дніпро кінець -->
+
+    <string name="failure_unknown">Невідома помилка</string>
+    <string name="failure_map_notselected">Помилка. Місто не обране</string>
+    <string name="action_select">Обрати</string>
 </resources>

@@ -10,7 +10,12 @@ import uniconteam.ukrainemetro.core.platform.BaseFragment
 import javax.inject.Inject
 import androidx.fragment.app.viewModels
 import com.google.android.material.radiobutton.MaterialRadioButton
+import unicon.metro.kharkiv.R
 import unicon.metro.kharkiv.databinding.FragmentSelectmapBinding;
+import uniconteam.ukrainemetro.core.exceptions.Failure
+import uniconteam.ukrainemetro.core.extensions.failure
+import uniconteam.ukrainemetro.core.extensions.observe
+import uniconteam.ukrainemetro.features.map.MapFailure
 import uniconteam.ukrainemetro.mapview.entities.City
 
 @AndroidEntryPoint
@@ -31,22 +36,13 @@ class SelectMapFragment: BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // TODO: migrate logic to VM
-        if(viewModel.isHasCity()) {
-            navigator.showMap()
+        with(viewModel) {
+            observe(cities, ::handleCities)
+            observe(isCitySelected, ::handleSelection)
+            failure(failure, ::handleFailure)
         }
 
-        viewModel.cities.observe(viewLifecycleOwner) { cities ->
-            cities.forEach {
-                if(savedInstanceState != null) {
-                    val savedCityId = savedInstanceState.getString("selected_city_id")
-                    if(savedCityId == it.id)
-                        addRadioButton(it, true)
-                    else
-                        addRadioButton(it)
-                } else addRadioButton(it)
-            }
-        }
+        viewModel.checkSelection()
         viewModel.fetchCities()
 
         binding.nextButton.setOnClickListener {
@@ -61,9 +57,23 @@ class SelectMapFragment: BaseFragment() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("selected_city_id", binding.root.findViewById<MaterialRadioButton>(binding.radioGroup.checkedRadioButtonId).tag.toString())
-        super.onSaveInstanceState(outState)
+    private fun handleCities(cities: List<City>?) {
+        cities?.forEach {
+            addRadioButton(it)
+        }
+    }
+
+    private fun handleSelection(isSelected: Boolean?) {
+        if(isSelected == true)
+            navigator.showMap()
+    }
+
+    private fun handleFailure(failure: Failure?) {
+        when (failure) {
+            else -> {
+                notify(binding.root, R.string.failure_unknown)
+            }
+        }
     }
 
     private fun addRadioButton(city: City, isChecked: Boolean = false) {

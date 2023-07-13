@@ -42,6 +42,8 @@ class MetroView(context: Context, attr: AttributeSet): TouchControllableView(con
         data.clear()
         data.addAll(arr)
 
+        updateMapVectors()
+
         invalidate()
     }
 

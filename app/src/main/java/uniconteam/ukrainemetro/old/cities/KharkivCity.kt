@@ -1,4 +1,4 @@
-package uniconteam.ukrainemetro.cities
+package uniconteam.ukrainemetro.old.cities
 
 import android.graphics.Color
 import unicon.metro.kharkiv.R

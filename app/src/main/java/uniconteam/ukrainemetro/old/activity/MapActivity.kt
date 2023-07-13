@@ -1,5 +1,6 @@
-package uniconteam.ukrainemetro.activity
+package uniconteam.ukrainemetro.old.activity
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -11,11 +12,12 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import uniconteam.ukrainemetro.createViewModel
-import uniconteam.ukrainemetro.models.MapViewModel
+import uniconteam.ukrainemetro.old.createViewModel
+import uniconteam.ukrainemetro.old.models.MapViewModel
 import uniconteam.ukrainemetro.mapview.view.MetroView
 import unicon.metro.kharkiv.R
-import uniconteam.ukrainemetro.Const
+import uniconteam.ukrainemetro.features.selecting.SelectMapActivity
+import uniconteam.ukrainemetro.old.Const
 
 class MapActivity : AppCompatActivity() {
     private val metroView: MetroView by lazy { findViewById(R.id.metroView) }
@@ -25,7 +27,7 @@ class MapActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_map)
+        setContentView(R.layout.fragment_map)
 
         initAds()
 
@@ -71,5 +73,11 @@ class MapActivity : AppCompatActivity() {
         MobileAds.initialize(this) { }
         val adRequest = AdRequest.Builder()
         adView.loadAd(adRequest.build())
+    }
+
+    companion object {
+        fun callingIntent(context: Context): Intent? {
+            TODO("Not impl")
+        }
     }
 }

@@ -1,17 +1,12 @@
-package uniconteam.ukrainemetro
+package uniconteam.ukrainemetro.old
 
 import android.content.Context
-import android.graphics.Paint
-import android.graphics.RectF
-import android.text.TextPaint
-import android.util.TypedValue
-import androidx.annotation.AttrRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.get
-import uniconteam.ukrainemetro.repository.MapsRepository
-import uniconteam.ukrainemetro.repository.PrefsRepository
+import uniconteam.ukrainemetro.core.repositories.MapsRepository
+import uniconteam.ukrainemetro.core.repositories.PrefsRepository
 
 /** Create viewmodel for viewmodelstoreowner
  * @param context Activity context
@@ -21,10 +16,12 @@ import uniconteam.ukrainemetro.repository.PrefsRepository
 fun <T: ViewModel> ViewModelStoreOwner.createViewModel(context: Context, clazz: Class<T>): T {
     // get constructor and initialize
     val constructor = clazz.getConstructor(RepositoriesContainer::class.java)
-    val instance = constructor.newInstance(RepositoriesContainer(
+    val instance = constructor.newInstance(
+        RepositoriesContainer(
         MapsRepository(),
         PrefsRepository(context)
-    ))
+    )
+    )
 
     // make factory
     val factory = object: ViewModelProvider.Factory {

@@ -1,11 +1,10 @@
-package uniconteam.ukrainemetro.models
+package uniconteam.ukrainemetro.old.models
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import uniconteam.ukrainemetro.RepositoriesContainer
+import uniconteam.ukrainemetro.old.RepositoriesContainer
 import uniconteam.ukrainemetro.mapview.entities.City
-import uniconteam.ukrainemetro.mapview.entities.elements.Element
 
 class MapViewModel(
     private val repositoriesContainer: RepositoriesContainer

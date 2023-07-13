@@ -1,7 +1,7 @@
-package uniconteam.ukrainemetro
+package uniconteam.ukrainemetro.old
 
-import uniconteam.ukrainemetro.repository.MapsRepository
-import uniconteam.ukrainemetro.repository.PrefsRepository
+import uniconteam.ukrainemetro.core.repositories.MapsRepository
+import uniconteam.ukrainemetro.core.repositories.PrefsRepository
 
 class RepositoriesContainer(
     private val mapsRepository: MapsRepository,

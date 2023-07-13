@@ -1,11 +1,10 @@
-package uniconteam.ukrainemetro.repository
+package uniconteam.ukrainemetro.core.repositories
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import uniconteam.ukrainemetro.mapview.entities.City
 
-class PrefsRepository(private val context: Context) {
+class PrefsRepository(context: Context) {
     object Keys {
         const val CITY_ID = "CITY_ID"
     }

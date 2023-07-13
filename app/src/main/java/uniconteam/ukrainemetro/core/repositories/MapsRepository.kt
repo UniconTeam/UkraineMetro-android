@@ -1,9 +1,9 @@
 package uniconteam.ukrainemetro.core.repositories
 
-import uniconteam.ukrainemetro.old.cities.DniproCity
-import uniconteam.ukrainemetro.old.cities.KharkivCity
-import uniconteam.ukrainemetro.old.cities.KriviyRogCity
-import uniconteam.ukrainemetro.old.cities.KyivCity
+import uniconteam.ukrainemetro.core.cities.DniproCity
+import uniconteam.ukrainemetro.core.cities.KharkivCity
+import uniconteam.ukrainemetro.core.cities.KriviyRogCity
+import uniconteam.ukrainemetro.core.cities.KyivCity
 import uniconteam.ukrainemetro.mapview.entities.City
 
 class MapsRepository {

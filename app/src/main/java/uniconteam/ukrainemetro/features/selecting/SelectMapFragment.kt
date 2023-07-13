@@ -1,18 +1,17 @@
 package uniconteam.ukrainemetro.features.selecting
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import dagger.hilt.android.AndroidEntryPoint
 import uniconteam.ukrainemetro.core.navigation.Navigator
 import uniconteam.ukrainemetro.core.platform.BaseFragment
-import uniconteam.ukrainemetro.old.models.SelectMapViewModel
 import javax.inject.Inject
 import androidx.fragment.app.viewModels
 import com.google.android.material.radiobutton.MaterialRadioButton
 import unicon.metro.kharkiv.databinding.FragmentSelectmapBinding;
 import uniconteam.ukrainemetro.mapview.entities.City
-import uniconteam.ukrainemetro.old.activity.MapActivity
 
 @AndroidEntryPoint
 class SelectMapFragment: BaseFragment() {
@@ -23,6 +22,11 @@ class SelectMapFragment: BaseFragment() {
 
     private var _binding: FragmentSelectmapBinding? = null
     private val binding get() = _binding!!
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        _binding = FragmentSelectmapBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

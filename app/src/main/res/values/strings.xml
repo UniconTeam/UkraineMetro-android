@@ -31,9 +31,9 @@
     <string name="name_pivdvokzal">Pivdenniy vokzal</string>
     <string name="name_centrarinok">Central rinok</string>
     <string name="name_maydankonst">Maydan konstitucii</string>
-    <string name="name_prospect_gagarnina">Prospect Gagarina</string>
+    <string name="name_prospect_gagarnina">Levada</string>
     <string name="name_sportivna">Sportivnaya</string>
-    <string name="name_zavimenimalisheva">Zavod im Maliseva</string>
+    <string name="name_zavimenimalisheva">Zavodska</string>
     <string name="name_turboatom">Turboatom</string>
     <string name="name_palacsporta">Palac sporta</string>
     <string name="name_armiyska">Armeyska</string>
@@ -41,7 +41,7 @@
     <string name="name_traktorzavod">Traktorniy zavod</string>
     <string name="name_industrial">Industialna</string>
 
-    <string name="name_garoivwork">Geroyev truda</string>
+    <string name="name_garoivwork">Saltivska</string>
     <string name="name_studenstka">Studencheska</string>
     <string name="name_akadempavl">Akademika Pavlova</string>
     <string name="name_barabashova">Akademika Barabashova</string>

@@ -31,9 +31,9 @@
     <string name="name_pivdvokzal">Пiвденний вокзал</string>
     <string name="name_centrarinok">Центральний ринок</string>
     <string name="name_maydankonst">Майдан Коституцiї</string>
-    <string name="name_prospect_gagarnina">Проспект Гагарiна</string>
+    <string name="name_prospect_gagarnina">Левада</string>
     <string name="name_sportivna">Спортивна</string>
-    <string name="name_zavimenimalisheva">Завод iменi Малишева</string>
+    <string name="name_zavimenimalisheva">Заводська</string>
     <string name="name_turboatom">Турбоатом</string>
     <string name="name_palacsporta">Палац Спорту</string>
     <string name="name_armiyska">Армiйська</string>
@@ -41,7 +41,7 @@
     <string name="name_traktorzavod">Тракторний завод</string>
     <string name="name_industrial">Iндустрiальна</string>
 
-    <string name="name_garoivwork">Героїв Працi</string>
+    <string name="name_garoivwork">Салтівська</string>
     <string name="name_studenstka">Студентська</string>
     <string name="name_akadempavl">Академiка Павлова</string>
     <string name="name_barabashova">Академiка Барабашова</string>

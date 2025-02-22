@@ -8,5 +8,5 @@ Implemented using Kotlin, MVVM, Clean Architecture and Hilt.
 ### Motivation
 This application was originally created for personal use, <br>
 but from now on, when there are more than 600 active users (as well as more <br>
-two thousand downloads) I have a very strong motivation to make it more <br>
+six thousand downloads) I have a very strong motivation to make it more <br>
 better and more useful.<br>

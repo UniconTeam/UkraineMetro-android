@@ -17,7 +17,7 @@ android {
 
         versionCode 35
         versionName '3.1.2'
-        resourceConfigurations += ['en', 'ua']
+        resourceConfigurations += ['en', 'uk', 'ru']
 
     }
     packagingOptions {

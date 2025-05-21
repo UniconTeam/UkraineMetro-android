@@ -1,3 +1,8 @@
 package team.unicon.ukrainemetro.entities
 
-data class Point(var pos: Vector, var name: String)
+import team.unicon.ukrainemetro.localization.LocalizedString
+
+data class Point(
+    var pos: Vector,
+    var name: LocalizedString?
+)

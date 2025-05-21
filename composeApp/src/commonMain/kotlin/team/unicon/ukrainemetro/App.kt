@@ -34,7 +34,7 @@ fun App() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Button(onClick = { showContent = !showContent }) {
-                    Text(strings.todoNotion.resolve())
+                    Text(strings.nameIpodrom.resolve())
                 }
                 AnimatedVisibility(showContent) {
                     val greeting = remember { Greeting().greet() }

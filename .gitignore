@@ -1,17 +1,16 @@
 # Gradle
-.gradle/
-build/
+/.gradle/
+/build/
 **/build/
 local.properties
 
 # IntelliJ IDEA / Android Studio
-.idea/
+/.idea/
 *.iml
 *.iws
 *.ipr
 out/
-.fleet/
-.kotlin/ # For Kotlin 2.0+ data
+/.kotlin/ # For Kotlin 2.0+ data
 
 # macOS
 .DS_Store

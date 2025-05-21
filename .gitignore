@@ -1,37 +1,21 @@
-# Gradle
-/.gradle/
-/build/
-**/build/
-local.properties
-
-# IntelliJ IDEA / Android Studio
-/.idea/
 *.iml
-*.iws
-*.ipr
-out/
-/.kotlin/ # For Kotlin 2.0+ data
-
-# macOS
+.kotlin
+.gradle
+**/build/
+xcuserdata
+!src/**/build/
+local.properties
+.idea
 .DS_Store
+captures
+.externalNativeBuild
+.cxx
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
 
-# iOS / Xcode
-xcuserdata/
-DerivedData/
-Pods/
-*.xcworkspace/
-*.xcodeproj/project.xcworkspace/
-# Specific to your project, replace 'YourProjectName' with your actual project name
-# YourProjectName.xcodeproj/*
-# !YourProjectName.xcodeproj/project.pbxproj 
-
-# Android
-.externalNativeBuild/
-.cxx/
-captures/
-*.jks
-
-# gradle modules
-/composeApp/build/*
 
 local.properties

@@ -4,5 +4,8 @@ import org.koin.core.module.Module
 
 val commonDiModules: List<Module>
     = listOf(
-
+        localizationDiModule,
+        dataSourcesDiModule,
+        repositoriesDiModule,
+        viewModelsDiModule,
     )

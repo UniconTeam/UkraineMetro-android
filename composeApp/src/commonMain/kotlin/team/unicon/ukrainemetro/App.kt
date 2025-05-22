@@ -14,36 +14,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.koin.compose.viewmodel.koinViewModel
 import team.unicon.ukrainemetro.localization.getStrings
+import team.unicon.ukrainemetro.ui.main.MainScreen
+import team.unicon.ukrainemetro.ui.main.MainViewModel
 
 import ukrainemetro.composeapp.generated.resources.Res
 import ukrainemetro.composeapp.generated.resources.compose_multiplatform
 
 @Composable
-@Preview
 fun App() {
     LocalizationProvider {
         MaterialTheme {
-            val strings = LocalStrings.current
-
-            var showContent by remember { mutableStateOf(false) }
-            Column(
-                modifier = Modifier
-                    .safeContentPadding()
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Button(onClick = { showContent = !showContent }) {
-                    Text(strings.nameIpodrom.resolve())
-                }
-                AnimatedVisibility(showContent) {
-                    val greeting = remember { Greeting().greet() }
-                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(painterResource(Res.drawable.compose_multiplatform), null)
-                        Text("Compose: $greeting")
-                    }
-                }
-            }
+            val mainViewModel = koinViewModel<MainViewModel>()
+            MainScreen(mainViewModel)
         }
     }
 }

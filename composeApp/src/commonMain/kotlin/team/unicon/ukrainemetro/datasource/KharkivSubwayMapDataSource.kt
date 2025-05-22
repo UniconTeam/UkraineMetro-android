@@ -3,14 +3,18 @@ package team.unicon.ukrainemetro.datasource
 import team.unicon.ukrainemetro.entities.Point
 import team.unicon.ukrainemetro.entities.Vector
 import team.unicon.ukrainemetro.entities.elements.*
+import team.unicon.ukrainemetro.localization.LocalizedString
 import team.unicon.ukrainemetro.localization.Strings
 import team.unicon.ukrainemetro.localization.getStrings
 
 class KharkivSubwayMapDataSource(
     val strings: Strings = getStrings()
 ) : SubwayMapDataSource {
-    override fun getMapElements(): List<Element> {
-        return listOf(
+    override val name: LocalizedString
+        get() = strings.cityKharkiv
+
+    override val elements: List<Element>
+        get() = listOf(
             BranchElement(
                 listOf(
                     Point(
@@ -163,5 +167,4 @@ class KharkivSubwayMapDataSource(
                 Vector(302, 267)
             )
         )
-    }
 }

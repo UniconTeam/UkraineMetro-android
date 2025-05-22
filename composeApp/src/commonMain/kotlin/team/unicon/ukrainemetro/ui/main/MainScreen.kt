@@ -3,6 +3,7 @@ package team.unicon.ukrainemetro.ui.main
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,12 +58,9 @@ fun MainScreen(viewModel: MainViewModel) {
                     modifier = Modifier.padding(paddingValues)
                         .padding(16.dp)
                 ) {
-                    Image(
-                        painterResource(Res.drawable.compose_multiplatform),
-                        null
-                    )
-                    Text(
-                        text = presentUiState.subwayInfo.name.resolve()
+                    SubwayMap(
+                        modifier = Modifier.fillMaxSize(),
+                        elements = presentUiState.subwayInfo.elements
                     )
                 }
             }

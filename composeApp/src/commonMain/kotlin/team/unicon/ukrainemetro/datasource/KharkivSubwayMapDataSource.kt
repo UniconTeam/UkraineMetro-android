@@ -1,5 +1,6 @@
 package team.unicon.ukrainemetro.datasource
 
+import androidx.compose.ui.graphics.Color
 import team.unicon.ukrainemetro.entities.Point
 import team.unicon.ukrainemetro.entities.Vector
 import team.unicon.ukrainemetro.entities.elements.*
@@ -54,7 +55,7 @@ class KharkivSubwayMapDataSource(
                         strings.nameMetrobudivnykivKharkiv
                     )
                 ),
-                0 // Color.parseColor("#379926")
+                Color(55, 153, 38) // Green
             ),
             BranchElement(
                 listOf(
@@ -111,7 +112,7 @@ class KharkivSubwayMapDataSource(
                         strings.nameIndustrialnaKharkiv
                     )
                 ),
-                0 //Color.parseColor("#f22718")
+                Color(242, 39, 24) // Red
             ),
             BranchElement(
                 listOf(
@@ -156,7 +157,7 @@ class KharkivSubwayMapDataSource(
                         strings.nameIstorychnyiMuzei
                     )
                 ),
-                0 // Color.parseColor("#1261ff")
+                Color(18, 97, 255) // Blue
             ),
             TransElement(
                 Vector(151, 208),

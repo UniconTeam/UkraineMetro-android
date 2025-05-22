@@ -1,6 +1,7 @@
 package team.unicon.ukrainemetro.ui.main
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,40 +18,58 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import team.unicon.ukrainemetro.entities.Point
 import team.unicon.ukrainemetro.entities.elements.BranchElement
 import team.unicon.ukrainemetro.entities.elements.Element
 import team.unicon.ukrainemetro.entities.elements.TransElement
 import team.unicon.ukrainemetro.entities.toOffset
 
 @Composable
-fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
+fun SubwayMap(
+    elements: List<Element>,
+    modifier: Modifier = Modifier,
+    onStationClick: (Point) -> Unit = {}
+) {
     val textMeasurer = rememberTextMeasurer()
 
     val primaryColor = MaterialTheme.colorScheme.primary
     val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
-    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary // Used for transfer endpoint circles
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
 
     val renderScale = 2.4f
-    val scaleLimits = 0.6f..1.8f // Original scaleLimits from your code
+    val scaleLimits = 0.6f..1.8f // User updated scale limits
     var scale by remember { mutableStateOf(1f) }
-    scale = scale.coerceIn(scaleLimits) // Coerce within defined limits
     var offset by remember { mutableStateOf(Offset.Zero) }
-    val state = rememberTransformableState { zoomChange, offsetChange, _ ->
-        scale *= zoomChange
-        // Coerce scale after zoomChange before applying to graphicsLayer
-        scale = scale.coerceIn(scaleLimits)
+
+    // Calculate stationRadius in Px here to make it accessible to pointerInput
+    val stationRadiusPx = with(LocalDensity.current) { 5.dp.toPx() }
+    // For easier tapping, you might want a slightly larger tap area than visual radius
+    val stationTapRadiusPx = stationRadiusPx * 1.5f
+
+
+    val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
+        val newScale = (scale * zoomChange).coerceIn(scaleLimits)
+        // Calculate the offset change considering the zoom point (centroid of the gesture)
+        // This makes zooming feel more natural, centered around the touch points.
+        // If zoomChange is 1.0, this simplifies to just adding offsetChange.
+        // (tapOffset - currentOffset) - ((tapOffset - currentOffset) / oldScale) * newScale
+        // Simplified: offset += offsetChange * scale (less accurate for pinch zoom center)
+        // A more robust way:
+        // offset = (offset + centroid / scale - centroid / newScale) * newScale + panChange
+        // For now, using the simpler approach based on your original code, but good to be aware.
+        // The offset provided by transformableState is usually pre-adjusted.
         offset += offsetChange
+        scale = newScale
     }
 
-    // It's good practice to remember the Path object if the element itself is stable
-    // However, if BranchElement objects are recreated often, direct creation is fine.
-    // For simplicity here, creating path inside the loop if not remembered with a key.
     val branchPath = remember { Path() }
 
     Canvas(modifier = modifier
@@ -61,9 +80,54 @@ fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
             translationX = offset.x,
             translationY = offset.y
         )
-        .transformable(state)
+        .transformable(state = transformState)
+        .pointerInput(elements, scale, offset, renderScale, stationRadiusPx, stationTapRadiusPx, onStationClick) {
+            detectTapGestures(
+                onTap = { tapViewOffset ->
+                    // 1. Transform tap coordinates from View Space to Canvas Content Space
+                    // This reverses the scaling and translation applied by graphicsLayer
+                    val tapInCanvasContentX = (tapViewOffset.x - offset.x) / scale
+                    val tapInCanvasContentY = (tapViewOffset.y - offset.y) / scale
+                    val tapInCanvasContentCoords = Offset(tapInCanvasContentX, tapInCanvasContentY)
+
+                    var stationClicked: Point? = null
+
+                    // 2. Iterate through elements to find a clicked station
+                    // Loop in reverse drawing order (or just all elements if overlap isn't an issue for stations)
+                    // For stations, they are distinct, so simple iteration is fine.
+                    for (element in elements) {
+                        if (element is BranchElement) {
+                            for (point in element.points) {
+                                if (point.name != null) { // Check only actual stations (points with names)
+                                    // Station center in Canvas Content Space
+                                    val stationDrawCenter = point.pos.toOffset() * renderScale
+
+                                    // Calculate distance squared for efficiency (avoids sqrt)
+                                    val dx = tapInCanvasContentCoords.x - stationDrawCenter.x
+                                    val dy = tapInCanvasContentCoords.y - stationDrawCenter.y
+                                    val distanceSquared = dx * dx + dy * dy
+
+                                    if (distanceSquared <= stationTapRadiusPx * stationTapRadiusPx) {
+                                        stationClicked = point
+                                        break // Found a station, stop checking points in this branch
+                                    }
+                                }
+                            }
+                        }
+                        if (stationClicked != null) {
+                            break // Found a station, stop checking other elements
+                        }
+                    }
+
+                    // 3. If a station was clicked, invoke the callback
+                    stationClicked?.let {
+                        onStationClick(it)
+                    }
+                }
+            )
+        }
     ) {
-        val stationRadius = 5.dp.toPx()
+        // Drawing logic is inside the DrawScope, stationRadiusPx is already calculated
         val branchStrokeWidth = 3.dp.toPx()
         val transferStrokeWidth = 2.dp.toPx()
 
@@ -76,111 +140,82 @@ fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
         })).forEach { element ->
             when (element) {
                 is BranchElement -> {
-                    branchPath.reset() // Reset the path for the current branch
+                    branchPath.reset()
                     val scaledPoints = element.points.map { it.pos.toOffset() * renderScale }
 
                     if (scaledPoints.size >= 2) {
                         branchPath.moveTo(scaledPoints[0].x, scaledPoints[0].y)
-
                         if (scaledPoints.size == 2) {
-                            // For only two points, draw a straight line.
                             branchPath.lineTo(scaledPoints[1].x, scaledPoints[1].y)
                         } else {
-                            // More than two points, use cubic Bezier curves for a smooth line.
-                            // Adjust this factor to control the "curviness".
-                            // Values typically range from 0.15 to 0.3. 1/6f (~0.167f) is common for Catmull-Rom like splines.
                             val smoothness = 0.2f
-
                             for (i in 0 until scaledPoints.size - 1) {
-                                val p_i = scaledPoints[i]            // Current point (P_i)
-                                val p_i_plus_1 = scaledPoints[i+1]   // Next point (P_{i+1})
-
-                                // Determine P_{i-1} (point before P_i)
-                                // For the first segment, P_{i-1} is P_i itself.
+                                val p_i = scaledPoints[i]
+                                val p_i_plus_1 = scaledPoints[i + 1]
                                 val p_i_minus_1 = if (i > 0) scaledPoints[i - 1] else p_i
-
-                                // Determine P_{i+2} (point after P_{i+1})
-                                // For the last segment, P_{i+2} is P_{i+1} itself.
                                 val p_i_plus_2 = if (i < scaledPoints.size - 2) scaledPoints[i + 2] else p_i_plus_1
-
-                                // Calculate control point 1 (influences curve leaving P_i)
-                                // C1 = P_i + smoothness * (P_{i+1} - P_{i-1})
                                 val cp1X = p_i.x + (p_i_plus_1.x - p_i_minus_1.x) * smoothness
                                 val cp1Y = p_i.y + (p_i_plus_1.y - p_i_minus_1.y) * smoothness
-
-                                // Calculate control point 2 (influences curve approaching P_{i+1})
-                                // C2 = P_{i+1} - smoothness * (P_{i+2} - P_i)
                                 val cp2X = p_i_plus_1.x - (p_i_plus_2.x - p_i.x) * smoothness
                                 val cp2Y = p_i_plus_1.y - (p_i_plus_2.y - p_i.y) * smoothness
-
-                                branchPath.cubicTo(
-                                    cp1X, cp1Y,
-                                    cp2X, cp2Y,
-                                    p_i_plus_1.x, p_i_plus_1.y
-                                )
+                                branchPath.cubicTo(cp1X, cp1Y, cp2X, cp2Y, p_i_plus_1.x, p_i_plus_1.y)
                             }
                         }
-                        // Draw the constructed path for the branch
                         drawPath(
                             path = branchPath,
                             color = element.color,
                             style = Stroke(width = branchStrokeWidth, cap = StrokeCap.Round)
                         )
                     } else if (scaledPoints.size == 1) {
-                        // Optional: Draw a single point if a branch has only one station
                         drawCircle(
                             color = element.color,
-                            radius = branchStrokeWidth / 2, // Or stationRadius if it should look like a station
+                            radius = branchStrokeWidth / 2,
                             center = scaledPoints[0]
                         )
                     }
 
-
-                    // Draw the stations and their names (existing logic)
                     element.points.forEach { point ->
                         val stationCenter = point.pos.toOffset() * renderScale
                         point.name?.let { name ->
+                            // Use stationRadiusPx (defined outside DrawScope) for drawing circles
                             drawCircle(
                                 color = primaryColor,
-                                radius = stationRadius,
+                                radius = stationRadiusPx, // Use the pre-calculated Px value
                                 center = stationCenter
                             )
                             drawCircle(
                                 color = primaryContainerColor,
-                                radius = stationRadius,
+                                radius = stationRadiusPx, // Use the pre-calculated Px value
                                 center = stationCenter,
                                 style = Stroke(width = 1.dp.toPx())
                             )
                             val measuredText = textMeasurer.measure(
                                 text = name.resolve(),
-                                style = TextStyle(fontSize = 10.sp, color = Color.Black) // Consider using onBackgroundColor
+                                style = TextStyle(fontSize = 10.sp, color = onBackgroundColor) // Used onBackgroundColor
                             )
                             drawText(
                                 textLayoutResult = measuredText,
                                 topLeft = Offset(
-                                    x = stationCenter.x + stationRadius + 2.dp.toPx(),
+                                    x = stationCenter.x + stationRadiusPx + 2.dp.toPx(),
                                     y = stationCenter.y - measuredText.size.height / 2
                                 ),
-                                color = onBackgroundColor // Use theme color
+                                color = onBackgroundColor
                             )
                         }
                     }
                 }
-
                 is TransElement -> {
-                    // Transfer lines remain straight
                     val startOffset = element.from.toOffset() * renderScale
                     val endOffset = element.to.toOffset() * renderScale
                     drawLine(
-                        color = primaryColor, // Or a specific transfer color
+                        color = primaryColor,
                         start = startOffset,
                         end = endOffset,
                         strokeWidth = transferStrokeWidth,
                         cap = StrokeCap.Butt,
                     )
-                    // Circles at the ends of transfer lines
                     drawCircle(
-                        color = onPrimaryColor, // Or a different color to distinguish transfer points
+                        color = onPrimaryColor,
                         radius = 2.dp.toPx(),
                         center = startOffset
                     )

@@ -60,7 +60,10 @@ fun MainScreen(viewModel: MainViewModel) {
                 ) {
                     SubwayMap(
                         modifier = Modifier.fillMaxSize(),
-                        elements = presentUiState.subwayInfo.elements
+                        elements = presentUiState.subwayInfo.elements,
+                        onStationClick = {
+                            println(it.name?.resolve())
+                        }
                     )
                 }
             }

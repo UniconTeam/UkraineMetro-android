@@ -16,6 +16,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -57,15 +58,6 @@ fun SubwayMap(
 
     val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
         val newScale = (scale * zoomChange).coerceIn(scaleLimits)
-        // Calculate the offset change considering the zoom point (centroid of the gesture)
-        // This makes zooming feel more natural, centered around the touch points.
-        // If zoomChange is 1.0, this simplifies to just adding offsetChange.
-        // (tapOffset - currentOffset) - ((tapOffset - currentOffset) / oldScale) * newScale
-        // Simplified: offset += offsetChange * scale (less accurate for pinch zoom center)
-        // A more robust way:
-        // offset = (offset + centroid / scale - centroid / newScale) * newScale + panChange
-        // For now, using the simpler approach based on your original code, but good to be aware.
-        // The offset provided by transformableState is usually pre-adjusted.
         offset += offsetChange
         scale = newScale
     }
@@ -78,7 +70,8 @@ fun SubwayMap(
             scaleX = scale,
             scaleY = scale,
             translationX = offset.x,
-            translationY = offset.y
+            translationY = offset.y,
+            transformOrigin = TransformOrigin(0f, 0f)
         )
         .transformable(state = transformState)
         .pointerInput(elements, scale, offset, renderScale, stationRadiusPx, stationTapRadiusPx, onStationClick) {
@@ -93,29 +86,24 @@ fun SubwayMap(
                     var stationClicked: Point? = null
 
                     // 2. Iterate through elements to find a clicked station
-                    // Loop in reverse drawing order (or just all elements if overlap isn't an issue for stations)
-                    // For stations, they are distinct, so simple iteration is fine.
                     for (element in elements) {
                         if (element is BranchElement) {
                             for (point in element.points) {
-                                if (point.name != null) { // Check only actual stations (points with names)
-                                    // Station center in Canvas Content Space
+                                if (point.name != null) { // Check only actual stations
                                     val stationDrawCenter = point.pos.toOffset() * renderScale
-
-                                    // Calculate distance squared for efficiency (avoids sqrt)
                                     val dx = tapInCanvasContentCoords.x - stationDrawCenter.x
                                     val dy = tapInCanvasContentCoords.y - stationDrawCenter.y
                                     val distanceSquared = dx * dx + dy * dy
 
                                     if (distanceSquared <= stationTapRadiusPx * stationTapRadiusPx) {
                                         stationClicked = point
-                                        break // Found a station, stop checking points in this branch
+                                        break
                                     }
                                 }
                             }
                         }
                         if (stationClicked != null) {
-                            break // Found a station, stop checking other elements
+                            break
                         }
                     }
 

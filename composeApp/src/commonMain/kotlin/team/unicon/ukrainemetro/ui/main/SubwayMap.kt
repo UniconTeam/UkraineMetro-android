@@ -13,6 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
@@ -32,17 +34,24 @@ fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
-    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary // Used for transfer endpoint circles
 
     val renderScale = 2.4f
-    val scaleLimits = 1f..2f
+    val scaleLimits = 1f..2f // Original scaleLimits from your code
     var scale by remember { mutableStateOf(1f) }
-    scale = scale.coerceIn(scaleLimits)
+    scale = scale.coerceIn(scaleLimits) // Coerce within defined limits
     var offset by remember { mutableStateOf(Offset.Zero) }
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         scale *= zoomChange
+        // Coerce scale after zoomChange before applying to graphicsLayer
+        scale = scale.coerceIn(scaleLimits)
         offset += offsetChange
     }
+
+    // It's good practice to remember the Path object if the element itself is stable
+    // However, if BranchElement objects are recreated often, direct creation is fine.
+    // For simplicity here, creating path inside the loop if not remembered with a key.
+    val branchPath = remember { Path() }
 
     Canvas(modifier = modifier
         .fillMaxSize()
@@ -58,10 +67,8 @@ fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
         val branchStrokeWidth = 3.dp.toPx()
         val transferStrokeWidth = 2.dp.toPx()
 
-        // Loop through all elements and draw them
-        // Sort by type
         elements.sortedWith(compareBy({
-            when(it) {
+            when (it) {
                 is BranchElement -> 0
                 is TransElement -> 1
                 else -> Int.MAX_VALUE
@@ -69,73 +76,118 @@ fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
         })).forEach { element ->
             when (element) {
                 is BranchElement -> {
-                    // Draw the branch lines
-                    for (i in 0 until element.points.size - 1) {
-                        val startPoint = element.points[i].pos.toOffset() * renderScale
-                        val endPoint = element.points[i + 1].pos.toOffset() * renderScale
-                        drawLine(
+                    branchPath.reset() // Reset the path for the current branch
+                    val scaledPoints = element.points.map { it.pos.toOffset() * renderScale }
+
+                    if (scaledPoints.size >= 2) {
+                        branchPath.moveTo(scaledPoints[0].x, scaledPoints[0].y)
+
+                        if (scaledPoints.size == 2) {
+                            // For only two points, draw a straight line.
+                            branchPath.lineTo(scaledPoints[1].x, scaledPoints[1].y)
+                        } else {
+                            // More than two points, use cubic Bezier curves for a smooth line.
+                            // Adjust this factor to control the "curviness".
+                            // Values typically range from 0.15 to 0.3. 1/6f (~0.167f) is common for Catmull-Rom like splines.
+                            val smoothness = 0.2f
+
+                            for (i in 0 until scaledPoints.size - 1) {
+                                val p_i = scaledPoints[i]            // Current point (P_i)
+                                val p_i_plus_1 = scaledPoints[i+1]   // Next point (P_{i+1})
+
+                                // Determine P_{i-1} (point before P_i)
+                                // For the first segment, P_{i-1} is P_i itself.
+                                val p_i_minus_1 = if (i > 0) scaledPoints[i - 1] else p_i
+
+                                // Determine P_{i+2} (point after P_{i+1})
+                                // For the last segment, P_{i+2} is P_{i+1} itself.
+                                val p_i_plus_2 = if (i < scaledPoints.size - 2) scaledPoints[i + 2] else p_i_plus_1
+
+                                // Calculate control point 1 (influences curve leaving P_i)
+                                // C1 = P_i + smoothness * (P_{i+1} - P_{i-1})
+                                val cp1X = p_i.x + (p_i_plus_1.x - p_i_minus_1.x) * smoothness
+                                val cp1Y = p_i.y + (p_i_plus_1.y - p_i_minus_1.y) * smoothness
+
+                                // Calculate control point 2 (influences curve approaching P_{i+1})
+                                // C2 = P_{i+1} - smoothness * (P_{i+2} - P_i)
+                                val cp2X = p_i_plus_1.x - (p_i_plus_2.x - p_i.x) * smoothness
+                                val cp2Y = p_i_plus_1.y - (p_i_plus_2.y - p_i.y) * smoothness
+
+                                branchPath.cubicTo(
+                                    cp1X, cp1Y,
+                                    cp2X, cp2Y,
+                                    p_i_plus_1.x, p_i_plus_1.y
+                                )
+                            }
+                        }
+                        // Draw the constructed path for the branch
+                        drawPath(
+                            path = branchPath,
                             color = element.color,
-                            start = startPoint,
-                            end = endPoint,
-                            strokeWidth = branchStrokeWidth,
-                            cap = androidx.compose.ui.graphics.StrokeCap.Round
+                            style = Stroke(width = branchStrokeWidth, cap = StrokeCap.Round)
+                        )
+                    } else if (scaledPoints.size == 1) {
+                        // Optional: Draw a single point if a branch has only one station
+                        drawCircle(
+                            color = element.color,
+                            radius = branchStrokeWidth / 2, // Or stationRadius if it should look like a station
+                            center = scaledPoints[0]
                         )
                     }
 
-                    // Draw the stations and their names
+
+                    // Draw the stations and their names (existing logic)
                     element.points.forEach { point ->
                         val stationCenter = point.pos.toOffset() * renderScale
-
-                        // Draw station if have name
                         point.name?.let { name ->
-                            // Draw station circle
                             drawCircle(
                                 color = primaryColor,
                                 radius = stationRadius,
                                 center = stationCenter
                             )
-                            // Add a border to stations for better visibility
                             drawCircle(
                                 color = primaryContainerColor,
                                 radius = stationRadius,
                                 center = stationCenter,
                                 style = Stroke(width = 1.dp.toPx())
                             )
-
                             val measuredText = textMeasurer.measure(
-                                text = name.resolve(), // Assuming 'default' property for the string
-                                style = TextStyle(fontSize = 10.sp, color = Color.Black)
+                                text = name.resolve(),
+                                style = TextStyle(fontSize = 10.sp, color = Color.Black) // Consider using onBackgroundColor
                             )
-                            // Position text slightly below and to the right of the station
                             drawText(
                                 textLayoutResult = measuredText,
                                 topLeft = Offset(
                                     x = stationCenter.x + stationRadius + 2.dp.toPx(),
                                     y = stationCenter.y - measuredText.size.height / 2
                                 ),
-                                color = onBackgroundColor
+                                color = onBackgroundColor // Use theme color
                             )
                         }
                     }
                 }
 
                 is TransElement -> {
+                    // Transfer lines remain straight
+                    val startOffset = element.from.toOffset() * renderScale
+                    val endOffset = element.to.toOffset() * renderScale
                     drawLine(
-                        color = primaryColor,
-                        start = element.from.toOffset() * renderScale,
-                        end = element.to.toOffset() * renderScale,
+                        color = primaryColor, // Or a specific transfer color
+                        start = startOffset,
+                        end = endOffset,
                         strokeWidth = transferStrokeWidth,
-                        cap = androidx.compose.ui.graphics.StrokeCap.Butt,
+                        cap = StrokeCap.Butt,
+                    )
+                    // Circles at the ends of transfer lines
+                    drawCircle(
+                        color = onPrimaryColor, // Or a different color to distinguish transfer points
+                        radius = 2.dp.toPx(),
+                        center = startOffset
                     )
                     drawCircle(
                         color = onPrimaryColor,
                         radius = 2.dp.toPx(),
-                        center = element.from.toOffset() * renderScale
-                    )
-                    drawCircle(
-                        color = onPrimaryColor,
-                        radius = 2.dp.toPx(),
-                        center = element.to.toOffset() * renderScale
+                        center = endOffset
                     )
                 }
             }

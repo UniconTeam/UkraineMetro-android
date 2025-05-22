@@ -144,14 +144,14 @@ class KharkivSubwayMapDataSource(
                         Vector(196, 163),
                         strings.nameUniversytetKharkiv
                     ),
-                    Point(
-                        Vector(167, 163),
-                        null
-                    ),
-                    Point(
-                        Vector(163, 167),
-                        null
-                    ),
+//                    Point(
+//                        Vector(167, 163),
+//                        null
+//                    ),
+//                    Point(
+//                        Vector(163, 167),
+//                        null
+//                    ),
                     Point(
                         Vector(162, 197),
                         strings.nameIstorychnyiMuzei

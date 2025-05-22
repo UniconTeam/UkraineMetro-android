@@ -4,9 +4,12 @@ import team.unicon.ukrainemetro.entities.Point
 import team.unicon.ukrainemetro.entities.Vector
 import team.unicon.ukrainemetro.entities.elements.*
 import team.unicon.ukrainemetro.localization.Strings
+import team.unicon.ukrainemetro.localization.getStrings
 
-class KharkivSubwayMapDataSource : SubwayMapDataSource {
-    override fun getMapElements(strings: Strings): List<Element> {
+class KharkivSubwayMapDataSource(
+    val strings: Strings = getStrings()
+) : SubwayMapDataSource {
+    override fun getMapElements(): List<Element> {
         return listOf(
             BranchElement(
                 listOf(

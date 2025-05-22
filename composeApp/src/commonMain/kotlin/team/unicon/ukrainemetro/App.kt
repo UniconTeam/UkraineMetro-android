@@ -18,6 +18,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import team.unicon.ukrainemetro.localization.getStrings
 import team.unicon.ukrainemetro.ui.main.MainScreen
 import team.unicon.ukrainemetro.ui.main.MainViewModel
+import team.unicon.ukrainemetro.ui.theme.AppTheme
 
 import ukrainemetro.composeapp.generated.resources.Res
 import ukrainemetro.composeapp.generated.resources.compose_multiplatform
@@ -25,7 +26,7 @@ import ukrainemetro.composeapp.generated.resources.compose_multiplatform
 @Composable
 fun App() {
     LocalizationProvider {
-        MaterialTheme {
+        AppTheme {
             val mainViewModel = koinViewModel<MainViewModel>()
             MainScreen(mainViewModel)
         }

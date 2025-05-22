@@ -33,11 +33,11 @@ fun MainScreen(viewModel: MainViewModel) {
     }
 
     Scaffold(
-        topBar = {
-            LargeTopAppBar(
-                title = { Text(text = "UkraineMetro") }
-            )
-        }
+//        topBar = {
+//            LargeTopAppBar(
+//                title = { Text(text = "UkraineMetro") }
+//            )
+//        }
     ) { paddingValues ->
         when(uiState) {
             is MainViewModel.UIState.Loading -> {

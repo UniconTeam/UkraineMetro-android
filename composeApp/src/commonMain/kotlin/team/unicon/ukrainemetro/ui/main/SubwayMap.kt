@@ -37,7 +37,7 @@ fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary // Used for transfer endpoint circles
 
     val renderScale = 2.4f
-    val scaleLimits = 1f..2f // Original scaleLimits from your code
+    val scaleLimits = 0.6f..1.8f // Original scaleLimits from your code
     var scale by remember { mutableStateOf(1f) }
     scale = scale.coerceIn(scaleLimits) // Coerce within defined limits
     var offset by remember { mutableStateOf(Offset.Zero) }

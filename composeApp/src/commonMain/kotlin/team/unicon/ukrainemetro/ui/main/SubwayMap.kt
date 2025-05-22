@@ -86,22 +86,22 @@ fun SubwayMap(elements: List<Element>, modifier: Modifier = Modifier) {
                     element.points.forEach { point ->
                         val stationCenter = point.pos.toOffset() * renderScale
 
-                        // Draw station circle
-                        drawCircle(
-                            color = primaryColor,
-                            radius = stationRadius,
-                            center = stationCenter
-                        )
-                        // Add a border to stations for better visibility
-                        drawCircle(
-                            color = primaryContainerColor,
-                            radius = stationRadius,
-                            center = stationCenter,
-                            style = Stroke(width = 1.dp.toPx())
-                        )
-
-                        // Draw station name
+                        // Draw station if have name
                         point.name?.let { name ->
+                            // Draw station circle
+                            drawCircle(
+                                color = primaryColor,
+                                radius = stationRadius,
+                                center = stationCenter
+                            )
+                            // Add a border to stations for better visibility
+                            drawCircle(
+                                color = primaryContainerColor,
+                                radius = stationRadius,
+                                center = stationCenter,
+                                style = Stroke(width = 1.dp.toPx())
+                            )
+
                             val measuredText = textMeasurer.measure(
                                 text = name.resolve(), // Assuming 'default' property for the string
                                 style = TextStyle(fontSize = 10.sp, color = Color.Black)

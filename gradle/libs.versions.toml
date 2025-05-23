@@ -13,7 +13,7 @@ androidx-testExt = "1.2.1"
 composeMultiplatform = "1.8.0"
 junit = "4.13.2"
 kotlin = "2.1.21"
-koin = "4.1.0-RC1"
+koin = "4.0.4"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

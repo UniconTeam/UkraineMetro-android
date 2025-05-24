@@ -1,34 +1,49 @@
 package team.unicon.ukrainemetro
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.koin.compose.viewmodel.koinViewModel
-import team.unicon.ukrainemetro.localization.getStrings
 import team.unicon.ukrainemetro.ui.main.MainScreen
 import team.unicon.ukrainemetro.ui.main.MainViewModel
+import team.unicon.ukrainemetro.ui.settings.SettingsViewModel
 import team.unicon.ukrainemetro.ui.theme.AppTheme
 
-import ukrainemetro.composeapp.generated.resources.Res
-import ukrainemetro.composeapp.generated.resources.compose_multiplatform
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
+import team.unicon.ukrainemetro.ui.RootNavigation
+import team.unicon.ukrainemetro.ui.settings.SettingsScreen
 
 @Composable
 fun App() {
     LocalizationProvider {
         AppTheme {
             val mainViewModel = koinViewModel<MainViewModel>()
-            MainScreen(mainViewModel)
+            val settingsViewModel = koinViewModel<SettingsViewModel>()
+
+            val backStack = remember { mutableStateListOf<RootNavigation>(RootNavigation.Main) }
+
+            NavDisplay(
+                backStack = backStack,
+                onBack = { numToPop ->
+                    repeat(numToPop) { backStack.removeLastOrNull() }
+                },
+                entryProvider = { route ->
+                    when(route) {
+                        is RootNavigation.Main -> NavEntry(route) {
+                            MainScreen(
+                                viewModel = mainViewModel,
+                                onNavigateToSettings = { backStack.add(RootNavigation.Settings) },
+                            )
+                        }
+                        is RootNavigation.Settings -> NavEntry(route) {
+                            SettingsScreen(
+                                viewModel = settingsViewModel,
+                                onNavigateBack = { backStack.removeLastOrNull() },
+                            )
+                        }
+                    }
+                }
+            )
         }
     }
 }

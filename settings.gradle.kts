@@ -12,6 +12,9 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven {
+            url = uri("https://androidx.dev/snapshots/builds/13526554/artifacts/repository")
+        }
     }
 }
 
@@ -25,6 +28,9 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven {
+            url = uri("https://androidx.dev/snapshots/builds/13526554/artifacts/repository")
+        }
     }
 }
 

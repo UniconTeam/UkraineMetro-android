@@ -44,12 +44,6 @@ sealed interface SettingItem {
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
     val settingItems = remember { listOf(
-        SettingItem.Switch(
-            title = "Alternative branch colors",
-            description = "Use styled colors for branches.",
-            key = "alternative_colors",
-            defaultValue = false
-        ),
         SettingItem.Dropdown(
             title = "App language",
             description = "Alternate app language.",
@@ -68,7 +62,19 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
                     key = "abc3",
                 ),
             )
-        )
+        ),
+        SettingItem.Switch(
+            title = "Alternative branch colors",
+            description = "Use styled colors for branches.",
+            key = "alternative_colors",
+            defaultValue = false
+        ),
+        SettingItem.Switch(
+            title = "Simplified map",
+            description = "Use lightweight version of map.",
+            key = "lightweight_map",
+            defaultValue = false
+        ),
     ) }
 
     Scaffold(

@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import team.unicon.ukrainemetro.ui.settings.SettingsConstants
 
 data class SettingDropdownSelection(
     val title: String,
@@ -42,10 +43,8 @@ fun SettingDropdownItem(
     ) {
         Row(
             modifier = Modifier.padding(
-                top = 16.dp,
-                bottom = 16.dp,
-                start = 24.dp,
-                end = 24.dp
+                vertical = SettingsConstants.itemsPaddingsVertical,
+                horizontal = SettingsConstants.itemsPaddingsHorizontal,
             ),
             verticalAlignment = Alignment.CenterVertically
         ) {

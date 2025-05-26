@@ -39,13 +39,18 @@ import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import team.unicon.ukrainemetro.LocalStrings
+import team.unicon.ukrainemetro.entities.Point
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -56,6 +61,8 @@ fun MainScreen(viewModel: MainViewModel, onNavigateToSettings: () -> Unit) {
 
     val textFieldState = rememberTextFieldState()
     val searchBarState = rememberSearchBarState()
+
+    var selectedPoint by rememberSaveable { mutableStateOf<Point?>(null) }
 
     LaunchedEffect(Unit)  {
         viewModel.loadSubway()
@@ -139,8 +146,9 @@ fun MainScreen(viewModel: MainViewModel, onNavigateToSettings: () -> Unit) {
                         SubwayMap(
                             modifier = Modifier.fillMaxSize(),
                             elements = presentUiState.subwayInfo.elements,
+                            selectedPoint = selectedPoint,
                             onStationClick = {
-                                println(it.name?.resolve())
+                                selectedPoint = it
                             }
                         )
                     }

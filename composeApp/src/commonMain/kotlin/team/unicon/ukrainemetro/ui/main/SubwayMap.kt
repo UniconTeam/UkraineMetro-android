@@ -40,6 +40,7 @@ import kotlin.math.pow
 fun SubwayMap(
     elements: List<Element>,
     modifier: Modifier = Modifier,
+    selectedPoint: Point?,
     onStationClick: (Point) -> Unit = {}
 ) {
     val textMeasurer = rememberTextMeasurer()
@@ -214,10 +215,11 @@ fun SubwayMap(
                         element.points.forEach { point ->
                             val centerOnScreen = point.pos.toOffset().transformToScreen(scale)
                             point.name?.let { name ->
+                                val isSelected = point == selectedPoint
                                 // Draw station circle
                                 drawCircle(
                                     color = primaryColor,
-                                    radius = stationRadiusPx, // Screen pixels
+                                    radius = if(isSelected) stationRadiusPx * 1.5f else stationRadiusPx, // Screen pixels
                                     center = centerOnScreen
                                 )
                                 // Draw station border

@@ -8,4 +8,5 @@ val commonDiModules: List<Module>
         dataSourcesDiModule,
         repositoriesDiModule,
         viewModelsDiModule,
+        settingsDiModule,
     )

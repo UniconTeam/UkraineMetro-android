@@ -1,13 +1,10 @@
 package team.unicon.ukrainemetro.ui.settings
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -18,7 +15,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,34 +27,14 @@ import team.unicon.ukrainemetro.ui.settings.subitems.SettingDropdownItem
 import team.unicon.ukrainemetro.ui.settings.subitems.SettingDropdownSelection
 import team.unicon.ukrainemetro.ui.settings.subitems.SettingSwitchItem
 
-sealed interface SettingItem {
-    data class GroupSeparator(
-        val title: String,
-    )
-
-    data class Switch(
-        val title: String,
-        val description: String,
-        val key: String,
-        val defaultValue: Boolean
-    ) : SettingItem
-
-    data class Dropdown(
-        val title: String,
-        val description: String,
-        val key: String,
-        val selections: List<SettingDropdownSelection>
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
     val settingItems = remember { listOf(
         // ====
-        SettingItem.GroupSeparator("Common"),
+        Setting.GroupSeparator("Common"),
 
-        SettingItem.Dropdown(
+        Setting.Dropdown(
             title = "App language",
             description = "Alternate app language.",
             key = "language",
@@ -79,14 +55,14 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
         ),
 
         // ====
-        SettingItem.GroupSeparator("Appearance"),
-        SettingItem.Switch(
+        Setting.GroupSeparator("Appearance"),
+        Setting.Switch(
             title = "Alternative branch colors",
             description = "Use styled colors for branches.",
             key = "alternative_colors",
             defaultValue = false
         ),
-        SettingItem.Switch(
+        Setting.Switch(
             title = "Simplified map",
             description = "Use lightweight version of map.",
             key = "lightweight_map",
@@ -120,7 +96,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
         ) {
             items(settingItems) { item ->
                 when(item) {
-                    is SettingItem.GroupSeparator -> {
+                    is Setting.GroupSeparator -> {
                         Text(
                             modifier = Modifier.padding(start = 24.dp, top = 8.dp),
                             text = item.title,
@@ -131,7 +107,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
                         )
                     }
 
-                    is SettingItem.Switch -> {
+                    is Setting.Switch -> {
                         var value by remember { mutableStateOf(item.defaultValue) }
 
                         SettingSwitchItem(
@@ -143,7 +119,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
                         )
                     }
 
-                    is SettingItem.Dropdown -> {
+                    is Setting.Dropdown -> {
                         var selectedIndex by remember { mutableStateOf(0) }
 
                         SettingDropdownItem(

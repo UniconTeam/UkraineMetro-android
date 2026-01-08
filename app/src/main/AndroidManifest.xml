@@ -11,9 +11,8 @@
             android:theme="@style/Theme.KharkivMetro"
             android:name="uniconteam.ukrainemetro.App">
         <activity
-                android:screenOrientation="sensor"
-                android:name="uniconteam.ukrainemetro.core.navigation.RouteActivity"
-                android:exported="true">
+            android:name="uniconteam.ukrainemetro.v4.EntryActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

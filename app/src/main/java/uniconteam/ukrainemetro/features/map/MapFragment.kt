@@ -48,26 +48,26 @@ class MapFragment: BaseFragment() {
 
         viewModel.fetchCityMap()
 
-        binding.fab.setOnClickListener {
-            MaterialDialog(requireContext())
-                .title(R.string.app_name)
-                .message(R.string.about_text)
-                .cornerRadius(16f)
-                .listItems(items = listOf(getString(R.string.btn_resetcity), getString(R.string.btn_googleplay), getString(
-                    R.string.btn_github)), selection = object: ItemListener {
-                    override fun invoke(dialog: MaterialDialog, index: Int, text: CharSequence) {
-                        when(index) {
-                            0 -> {
-                                viewModel.resetCity()
-                                navigator.showSelectMap()
-                            }
-                            1 -> { navigator.openMarketLink(requireContext()) }
-                            2 -> { navigator.openGithubLink(requireContext()) }
-                        }
-                    }
-                })
-                .show()
-        }
+//        binding.fab.setOnClickListener {
+//            MaterialDialog(requireContext())
+//                .title(R.string.app_name)
+//                .message(R.string.about_text)
+//                .cornerRadius(16f)
+//                .listItems(items = listOf(getString(R.string.btn_resetcity), getString(R.string.btn_googleplay), getString(
+//                    R.string.btn_github)), selection = object: ItemListener {
+//                    override fun invoke(dialog: MaterialDialog, index: Int, text: CharSequence) {
+//                        when(index) {
+//                            0 -> {
+//                                viewModel.resetCity()
+//                                navigator.showSelectMap()
+//                            }
+//                            1 -> { navigator.openMarketLink(requireContext()) }
+//                            2 -> { navigator.openGithubLink(requireContext()) }
+//                        }
+//                    }
+//                })
+//                .show()
+//        }
     }
 
     private fun handleCity(city: City?) {

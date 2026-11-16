@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.list.ItemListener
 import com.afollestad.materialdialogs.list.listItems
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
@@ -54,8 +53,7 @@ class MapFragment: BaseFragment() {
                 .message(R.string.about_text)
                 .cornerRadius(16f)
                 .listItems(items = listOf(getString(R.string.btn_resetcity), getString(R.string.btn_googleplay), getString(
-                    R.string.btn_github)), selection = object: ItemListener {
-                    override fun invoke(dialog: MaterialDialog, index: Int, text: CharSequence) {
+                    R.string.btn_github)), selection = { _, index, _ ->
                         when(index) {
                             0 -> {
                                 viewModel.resetCity()
@@ -64,7 +62,6 @@ class MapFragment: BaseFragment() {
                             1 -> { navigator.openMarketLink(requireContext()) }
                             2 -> { navigator.openGithubLink(requireContext()) }
                         }
-                    }
                 })
                 .show()
         }

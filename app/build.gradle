@@ -1,26 +1,25 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
+    id 'com.android.legacy-kapt'
     id 'com.google.dagger.hilt.android'
 }
 
 android {
     namespace 'unicon.metro.kharkiv'
-    compileSdk 35
+    compileSdk 37
 
     defaultConfig {
         applicationId "unicon.metro.kharkiv"
 
-        minSdk 23
-        targetSdk 35
+        minSdk 24
+        targetSdk 37
 
         versionCode 36
         versionName '3.1.3'
         resourceConfigurations += ['en', 'uk', 'ru']
 
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += ['META-INF/*.kotlin_module', '**.kotlin_builtins', '**.kotlin_metadata']
         }
@@ -38,10 +37,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-
-    kotlinOptions {
-        jvmTarget = '17'
-    }
     lint {
         abortOnError false
         checkReleaseBuilds false
@@ -52,30 +47,35 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
 dependencies {
-    implementation 'androidx.core:core-ktx:1.15.0'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    implementation 'androidx.core:core-ktx:1.19.1'
+    implementation 'androidx.appcompat:appcompat:1.8.0'
+    implementation 'com.google.android.material:material:1.14.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.2'
     implementation 'com.afollestad.material-dialogs:bottomsheets:3.3.0'
 
     // Lifecycle
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.7'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.11.0'
 
-    implementation 'androidx.fragment:fragment-ktx:1.8.6'
+    implementation 'androidx.fragment:fragment-ktx:1.9.1'
 
     // Coroutines
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
 
     // Ads
-    implementation 'com.google.android.gms:play-services-ads:23.6.0'
-    implementation "com.android.billingclient:billing:7.1.1"
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    implementation "com.android.billingclient:billing:9.1.0"
 
     // Hilt
-    implementation("com.google.dagger:hilt-android:2.55")
-    kapt("com.google.dagger:hilt-android-compiler:2.55")
+    implementation("com.google.dagger:hilt-android:2.60.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.60.1")
 
     implementation project(path: ':metroview')
 }

@@ -27,6 +27,9 @@ android {
 
     buildTypes {
         release {
+            // Debug keystore signing so the APK installs directly
+            // (tap-to-install, no adb needed).
+            signingConfig signingConfigs.debug
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

@@ -248,15 +248,20 @@ class VulkanMetroView @JvmOverloads constructor(
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         surfaceAvailable = false
-        if (nativeHandle != 0L) {
-            nativeSurfaceDestroyed(nativeHandle)
+        val handle = nativeHandle
+        if (handle != 0L) {
+            nativeSurfaceDestroyed(handle)
         }
     }
 
     override fun onDetachedFromWindow() {
-        if (nativeHandle != 0L) {
-            nativeDestroy(nativeHandle)
-            nativeHandle = 0L
+        // Clear the handle first: a late surfaceDestroyed must never touch
+        // the deleted native renderer (use-after-free native crash).
+        val handle = nativeHandle
+        nativeHandle = 0L
+        surfaceAvailable = false
+        if (handle != 0L) {
+            nativeDestroy(handle)
         }
         super.onDetachedFromWindow()
     }

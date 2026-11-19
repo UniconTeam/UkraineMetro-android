@@ -67,27 +67,39 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeInit(
 JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeDestroy(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle) {
-    delete fromHandle(handle);
+    delete fromHandle(handle);  // delete nullptr is a no-op
 }
 
 JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSurfaceCreated(
     JNIEnv* env, jobject /*thiz*/, jlong handle, jobject surface) {
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
     ANativeWindow* window =
         surface != nullptr ? ANativeWindow_fromSurface(env, surface) : nullptr;
-    fromHandle(handle)->setSurface(window);
+    renderer->setSurface(window);
 }
 
 JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSurfaceDestroyed(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle) {
-    fromHandle(handle)->setSurface(nullptr);
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    renderer->setSurface(nullptr);
 }
 
 JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeResize(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle, jint w, jint h) {
-    fromHandle(handle)->resize(w, h);
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    renderer->resize(w, h);
 }
 
 JNIEXPORT void JNICALL
@@ -143,14 +155,22 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetView(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle, jfloat scrollX,
     jfloat scrollY, jfloat scale, jfloat pivotX, jfloat pivotY, jfloat textR,
     jfloat textG, jfloat textB, jfloat textA) {
-    fromHandle(handle)->setView(scrollX, scrollY, scale, pivotX, pivotY, textR,
-                                textG, textB, textA);
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    renderer->setView(scrollX, scrollY, scale, pivotX, pivotY, textR, textG,
+                      textB, textA);
 }
 
 JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeRender(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle) {
-    fromHandle(handle)->render();
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    renderer->render();
 }
 
 }  // extern "C"

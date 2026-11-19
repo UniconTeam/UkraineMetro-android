@@ -12,8 +12,11 @@ import uniconteam.ukrainemetro.mapview.entities.Size
 import uniconteam.ukrainemetro.mapview.entities.elements.BranchElement
 import uniconteam.ukrainemetro.mapview.entities.elements.Element
 import uniconteam.ukrainemetro.mapview.entities.elements.TransElement
-import kotlin.math.max
-import kotlin.math.min
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.sin
 
 /**
  * Vulkan-backed metro map view. New API replacing the legacy Canvas [MetroView]:
@@ -21,7 +24,9 @@ import kotlin.math.min
  * Vulkan renderer (libmetroview.so) into this SurfaceView.
  *
  * Kept API-compatible where it matters: [updateData] accepts the same
- * [Element] list, pan/zoom gestures behave like before.
+ * [Element] list. Gestures: one-finger drag pans, two-finger drag pans,
+ * pinch zooms, twist rotates — all anchored so content stays glued to
+ * the fingers; double tap smoothly zooms in/out at the tap point.
  */
 class VulkanMetroView @JvmOverloads constructor(
     context: Context,
@@ -41,16 +46,24 @@ class VulkanMetroView @JvmOverloads constructor(
     private var mapCenterY = 0f
     private var hasCenter = false
 
-    // Touch state (ported from TouchControllableView).
+    // Touch + camera state. The camera is (scroll, scale, angle); the shader
+    // renders screen = R(angle) * ((map + scroll - pivot) * scale) + pivot.
     private val doubleTapTime = 300
-    private var lock = false
-    private var dX = 0f
-    private var dY = 0f
     private var lastActionDownTime = 0L
     private var scaleFactor = 1.0f
-    private val scaleDetector = MyScaleGestureDetector(context, ScaleListener { factor ->
-        updateScale(factor)
-    })
+    private var angleRad = 0f
+    private var zoomAnim: android.animation.ValueAnimator? = null
+
+    private var mode = MODE_NONE
+    private var idA = -1
+    private var idB = -1
+    private var dX = 0f
+    private var dY = 0f
+    private var pendingSync = false
+    private var prevFx = 0f
+    private var prevFy = 0f
+    private var prevSpan = 0f
+    private var prevAngle = 0f
 
     private val colorBg = resolveBackground()
     private val colorBubble = Color.parseColor(Const.COLOR_RECT_BG)
@@ -156,52 +169,213 @@ class VulkanMetroView @JvmOverloads constructor(
         if (nativeHandle == 0L || !surfaceAvailable) return
         val c = normal(colorText)
         nativeSetView(
-            nativeHandle, scrollXf, scrollYf, scaleFactor,
+            nativeHandle, scrollXf, scrollYf, scaleFactor, angleRad,
             (width / 2f).coerceAtLeast(1f), (height / 2f).coerceAtLeast(1f),
             c[0], c[1], c[2], c[3]
         )
         nativeRender(nativeHandle)
     }
 
-    private fun updateScale(factor: Float) {
-        scaleFactor = max(Const.SCALE_FACTOR_MIN, min(scaleFactor * factor, Const.SCALE_FACTOR_MAX))
+    // ------------------------------------------------------------ camera
+
+    private fun rot(x: Float, y: Float, a: Float): Pair<Float, Float> {
+        val c = cos(a)
+        val s = sin(a)
+        return Pair(c * x - s * y, s * x + c * y)
+    }
+
+    private fun wrapAngle(a: Float): Float {
+        val twoPi = PI.toFloat() * 2f
+        var v = a % twoPi
+        if (v > PI.toFloat()) v -= twoPi
+        if (v < -PI.toFloat()) v += twoPi
+        return v
+    }
+
+    // Screen (view-local px) -> map units under the current camera.
+    private fun mapFromScreen(sx: Float, sy: Float): Pair<Float, Float> {
+        val cx = width / 2f
+        val cy = height / 2f
+        if (cx <= 0f || cy <= 0f || scaleFactor <= 0f) {
+            return Pair(sx - scrollXf, sy - scrollYf)
+        }
+        val (rx, ry) = rot((sx - cx) / scaleFactor, (sy - cy) / scaleFactor, -angleRad)
+        return Pair(rx + cx - scrollXf, ry + cy - scrollYf)
+    }
+
+    // Move scroll so map point (mx, my) sits under screen point (sx, sy)
+    // at the given scale/angle.
+    private fun anchorScroll(mx: Float, my: Float, sx: Float, sy: Float, k: Float, a: Float) {
+        val cx = width / 2f
+        val cy = height / 2f
+        if (cx <= 0f || cy <= 0f || k <= 0f) return
+        val (rx, ry) = rot((sx - cx) / k, (sy - cy) / k, -a)
+        scrollXf = rx + cx - mx
+        scrollYf = ry + cy - my
+    }
+
+    private fun panBy(dxScreen: Float, dyScreen: Float) {
+        if ((dxScreen != 0f || dyScreen != 0f) && scaleFactor > 0f) {
+            val (rx, ry) = rot(dxScreen / scaleFactor, dyScreen / scaleFactor, -angleRad)
+            scrollXf += rx
+            scrollYf += ry
+        }
+    }
+
+    private fun applyScale(newScale: Float, focusX: Float, focusY: Float) {
+        val k = newScale.coerceIn(Const.SCALE_FACTOR_MIN, Const.SCALE_FACTOR_MAX)
+        if (k == scaleFactor) return
+        val (mx, my) = mapFromScreen(focusX, focusY)
+        scaleFactor = k
+        anchorScroll(mx, my, focusX, focusY, k, angleRad)
         pushView()
     }
 
-    private fun forceUpdateScale(isMaximal: Boolean) {
-        scaleFactor = if (isMaximal) Const.SCALE_FACTOR_MAX else Const.SCALE_FACTOR_MIN
+    private fun cancelZoomAnim() {
+        zoomAnim?.cancel()
+        zoomAnim = null
+    }
+
+    private fun animateZoomTo(target: Float, focusX: Float, focusY: Float) {
+        cancelZoomAnim()
+        val start = scaleFactor
+        if (start == target) return
+        zoomAnim = android.animation.ValueAnimator.ofFloat(start, target).apply {
+            duration = 220
+            interpolator = android.view.animation.DecelerateInterpolator()
+            addUpdateListener { anim ->
+                applyScale(anim.animatedValue as Float, focusX, focusY)
+            }
+            start()
+        }
+    }
+
+    // ------------------------------------------------------------ gestures
+
+    private fun dualFrame(e: MotionEvent, i0: Int, i1: Int): FloatArray {
+        val x0 = e.getX(i0)
+        val y0 = e.getY(i0)
+        val x1 = e.getX(i1)
+        val y1 = e.getY(i1)
+        return floatArrayOf(
+            (x0 + x1) / 2f, (y0 + y1) / 2f,
+            hypot(x1 - x0, y1 - y0),
+            atan2(y1 - y0, x1 - x0)
+        )
+    }
+
+    private fun baselineDual(e: MotionEvent) {
+        val i0 = e.findPointerIndex(idA)
+        val i1 = e.findPointerIndex(idB)
+        if (i0 < 0 || i1 < 0) return
+        val f = dualFrame(e, i0, i1)
+        prevFx = f[0]
+        prevFy = f[1]
+        prevSpan = f[2]
+        prevAngle = f[3]
+    }
+
+    private fun handleDualMove(e: MotionEvent, i0: Int, i1: Int) {
+        val f = dualFrame(e, i0, i1)
+        val fx = f[0]
+        val fy = f[1]
+        val span = f[2]
+        val ang = f[3]
+        // 1. Two-finger drag pans the map (free panning while pinching).
+        panBy(fx - prevFx, fy - prevFy)
+        // 2. Pinch zoom + twist rotate around the current focal point.
+        val (mx, my) = mapFromScreen(fx, fy)
+        var k = scaleFactor
+        if (prevSpan > 0f && span > 0f) {
+            k = (scaleFactor * (span / prevSpan))
+                .coerceIn(Const.SCALE_FACTOR_MIN, Const.SCALE_FACTOR_MAX)
+        }
+        scaleFactor = k
+        val a = wrapAngle(angleRad + wrapAngle(ang - prevAngle))
+        angleRad = a
+        anchorScroll(mx, my, fx, fy, k, a)
+        prevFx = fx
+        prevFy = fy
+        prevSpan = span
+        prevAngle = ang
         pushView()
+    }
+
+    private fun dropToSingle() {
+        mode = MODE_SINGLE
+        idB = -1
+        // Resync single-finger deltas on the next MOVE so the map doesn't jump.
+        pendingSync = true
     }
 
     override fun onTouch(v: View, event: MotionEvent): Boolean {
-        if (event.pointerCount > 1) {
-            scaleDetector.onTouchEvent(event)
-            lock = true
-            return true
-        }
-        when (event.action) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                cancelZoomAnim()
+                mode = MODE_SINGLE
+                idA = event.getPointerId(0)
+                idB = -1
+                pendingSync = false
+                // Double tap: smooth zoom in/out anchored at the tap point.
                 if (System.currentTimeMillis() - lastActionDownTime < doubleTapTime) {
-                    if (scaleFactor == Const.SCALE_FACTOR_MAX) forceUpdateScale(false)
-                    else forceUpdateScale(true)
+                    animateZoomTo(
+                        if (scaleFactor == Const.SCALE_FACTOR_MAX)
+                            Const.SCALE_FACTOR_MIN else Const.SCALE_FACTOR_MAX,
+                        event.x, event.y
+                    )
                 }
                 lastActionDownTime = System.currentTimeMillis()
                 dX = event.rawX
                 dY = event.rawY
             }
-            MotionEvent.ACTION_MOVE -> {
-                if (!lock) {
-                    val x = -(dX - event.rawX)
-                    val y = -(dY - event.rawY)
-                    scrollXf += x / scaleFactor
-                    scrollYf += y / scaleFactor
-                    dX = event.rawX
-                    dY = event.rawY
-                    pushView()
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                cancelZoomAnim()
+                if (event.pointerCount >= 2) {
+                    if (mode != MODE_DUAL) {
+                        idA = event.getPointerId(0)
+                        idB = event.getPointerId(1)
+                        mode = MODE_DUAL
+                    }
+                    baselineDual(event)
                 }
             }
-            MotionEvent.ACTION_UP -> lock = false
-            else -> return false
+            MotionEvent.ACTION_MOVE -> {
+                if (mode == MODE_DUAL && event.pointerCount >= 2) {
+                    val i0 = event.findPointerIndex(idA)
+                    val i1 = event.findPointerIndex(idB)
+                    if (i0 < 0 || i1 < 0) {
+                        dropToSingle()
+                    } else {
+                        handleDualMove(event, i0, i1)
+                    }
+                } else if (mode == MODE_SINGLE && event.pointerCount == 1) {
+                    if (pendingSync) {
+                        dX = event.rawX
+                        dY = event.rawY
+                        pendingSync = false
+                    } else {
+                        val dx = event.rawX - dX
+                        val dy = event.rawY - dY
+                        dX = event.rawX
+                        dY = event.rawY
+                        panBy(dx, dy)
+                        pushView()
+                    }
+                }
+            }
+            MotionEvent.ACTION_POINTER_UP -> {
+                val lifted = event.getPointerId(event.actionIndex)
+                if (mode == MODE_DUAL && (lifted == idA || lifted == idB)) {
+                    idA = if (lifted == idA) idB else idA
+                    dropToSingle()
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                mode = MODE_NONE
+                idA = -1
+                idB = -1
+                pendingSync = false
+            }
         }
         return true
     }
@@ -301,7 +475,7 @@ class VulkanMetroView @JvmOverloads constructor(
         labelTexts: Array<String>, labelPos: FloatArray
     )
     private external fun nativeSetView(
-        handle: Long, scrollX: Float, scrollY: Float, scale: Float,
+        handle: Long, scrollX: Float, scrollY: Float, scale: Float, angle: Float,
         pivotX: Float, pivotY: Float,
         textR: Float, textG: Float, textB: Float, textA: Float
     )
@@ -311,5 +485,9 @@ class VulkanMetroView @JvmOverloads constructor(
         init {
             System.loadLibrary("metroview")
         }
+
+        const val MODE_NONE = 0
+        const val MODE_SINGLE = 1
+        const val MODE_DUAL = 2
     }
 }

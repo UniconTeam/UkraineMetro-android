@@ -30,6 +30,7 @@ struct PushColor {
     float _pad0;  // keep vec2 alignment identical to the GLSL push block
     float viewW, viewH;
     float pivotX, pivotY;
+    float angle;  // map rotation, radians, clockwise-positive on screen
 };
 
 struct PushText {
@@ -39,10 +40,11 @@ struct PushText {
     float viewW, viewH;
     float pivotX, pivotY;
     float textR, textG, textB, textA;
+    float angle;  // map rotation, radians, clockwise-positive on screen
 };
 
-static_assert(sizeof(PushColor) == 32, "PushColor must match GLSL layout");
-static_assert(sizeof(PushText) == 48, "PushText must match GLSL layout");
+static_assert(sizeof(PushColor) == 36, "PushColor must match GLSL layout");
+static_assert(sizeof(PushText) == 52, "PushText must match GLSL layout");
 
 void colorIntToFloat(int32_t c, float* r, float* g, float* b, float* a) {
     *a = ((c >> 24) & 0xFF) / 255.0f;
@@ -813,13 +815,14 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
 }
 
 void Renderer::setView(float scrollX, float scrollY, float scale, float pivotX,
-                       float pivotY, float textR, float textG, float textB,
-                       float textA) {
+                       float pivotY, float angle, float textR, float textG,
+                       float textB, float textA) {
     scrollX_ = scrollX;
     scrollY_ = scrollY;
     scale_ = scale;
     pivotX_ = pivotX;
     pivotY_ = pivotY;
+    angleRad_ = angle;
     textColor_[0] = textR;
     textColor_[1] = textG;
     textColor_[2] = textB;
@@ -989,7 +992,8 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
 
     PushColor pc{scrollX_, scrollY_, scale_, 0.0f /*_pad0*/,
                  static_cast<float>(swapExtent_.width),
-                 static_cast<float>(swapExtent_.height), pivotX_, pivotY_};
+                 static_cast<float>(swapExtent_.height), pivotX_, pivotY_,
+                 angleRad_};
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeColor_);
     vkCmdPushConstants(cmd, pipeLayoutColor_, VK_SHADER_STAGE_VERTEX_BIT, 0,
                        sizeof(pc), &pc);
@@ -1007,7 +1011,8 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
         PushText pt{scrollX_, scrollY_, scale_, 0.0f /*_pad0*/,
                     static_cast<float>(swapExtent_.width),
                     static_cast<float>(swapExtent_.height), pivotX_, pivotY_,
-                    textColor_[0], textColor_[1], textColor_[2], textColor_[3]};
+                    textColor_[0], textColor_[1], textColor_[2], textColor_[3],
+                    angleRad_};
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeText_);
         vkCmdPushConstants(cmd, pipeLayoutText_,
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,

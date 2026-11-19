@@ -153,14 +153,14 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetData(
 JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetView(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle, jfloat scrollX,
-    jfloat scrollY, jfloat scale, jfloat pivotX, jfloat pivotY, jfloat textR,
-    jfloat textG, jfloat textB, jfloat textA) {
+    jfloat scrollY, jfloat scale, jfloat angle, jfloat pivotX, jfloat pivotY,
+    jfloat textR, jfloat textG, jfloat textB, jfloat textA) {
     metro::Renderer* renderer = fromHandle(handle);
     if (renderer == nullptr) {
         return;
     }
-    renderer->setView(scrollX, scrollY, scale, pivotX, pivotY, textR, textG,
-                      textB, textA);
+    renderer->setView(scrollX, scrollY, scale, pivotX, pivotY, angle, textR,
+                      textG, textB, textA);
 }
 
 JNIEXPORT void JNICALL

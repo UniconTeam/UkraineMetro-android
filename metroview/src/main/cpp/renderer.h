@@ -43,7 +43,7 @@ public:
                  int labelCount);
 
     void setView(float scrollX, float scrollY, float scale, float pivotX, float pivotY,
-                 float textR, float textG, float textB, float textA);
+                 float angle, float textR, float textG, float textB, float textA);
     void render();
     void destroy();
 
@@ -99,6 +99,7 @@ private:
     float scale_ = 1.0f;
     float pivotX_ = 0.0f;
     float pivotY_ = 0.0f;
+    float angleRad_ = 0.0f;
     float textColor_[4] = {0.41f, 0.34f, 0.38f, 1.0f};
     float bubbleColor_[4] = {0.79f, 0.79f, 0.79f, 1.0f};
 

@@ -139,6 +139,12 @@ void appendSmoothPolyline(std::vector<ColorVertex>& out, const float* pts, int p
         return;
     }
     const int steps = subdiv > 0 ? subdiv : 8;
+    // Centerline samples: consecutive quads share endpoints, but plain
+    // butt joints open wedge gaps on the outer edge of every turn.
+    // Round discs at interior joints close them (and keep the silhouette
+    // smooth at any zoom).
+    std::vector<float> spine;
+    spine.reserve(static_cast<size_t>(pointCount - 1) * steps * 2 + 2);
     float px = 0.0f;
     float py = 0.0f;
     bool havePrev = false;
@@ -154,15 +160,21 @@ void appendSmoothPolyline(std::vector<ColorVertex>& out, const float* pts, int p
             if (havePrev) {
                 emitThickSegment(out, px, py, x, y, half, r, g, b, a);
             }
+            spine.push_back(x);
+            spine.push_back(y);
             px = x;
             py = y;
             havePrev = true;
         }
     }
-    // Round caps only at the two ends: the spline itself is C1-continuous,
-    // so interior joints need no discs (they would only lump the silhouette).
+    // Round caps at the two ends plus round joints at every interior
+    // spine sample.
     appendDisc(out, pts[0], pts[1], half, r, g, b, a);
     appendDisc(out, pts[2 * (pointCount - 1)], pts[2 * (pointCount - 1) + 1], half, r, g, b, a);
+    const size_t samples = spine.size() / 2;
+    for (size_t k = 1; k + 1 < samples; ++k) {
+        appendDisc(out, spine[2 * k], spine[2 * k + 1], half, r, g, b, a);
+    }
 }
 
 void appendRect(std::vector<ColorVertex>& out, float x0, float y0, float x1, float y1,

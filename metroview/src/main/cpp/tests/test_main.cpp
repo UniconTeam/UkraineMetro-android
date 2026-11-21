@@ -80,9 +80,9 @@ static void testSmoothPolyline() {
     std::vector<metro::ColorVertex> v;
     const float pts[] = {0, 0, 10, 0, 10, 10};
     metro::appendSmoothPolyline(v, pts, 3, 1, 0, 0, 1, 4.0f, 8);
-    // 2 segments * 8 quads * 6 verts + 2 endpoint cap discs * 30 verts.
-    // (No discs at interior points: the spline is C1-continuous there.)
-    CHECK(v.size() == 2 * 8 * 6 + 2 * 30);
+    // 2 segments * 8 quads * 6 verts + 15 interior joint discs * 30 verts
+    // + 2 endpoint cap discs * 30 verts.
+    CHECK(v.size() == 2 * 8 * 6 + 15 * 30 + 2 * 30);
     // Centerline starts exactly at the first control point (vertex 0 is
     // offset by half line width, so average the first edge).
     CHECK(approx((v[0].x + v[1].x) * 0.5f, 0.0f) &&
@@ -154,8 +154,9 @@ static void testUnevenSpacingNoCusp() {
     std::vector<metro::ColorVertex> v;
     const float pts[] = {58, 0, 0, 0, -4, 4, -6, 64};
     metro::appendSmoothPolyline(v, pts, 4, 1, 1, 1, 1, 4.0f, 12);
-    // 3 segments * 12 quads * 6 verts + 2 endpoint cap discs * 30 verts.
-    CHECK(v.size() == 3 * 12 * 6 + 2 * 30);
+    // 3 segments * 12 quads * 6 verts + 35 interior joint discs * 30 verts
+    // + 2 endpoint cap discs * 30 verts.
+    CHECK(v.size() == 3 * 12 * 6 + 35 * 30 + 2 * 30);
     float maxTurn = 0.0f;
     bool nan = false;
     for (size_t q = 1; q + 1 < 3 * 12; ++q) {

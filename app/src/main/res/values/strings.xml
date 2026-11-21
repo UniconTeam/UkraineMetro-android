@@ -50,28 +50,28 @@
     <string name="name_zah_ukr">Zahistnikiv Ukraine</string>
     <string name="name_metrobud">Metrobudivnikiv</string>
 
-    <string name="name_holodnagora">Holodna gora</string>
-    <string name="name_pivdvokzal">Pivdenniy vokzal</string>
+    <string name="name_holodnagora">Kholodna Hora</string>
+    <string name="name_pivdvokzal">Vokzalna</string>
     <string name="name_centrarinok">Central rinok</string>
     <string name="name_maydankonst">Maydan konstitucii</string>
     <string name="name_prospect_gagarnina">Levada</string>
-    <string name="name_sportivna">Sportivnaya</string>
+    <string name="name_sportivna">Sportyvna</string>
     <string name="name_zavimenimalisheva">Zavodska</string>
     <string name="name_turboatom">Turboatom</string>
     <string name="name_palacsporta">Palac sporta</string>
-    <string name="name_armiyska">Armeyska</string>
+    <string name="name_armiyska">Armiiska</string>
     <string name="name_imosmaselscogo">Im. O. S. Maselskogo</string>
-    <string name="name_traktorzavod">Traktorniy zavod</string>
-    <string name="name_industrial">Industialna</string>
+    <string name="name_traktorzavod">Traktornyi Zavod</string>
+    <string name="name_industrial">Industrialna</string>
 
     <string name="name_garoivwork">Saltivska</string>
     <string name="name_studenstka">Studencheska</string>
     <string name="name_akadempavl">Akademika Pavlova</string>
     <string name="name_barabashova">Akademika Barabashova</string>
     <string name="name_kievska">Kiyvska</string>
-    <string name="name_pushkinska">Pushkinska</string>
-    <string name="name_univer">Universitet</string>
-    <string name="name_istormisei">History musey</string>
+    <string name="name_pushkinska">Yaroslava Mudroho</string>
+    <string name="name_univer">Universytet</string>
+    <string name="name_istormisei">Istorychnyi Muzei</string>
     <!-- Kharkiv end -->
 
     <!-- Kyiv -->
@@ -97,12 +97,12 @@
     <string name="name_heroes_dnipro">Heroes of Dnipro</string>
     <string name="name_minsk">Minsk</string>
     <string name="name_obolon">Obolon</string>
-    <string name="name_petrivka">Petrivka</string>
+    <string name="name_petrivka">Pochaina</string>
     <string name="name_taras_sxhevchenko">Taras Shevchenko</string>
     <string name="name_contract_area">Contract area</string>
     <string name="name_postal_square">Postal Square</string>
     <string name="name_independence_square">Independence Square</string>
-    <string name="name_leotolstoysquare">Ukrainian Heroes Square</string>
+    <string name="name_leotolstoysquare">Ploshcha Ukrainskykh Heroiv</string>
     <string name="name_olympic">Olympic</string>
     <string name="name_palaceukraine">Palace Ukraine</string>
     <string name="name_lybidska">Lybidska</string>
@@ -120,7 +120,7 @@
     <string name="name_palatssportu">Palace of Sports</string>
     <string name="name_klovska">Klovska</string>
     <string name="name_pecherska">Pecherska</string>
-    <string name="name_druzhbynarodiv">Zvirinetskaya</string>
+    <string name="name_druzhbynarodiv">Zvirynetska</string>
     <string name="name_vydubychi">Vydubychi</string>
     <string name="name_slavutych">Slavutych</string>
     <string name="name_mushrooms">Mushrooms</string>
@@ -137,9 +137,9 @@
     <string name="name_industrialna">Industrial</string>
     <string name="name_soniachna">Soniachna</string>
     <string name="name_miskaLiakrnia">City Hospital</string>
-    <string name="name_vechirniybulvar">Vechirniybulvar</string>
+    <string name="name_vechirniybulvar">Vechirnii Bulvar</string>
     <string name="name_mudriona">Mudriona</string>
-    <string name="name_budynokrad">House of Councils</string>
+    <string name="name_budynokrad">Miska Rada</string>
     <string name="name_prospektmetalurhiv">Prospect of Metallurgists</string>
     <string name="name_universytet">University</string>
     <string name="name_vulytsiavitcyzny">Str. Vitchizni</string>
@@ -151,9 +151,9 @@
 
     <!-- Dnipro -->
     <string name="name_pokrovska">Pokrovska</string>
-    <string name="name_prospektSvobody">Prospect svobodi</string>
+    <string name="name_prospektSvobody">Prospekt Svobody</string>
     <string name="name_zavodska">Zavodska</string>
-    <string name="name_metalurhiv">Metallurgiv</string>
+    <string name="name_metalurhiv">Metalurhiv</string>
     <string name="name_metrobudivnykiv">Metrobudivnykiv</string>
     <string name="name_vokzalna">Vokzalna</string>
     <!-- Dnipro end -->

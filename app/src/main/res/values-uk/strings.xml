@@ -48,10 +48,10 @@
     <string name="name_dergprom">Держпром</string>
     <string name="name_arh_beketova">Архiтектора Бекетова</string>
     <string name="name_zah_ukr">Захистникiв України</string>
-    <string name="name_metrobud">Метробудiвникiв</string>
+    <string name="name_metrobud">Метробудівників</string>
 
     <string name="name_holodnagora">Холодна гора</string>
-    <string name="name_pivdvokzal">Пiвденний вокзал</string>
+    <string name="name_pivdvokzal">Вокзальна</string>
     <string name="name_centrarinok">Центральний ринок</string>
     <string name="name_maydankonst">Майдан Коституцiї</string>
     <string name="name_prospect_gagarnina">Левада</string>
@@ -59,19 +59,19 @@
     <string name="name_zavimenimalisheva">Заводська</string>
     <string name="name_turboatom">Турбоатом</string>
     <string name="name_palacsporta">Палац Спорту</string>
-    <string name="name_armiyska">Армiйська</string>
-    <string name="name_imosmaselscogo">Iм. О. С. Масельского</string>
+    <string name="name_armiyska">Армійська</string>
+    <string name="name_imosmaselscogo">Ім. О. С. Масельского</string>
     <string name="name_traktorzavod">Тракторний завод</string>
-    <string name="name_industrial">Iндустрiальна</string>
+    <string name="name_industrial">Індустріальна</string>
 
     <string name="name_garoivwork">Салтівська</string>
     <string name="name_studenstka">Студентська</string>
-    <string name="name_akadempavl">Академiка Павлова</string>
+    <string name="name_akadempavl">Академіка Павлова</string>
     <string name="name_barabashova">Академiка Барабашова</string>
     <string name="name_kievska">Київська</string>
-    <string name="name_pushkinska">Пушкiнська</string>
-    <string name="name_univer">Унiверситет</string>
-    <string name="name_istormisei">Iсторичний музей</string>
+    <string name="name_pushkinska">Ярослава Мудрого</string>
+    <string name="name_univer">Університет</string>
+    <string name="name_istormisei">Історичний музей</string>
     <!-- Харків кінець -->
 
     <!-- Київ -->
@@ -97,7 +97,7 @@
     <string name="name_heroes_dnipro">Героїв Дніпра</string>
     <string name="name_minsk">Мінська</string>
     <string name="name_obolon">Оболонь</string>
-    <string name="name_petrivka">Петрівка</string>
+    <string name="name_petrivka">Почайна</string>
     <string name="name_taras_sxhevchenko">Тараса Шевченка</string>
     <string name="name_contract_area">Контрактова площа</string>
     <string name="name_postal_square">Поштова площа</string>
@@ -139,7 +139,7 @@
     <string name="name_miskaLiakrnia">Міська Лікарня</string>
     <string name="name_vechirniybulvar">Вечірній бульвар</string>
     <string name="name_mudriona">Мудрьона</string>
-    <string name="name_budynokrad">Будинок Рад</string>
+    <string name="name_budynokrad">Міська рада</string>
     <string name="name_prospektmetalurhiv">Проспект Металургів</string>
     <string name="name_universytet">Університет</string>
     <string name="name_vulytsiavitcyzny">Вул. Вітчизни</string>
@@ -154,7 +154,7 @@
     <string name="name_prospektSvobody">Проспект Свободи</string>
     <string name="name_zavodska">Заводська</string>
     <string name="name_metalurhiv">Металургів</string>
-    <string name="name_metrobudivnykiv">Метробудiвникiв</string>
+    <string name="name_metrobudivnykiv">Метробудівників</string>
     <string name="name_vokzalna">Вокзальна</string>
     <!-- Дніпро кінець -->
 

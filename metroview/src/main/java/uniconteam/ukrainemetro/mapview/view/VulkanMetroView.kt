@@ -571,7 +571,10 @@ class VulkanMetroView @JvmOverloads constructor(
 
     private fun resolveBackground(): Int {
         val tv = android.util.TypedValue()
-        return if (context.theme.resolveAttribute(android.R.attr.colorBackground, tv, true)) {
+        // Map canvas follows the theme instead of raw background white.
+        return if (context.theme.resolveAttribute(
+                com.google.android.material.R.attr.colorSurfaceContainerLow, tv, true
+            )) {
             if (tv.type >= android.util.TypedValue.TYPE_FIRST_COLOR_INT &&
                 tv.type <= android.util.TypedValue.TYPE_LAST_COLOR_INT
             ) {

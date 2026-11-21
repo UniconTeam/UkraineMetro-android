@@ -112,6 +112,9 @@ private:
     void uploadVertices();
     void rebuildLines();
     void rebuildMapGeometry();
+    void computeSwapExtent(VkExtent2D* extent,
+                           VkSurfaceTransformFlagBitsKHR* pre);
+    bool recreateDevice();
     bool rebuildLabelQuads();
     void recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex);
     void rebuildOverlay();
@@ -229,6 +232,8 @@ private:
     bool overlayTexDirty_ = false;
     bool overlayCopyPending_ = false;
     VkImageLayout overlayLayout_ = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkSurfaceTransformFlagBitsKHR swapTransform_ =
+        VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
     VkImage overlayImage_ = VK_NULL_HANDLE;
     VkDeviceMemory overlayMem_ = VK_NULL_HANDLE;
     VkImageView overlayView_ = VK_NULL_HANDLE;

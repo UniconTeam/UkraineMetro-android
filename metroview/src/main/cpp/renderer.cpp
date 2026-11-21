@@ -239,33 +239,188 @@ bool Renderer::chooseSwapFormat() {
     return swapFormat_ != VK_FORMAT_UNDEFINED;
 }
 
-bool Renderer::createSwapchain() {
-    if (swapFormat_ == VK_FORMAT_UNDEFINED && !chooseSwapFormat()) {
-        LOGE("no swapchain format");
-        return false;
-    }
+// Resolves the swapchain extent + transform for the current surface.
+// Prefers an identity transform: the renderer draws in display space,
+// so the compositor must not rotate our images. (Using currentTransform
+// blindly once latched a ROTATE_270 mid-rotation, showing the whole
+// map sideways until the next swapchain rebuild.)
+void Renderer::computeSwapExtent(VkExtent2D* extent,
+                                 VkSurfaceTransformFlagBitsKHR* pre) {
     SwapSupport s = querySwapSupport(physDev_);
-    VkExtent2D extent{
+    VkSurfaceTransformFlagBitsKHR t = s.caps.currentTransform;
+    if ((s.caps.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) != 0) {
+        t = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    }
+    LOGI("swapcaps current=%dx%d transform=0x%x (using 0x%x) min=%dx%d max=%dx%d view=%dx%d",
+         s.caps.currentExtent.width, s.caps.currentExtent.height,
+         s.caps.currentTransform, t, s.caps.minImageExtent.width,
+         s.caps.minImageExtent.height, s.caps.maxImageExtent.width,
+         s.caps.maxImageExtent.height, viewW_, viewH_);
+    VkExtent2D e{
         static_cast<uint32_t>(viewW_ > 0 ? viewW_ : 1),
         static_cast<uint32_t>(viewH_ > 0 ? viewH_ : 1),
     };
     if (s.caps.currentExtent.width != UINT32_MAX) {
-        extent = s.caps.currentExtent;
+        e = s.caps.currentExtent;
     } else {
-        if (extent.width < s.caps.minImageExtent.width) {
-            extent.width = s.caps.minImageExtent.width;
+        if (e.width < s.caps.minImageExtent.width) {
+            e.width = s.caps.minImageExtent.width;
         }
-        if (extent.width > s.caps.maxImageExtent.width) {
-            extent.width = s.caps.maxImageExtent.width;
+        if (e.width > s.caps.maxImageExtent.width) {
+            e.width = s.caps.maxImageExtent.width;
         }
-        if (extent.height < s.caps.minImageExtent.height) {
-            extent.height = s.caps.minImageExtent.height;
+        if (e.height < s.caps.minImageExtent.height) {
+            e.height = s.caps.minImageExtent.height;
         }
-        if (extent.height > s.caps.maxImageExtent.height) {
-            extent.height = s.caps.maxImageExtent.height;
+        if (e.height > s.caps.maxImageExtent.height) {
+            e.height = s.caps.maxImageExtent.height;
         }
     }
+    if (t == VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR ||
+        t == VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR) {
+        // Extent is expressed in pre-transform space: swap so the buffer
+        // matches the display orientation.
+        const uint32_t w = e.width;
+        e.width = e.height;
+        e.height = w;
+    }
+    *extent = e;
+    *pre = t;
+}
+
+// Full device-level teardown + rebuild (keeps instance/surface/window).
+// Used to recover from VK_ERROR_DEVICE_LOST: after a loss every device
+// object is undefined, so partial rebuilds cannot work.
+bool Renderer::recreateDevice() {
+    if (device_ == VK_NULL_HANDLE) {
+        return false;
+    }
+    LOGI("recreateDevice: tearing down after device loss");
+    vkDeviceWaitIdle(device_);  // best effort; fails harmlessly if lost
+    if (pipeColor_ != VK_NULL_HANDLE) {
+        vkDestroyPipeline(device_, pipeColor_, nullptr);
+        pipeColor_ = VK_NULL_HANDLE;
+    }
+    if (pipeText_ != VK_NULL_HANDLE) {
+        vkDestroyPipeline(device_, pipeText_, nullptr);
+        pipeText_ = VK_NULL_HANDLE;
+    }
+    if (pipeOverlay_ != VK_NULL_HANDLE) {
+        vkDestroyPipeline(device_, pipeOverlay_, nullptr);
+        pipeOverlay_ = VK_NULL_HANDLE;
+    }
+    if (pipeLayoutColor_ != VK_NULL_HANDLE) {
+        vkDestroyPipelineLayout(device_, pipeLayoutColor_, nullptr);
+        pipeLayoutColor_ = VK_NULL_HANDLE;
+    }
+    if (pipeLayoutText_ != VK_NULL_HANDLE) {
+        vkDestroyPipelineLayout(device_, pipeLayoutText_, nullptr);
+        pipeLayoutText_ = VK_NULL_HANDLE;
+    }
+    if (descPool_ != VK_NULL_HANDLE) {
+        vkDestroyDescriptorPool(device_, descPool_, nullptr);
+        descPool_ = VK_NULL_HANDLE;
+    }
+    overlayDescSet_ = VK_NULL_HANDLE;
+    descSet_ = VK_NULL_HANDLE;
+    if (dsLayout_ != VK_NULL_HANDLE) {
+        vkDestroyDescriptorSetLayout(device_, dsLayout_, nullptr);
+        dsLayout_ = VK_NULL_HANDLE;
+    }
+    if (sampler_ != VK_NULL_HANDLE) {
+        vkDestroySampler(device_, sampler_, nullptr);
+        sampler_ = VK_NULL_HANDLE;
+    }
+    if (atlasView_ != VK_NULL_HANDLE) {
+        vkDestroyImageView(device_, atlasView_, nullptr);
+        atlasView_ = VK_NULL_HANDLE;
+    }
+    if (atlasImage_ != VK_NULL_HANDLE) {
+        vkDestroyImage(device_, atlasImage_, nullptr);
+        vkFreeMemory(device_, atlasMem_, nullptr);
+        atlasImage_ = VK_NULL_HANDLE;
+    }
+    if (overlayView_ != VK_NULL_HANDLE) {
+        vkDestroyImageView(device_, overlayView_, nullptr);
+        overlayView_ = VK_NULL_HANDLE;
+    }
+    if (overlayImage_ != VK_NULL_HANDLE) {
+        vkDestroyImage(device_, overlayImage_, nullptr);
+        vkFreeMemory(device_, overlayMem_, nullptr);
+        overlayImage_ = VK_NULL_HANDLE;
+    }
+    auto dropBuf = [&](VkBuffer& b, VkDeviceMemory& m, VkDeviceSize& c) {
+        if (b != VK_NULL_HANDLE) {
+            vkDestroyBuffer(device_, b, nullptr);
+            vkFreeMemory(device_, m, nullptr);
+            b = VK_NULL_HANDLE;
+        }
+        c = 0;
+    };
+    dropBuf(stagingBuf_, stagingMem_, stagingCap_);
+    dropBuf(overlayStaging_, overlayStagingMem_, overlayStagingCap_);
+    dropBuf(lineBuf_, lineMem_, lineCap_);
+    dropBuf(leaderBuf_, leaderMem_, leaderCap_);
+    dropBuf(textBuf_, textMem_, textCap_);
+    dropBuf(haloBuf_, haloMem_, haloCap_);
+    dropBuf(overlayBuf_, overlayBufMem_, overlayBufCap_);
+    if (imgAvail_ != VK_NULL_HANDLE) {
+        vkDestroySemaphore(device_, imgAvail_, nullptr);
+        imgAvail_ = VK_NULL_HANDLE;
+    }
+    if (renderDone_ != VK_NULL_HANDLE) {
+        vkDestroySemaphore(device_, renderDone_, nullptr);
+        renderDone_ = VK_NULL_HANDLE;
+    }
+    if (renderFence_ != VK_NULL_HANDLE) {
+        vkDestroyFence(device_, renderFence_, nullptr);
+        renderFence_ = VK_NULL_HANDLE;
+    }
+    if (cmdPool_ != VK_NULL_HANDLE) {
+        vkDestroyCommandPool(device_, cmdPool_, nullptr);
+        cmdPool_ = VK_NULL_HANDLE;
+    }
+    if (renderPass_ != VK_NULL_HANDLE) {
+        vkDestroyRenderPass(device_, renderPass_, nullptr);
+        renderPass_ = VK_NULL_HANDLE;
+    }
+    destroySwapchain();
+    vkDestroyDevice(device_, nullptr);
+    device_ = VK_NULL_HANDLE;
+    atlasLayout_ = VK_IMAGE_LAYOUT_UNDEFINED;
+    overlayLayout_ = VK_IMAGE_LAYOUT_UNDEFINED;
+    ready_ = false;
+    if (!pickPhysicalDevice() || !createDevice() || !chooseSwapFormat() ||
+        !createRenderPass() || !createSwapchain() ||
+        !createDescriptorResources() || !createPipelines() ||
+        !createOverlayPipeline() || !createSyncObjects()) {
+        LOGE("recreateDevice failed");
+        return false;
+    }
+    atlasDirty_ = !atlasRgba_.empty();
+    textLayoutDirty_ = true;
+    labelsDirty_ = false;
+    overlayTexDirty_ = true;
+    uploadOverlay();
+    dataDirty_ = true;
+    ready_ = true;
+    // No render() call here: the caller returns true so Kotlin schedules
+    // the next frame, which draws on the fresh device (avoids recursion
+    // if the device is still lost).
+    return true;
+}
+
+bool Renderer::createSwapchain() {    if (swapFormat_ == VK_FORMAT_UNDEFINED && !chooseSwapFormat()) {
+        LOGE("no swapchain format");
+        return false;
+    }
+    VkExtent2D extent;
+    VkSurfaceTransformFlagBitsKHR pre;
+    computeSwapExtent(&extent, &pre);
     swapExtent_ = extent;
+    swapTransform_ = pre;
+    // Image count limits come from a fresh query (cheap, runs rarely).
+    SwapSupport s = querySwapSupport(physDev_);
     uint32_t count = s.caps.minImageCount + 1;
     if (s.caps.maxImageCount > 0 && count > s.caps.maxImageCount) {
         count = s.caps.maxImageCount;
@@ -280,7 +435,7 @@ bool Renderer::createSwapchain() {
     ci.imageArrayLayers = 1;
     ci.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     ci.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    ci.preTransform = s.caps.currentTransform;
+    ci.preTransform = pre;
     ci.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     ci.presentMode = VK_PRESENT_MODE_FIFO_KHR;
     ci.clipped = VK_TRUE;
@@ -320,6 +475,11 @@ void Renderer::destroySwapchain() {
     if (device_ == VK_NULL_HANDLE) {
         return;
     }
+    // A present using these images may still be in flight (presents are
+    // async and untracked by our fence). Draining first avoids faulting
+    // the driver by tearing down in-use swapchain resources, which
+    // surfaces as VK_ERROR_DEVICE_LOST on a later submit.
+    vkDeviceWaitIdle(device_);
     for (VkFramebuffer fb : framebuffers_) {
         vkDestroyFramebuffer(device_, fb, nullptr);
     }
@@ -879,8 +1039,14 @@ void Renderer::setSurface(ANativeWindow* window) {
             !createOverlayPipeline() || !createSyncObjects()) {
             return;
         }
-    } else if (!createSwapchain()) {
-        return;
+    } else {
+        // New surface on an existing device: drop the old swapchain
+        // (created against the previous surface) before creating the
+        // new one, instead of leaking it.
+        destroySwapchain();
+        if (!createSwapchain()) {
+            return;
+        }
     }
     dataDirty_ = true;
     labelsDirty_ = true;
@@ -898,6 +1064,16 @@ void Renderer::resize(int w, int h) {
     viewW_ = w;
     viewH_ = h;
     textLayoutDirty_ = true;
+    // Coalesce resize storms (rotation produces several in a row):
+    // only rebuild when the resolved extent actually changed.
+    VkExtent2D extent;
+    VkSurfaceTransformFlagBitsKHR pre;
+    computeSwapExtent(&extent, &pre);
+    if (swapchain_ != VK_NULL_HANDLE && extent.width == swapExtent_.width &&
+        extent.height == swapExtent_.height && pre == swapTransform_) {
+        render();
+        return;
+    }
     vkDeviceWaitIdle(device_);
     destroySwapchain();
     if (!createSwapchain()) {
@@ -1569,6 +1745,10 @@ void Renderer::uploadAtlas(const std::vector<uint8_t>& rgba) {
 }
 
 void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
+    // NOTE: no explicit vkResetCommandBuffer here. The buffer is recorded
+    // fresh every frame and vkBeginCommandBuffer implicitly resets it; an
+    // explicit reset of this one-time-submit buffer wedges this Adreno
+    // driver (every later submit fails with VK_ERROR_DEVICE_LOST).
     VkCommandBufferBeginInfo bi{};
     bi.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     bi.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -1742,6 +1922,21 @@ bool Renderer::render() {
     if (!ready_ || window_ == nullptr || viewW_ <= 0 || viewH_ <= 0) {
         return false;
     }
+    if (renderFence_ == VK_NULL_HANDLE) {
+        VkFenceCreateInfo fi{};
+        fi.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fi.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        if (vkCreateFence(device_, &fi, nullptr, &renderFence_) != VK_SUCCESS) {
+            return false;
+        }
+    }
+    if (swapchain_ == VK_NULL_HANDLE) {
+        destroySwapchain();
+        if (!createSwapchain()) {
+            LOGE("swapchain missing, recreate failed");
+            return false;
+        }
+    }
     const auto frameNow = std::chrono::steady_clock::now();
     if (debugOverlay_) {
         if (haveLastFrame_) {
@@ -1762,7 +1957,6 @@ bool Renderer::render() {
         haveLastFrame_ = false;
     }
     vkWaitForFences(device_, 1, &renderFence_, VK_TRUE, UINT64_MAX);
-    vkResetFences(device_, 1, &renderFence_);
     if (dataDirty_) {
         dataDirty_ = false;
     }
@@ -1792,10 +1986,15 @@ bool Renderer::render() {
         }
         return animating || debugOverlay_;
     }
+    if (acq == VK_ERROR_DEVICE_LOST) {
+        LOGE("acquire: device lost, rebuilding");
+        return recreateDevice();
+    }
     if (acq != VK_SUCCESS && acq != VK_SUBOPTIMAL_KHR) {
         LOGE("acquire failed %d", acq);
         return animating || debugOverlay_;
     }
+    vkResetFences(device_, 1, &renderFence_);
     recordCommandBuffer(cmdBuf_, imageIndex);
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo si{};
@@ -1807,9 +2006,29 @@ bool Renderer::render() {
     si.pCommandBuffers = &cmdBuf_;
     si.signalSemaphoreCount = 1;
     si.pSignalSemaphores = &renderDone_;
-    if (vkQueueSubmit(gfxQueue_, 1, &si, renderFence_) != VK_SUCCESS) {
-        LOGE("queue submit failed");
-        return animating || debugOverlay_;
+    VkResult sub = vkQueueSubmit(gfxQueue_, 1, &si, renderFence_);
+    if (sub == VK_ERROR_DEVICE_LOST) {
+        LOGE("submit: device lost, rebuilding");
+        return recreateDevice();
+    }
+    if (sub != VK_SUCCESS) {
+        LOGE("queue submit failed %d", sub);
+        // The fence was just reset but nothing will ever signal it: rebuild
+        // it in the signaled state so the next frame cannot wait forever,
+        // and drop the swapchain so the next frame recreates everything.
+        vkDeviceWaitIdle(device_);
+        vkDestroyFence(device_, renderFence_, nullptr);
+        renderFence_ = VK_NULL_HANDLE;
+        VkFenceCreateInfo fi{};
+        fi.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fi.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        if (vkCreateFence(device_, &fi, nullptr, &renderFence_) != VK_SUCCESS) {
+            LOGE("fence recreate failed");
+            renderFence_ = VK_NULL_HANDLE;
+            return false;
+        }
+        destroySwapchain();
+        return false;
     }
     VkPresentInfoKHR pi{};
     pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -1819,6 +2038,10 @@ bool Renderer::render() {
     pi.pSwapchains = &swapchain_;
     pi.pImageIndices = &imageIndex;
     VkResult pres = vkQueuePresentKHR(gfxQueue_, &pi);
+    if (pres == VK_ERROR_DEVICE_LOST) {
+        LOGE("present: device lost, rebuilding");
+        return recreateDevice();
+    }
     if (pres != VK_SUCCESS && pres != VK_SUBOPTIMAL_KHR) {
         LOGE("present failed %d", pres);
     }

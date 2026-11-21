@@ -63,30 +63,32 @@ class KriviyRogCity: City {
                             206
                         ), R.string.name_prospektmetalurhiv
                     ),
-                    Point(
-                        Vector(
-                            77,
-                            236
-                        ), R.string.name_universytet
-                    ),
-                    Point(
-                        Vector(
-                            81,
-                            250
-                        ), R.string.name_vulytsiavitcyzny
-                    ),
-                    Point(
-                        Vector(
-                            94,
-                            266
-                        ), R.string.name_tretiadilnytsia
-                    ),
-                    Point(
-                        Vector(
-                            111,
-                            280
-                        ), R.string.name_kiltseamkr
-                    ),
+                    // Not on any official metrotram list - hidden until confirmed.
+                    // Point(
+                    //     Vector(
+                    //         77,
+                    //         236
+                    //     ), R.string.name_universytet
+                    // ),
+                    // Point(
+                    //     Vector(
+                    //         81,
+                    //         250
+                    //     ), R.string.name_vulytsiavitcyzny
+                    // ),
+                    // Point(
+                    //     Vector(
+                    //         94,
+                    //         266
+                    //     ), R.string.name_tretiadilnytsia
+                    // ),
+                    // "AMKR Cilce" typo, no official match - hidden until confirmed.
+                    // Point(
+                    //     Vector(
+                    //         111,
+                    //         280
+                    //     ), R.string.name_kiltseamkr
+                    // ),
                     Point(
                         Vector(
                             123,

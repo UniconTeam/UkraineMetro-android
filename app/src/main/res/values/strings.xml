@@ -41,94 +41,94 @@
 
     <!-- Kharkiv -->
     <string name="name_peremoga">Pobeda</string>
-    <string name="name_olecsiivka">Oleksievska</string>
+    <string name="name_olecsiivka">Oleksiivska</string>
     <string name="name_23serpnya">23 Serpnya</string>
-    <string name="name_botanichniysad">Botanichniy sad</string>
+    <string name="name_botanichniysad">Botanichnyi Sad</string>
     <string name="name_naukova">Naukova</string>
-    <string name="name_dergprom">Dergprom</string>
-    <string name="name_arh_beketova">Architectora beketova</string>
-    <string name="name_zah_ukr">Zahistnikiv Ukraine</string>
+    <string name="name_dergprom">Derzhprom</string>
+    <string name="name_arh_beketova">Arkhitektora Beketova</string>
+    <string name="name_zah_ukr">Zakhysnykiv Ukrainy</string>
     <string name="name_metrobud">Metrobudivnikiv</string>
 
     <string name="name_holodnagora">Kholodna Hora</string>
     <string name="name_pivdvokzal">Vokzalna</string>
-    <string name="name_centrarinok">Central rinok</string>
-    <string name="name_maydankonst">Maydan konstitucii</string>
+    <string name="name_centrarinok">Tsentralnyi Rynok</string>
+    <string name="name_maydankonst">Maidan Konstytutsii</string>
     <string name="name_prospect_gagarnina">Levada</string>
     <string name="name_sportivna">Sportyvna</string>
     <string name="name_zavimenimalisheva">Zavodska</string>
     <string name="name_turboatom">Turboatom</string>
     <string name="name_palacsporta">Palac sporta</string>
     <string name="name_armiyska">Armiiska</string>
-    <string name="name_imosmaselscogo">Im. O. S. Maselskogo</string>
+    <string name="name_imosmaselscogo">Im. O. S. Maselskoho</string>
     <string name="name_traktorzavod">Traktornyi Zavod</string>
     <string name="name_industrial">Industrialna</string>
 
     <string name="name_garoivwork">Saltivska</string>
-    <string name="name_studenstka">Studencheska</string>
+    <string name="name_studenstka">Studentska</string>
     <string name="name_akadempavl">Akademika Pavlova</string>
     <string name="name_barabashova">Akademika Barabashova</string>
-    <string name="name_kievska">Kiyvska</string>
+    <string name="name_kievska">Kyivska</string>
     <string name="name_pushkinska">Yaroslava Mudroho</string>
     <string name="name_univer">Universytet</string>
     <string name="name_istormisei">Istorychnyi Muzei</string>
     <!-- Kharkiv end -->
 
     <!-- Kyiv -->
-    <string name="name_akademistechko">Akademistechko</string>
-    <string name="name_zhytomyr">Zhytomyr</string>
-    <string name="name_svyatoshyn">Svyatoshyn</string>
-    <string name="name_nykvy">Nykyv</string>
-    <string name="name_beresteyska">Beresteyska</string>
-    <string name="name_shulyavska">Shulyavska</string>
-    <string name="name_polytechnic_institute">Polytechnic Institute</string>
-    <string name="name_station">Station</string>
-    <string name="name_university">University</string>
-    <string name="name_theatrical">Theatrical</string>
+    <string name="name_akademistechko">Akademmistechko</string>
+    <string name="name_zhytomyr">Zhytomyrska</string>
+    <string name="name_svyatoshyn">Sviatoshyn</string>
+    <string name="name_nykvy">Nyvky</string>
+    <string name="name_beresteyska">Beresteiska</string>
+    <string name="name_shulyavska">Shuliavska</string>
+    <string name="name_polytechnic_institute">Politekhnichnyi Instytut</string>
+    <string name="name_station">Vokzalna</string>
+    <string name="name_university">Universytet</string>
+    <string name="name_theatrical">Teatralna</string>
     <string name="name_khreshchatyk">Khreshchatyk</string>
-    <string name="name_arsenal">Arsenal</string>
+    <string name="name_arsenal">Arsenalna</string>
     <string name="name_dnipro">Dnipro</string>
     <string name="name_hydropark">Hydropark</string>
-    <string name="name_leftbank">Leftbank</string>
-    <string name="name_darnytsy">Darnytsy</string>
+    <string name="name_leftbank">Livoberezhna</string>
+    <string name="name_darnytsy">Darnytsia</string>
     <string name="name_chernihivska">Chernihivska</string>
     <string name="name_lisova">Lisova</string>
 
-    <string name="name_heroes_dnipro">Heroes of Dnipro</string>
-    <string name="name_minsk">Minsk</string>
+    <string name="name_heroes_dnipro">Heroiv Dnipra</string>
+    <string name="name_minsk">Minska</string>
     <string name="name_obolon">Obolon</string>
     <string name="name_petrivka">Pochaina</string>
-    <string name="name_taras_sxhevchenko">Taras Shevchenko</string>
-    <string name="name_contract_area">Contract area</string>
-    <string name="name_postal_square">Postal Square</string>
-    <string name="name_independence_square">Independence Square</string>
+    <string name="name_taras_sxhevchenko">Tarasa Shevchenka</string>
+    <string name="name_contract_area">Kontraktova Ploshcha</string>
+    <string name="name_postal_square">Poshtova Ploshcha</string>
+    <string name="name_independence_square">Maidan Nezalezhnosti</string>
     <string name="name_leotolstoysquare">Ploshcha Ukrainskykh Heroiv</string>
-    <string name="name_olympic">Olympic</string>
-    <string name="name_palaceukraine">Palace Ukraine</string>
+    <string name="name_olympic">Olimpiiska</string>
+    <string name="name_palaceukraine">Palats Ukraina</string>
     <string name="name_lybidska">Lybidska</string>
     <string name="name_demiivska">Demiivska</string>
     <string name="name_holosiivska">Holosiivska</string>
     <string name="name_vasylkivska">Vasylkivska</string>
-    <string name="name_exhibitioncenter">Exhibition Center</string>
-    <string name="name_racetrack">Racetrack</string>
-    <string name="name_teremka">Teremka</string>
+    <string name="name_exhibitioncenter">Vystavkovyi Tsentr</string>
+    <string name="name_racetrack">Ipodrom</string>
+    <string name="name_teremka">Teremky</string>
 
     <string name="name_syrets">Syrets</string>
     <string name="name_dorohozhychi">Dorohozhychi</string>
     <string name="name_lukyanivska">Lukyanivska</string>
-    <string name="name_zolotiVorota">Golden Gate</string>
-    <string name="name_palatssportu">Palace of Sports</string>
+    <string name="name_zolotiVorota">Zoloti Vorota</string>
+    <string name="name_palatssportu">Palats Sportu</string>
     <string name="name_klovska">Klovska</string>
     <string name="name_pecherska">Pecherska</string>
     <string name="name_druzhbynarodiv">Zvirynetska</string>
     <string name="name_vydubychi">Vydubychi</string>
     <string name="name_slavutych">Slavutych</string>
-    <string name="name_mushrooms">Mushrooms</string>
-    <string name="name_poznyaks">Poznyaks</string>
+    <string name="name_mushrooms">Osokorky</string>
+    <string name="name_poznyaks">Pozniaky</string>
     <string name="name_kharkivska">Kharkivska</string>
-    <string name="name_vyrlitsa">Vyrlitsa</string>
+    <string name="name_vyrlitsa">Vyrlytsia</string>
     <string name="name_boryspilska">Boryspilska</string>
-    <string name="name_chervonyykhutir">Chervonyykhutir</string>
+    <string name="name_chervonyykhutir">Chervonyi Khutir</string>
     <!-- Kyiv end -->
 
     <!-- Kriviy rog -->
@@ -136,15 +136,15 @@
     <string name="name_elektrozavodska">Electrozavodska</string>
     <string name="name_industrialna">Industrial</string>
     <string name="name_soniachna">Soniachna</string>
-    <string name="name_miskaLiakrnia">City Hospital</string>
+    <string name="name_miskaLiakrnia">Miska Likarnia</string>
     <string name="name_vechirniybulvar">Vechirnii Bulvar</string>
     <string name="name_mudriona">Mudriona</string>
     <string name="name_budynokrad">Miska Rada</string>
-    <string name="name_prospektmetalurhiv">Prospect of Metallurgists</string>
-    <string name="name_universytet">University</string>
-    <string name="name_vulytsiavitcyzny">Str. Vitchizni</string>
-    <string name="name_tretiadilnytsia">3rd Dilnica</string>
-    <string name="name_kiltseamkr">AMKR Cilce</string>
+    <string name="name_prospektmetalurhiv">Prospekt Metalurhiv</string>
+    <string name="name_universytet">Universytet</string>
+    <string name="name_vulytsiavitcyzny">Vulytsia Vitchyzny</string>
+    <string name="name_tretiadilnytsia">Tretia Dilnytsia</string>
+    <string name="name_kiltseamkr">Kiltse AMKR</string>
     <string name="name_maidanPratsi">Maidan Pratsi</string>
     <string name="name_kiltseva">Kiltseva</string>
     <!-- Kriviy rog end -->

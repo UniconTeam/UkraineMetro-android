@@ -3,7 +3,7 @@
 
     <string name="btn_googleplay">Додаток в Google Play</string>
     <string name="btn_github">Код додатку на Github</string>
-    <string name="btn_resetcity">Змiнити мiсто</string>
+    <string name="btn_resetcity">Змінити місто</string>
     <string name="label_settings">Налаштування</string>
     <string name="settings_general">Загальне</string>
     <string name="settings_about">Про додаток</string>
@@ -41,19 +41,19 @@
 
     <!-- Харків -->
     <string name="name_peremoga">Перемога</string>
-    <string name="name_olecsiivka">Олексiївська</string>
+    <string name="name_olecsiivka">Олексіївська</string>
     <string name="name_23serpnya">23 Серпня</string>
-    <string name="name_botanichniysad">Ботанiчний сад</string>
+    <string name="name_botanichniysad">Ботанічний сад</string>
     <string name="name_naukova">Наукова</string>
     <string name="name_dergprom">Держпром</string>
-    <string name="name_arh_beketova">Архiтектора Бекетова</string>
-    <string name="name_zah_ukr">Захистникiв України</string>
+    <string name="name_arh_beketova">Архітектора Бекетова</string>
+    <string name="name_zah_ukr">Захисників України</string>
     <string name="name_metrobud">Метробудівників</string>
 
     <string name="name_holodnagora">Холодна гора</string>
     <string name="name_pivdvokzal">Вокзальна</string>
     <string name="name_centrarinok">Центральний ринок</string>
-    <string name="name_maydankonst">Майдан Коституцiї</string>
+    <string name="name_maydankonst">Майдан Конституції</string>
     <string name="name_prospect_gagarnina">Левада</string>
     <string name="name_sportivna">Спортивна</string>
     <string name="name_zavimenimalisheva">Заводська</string>
@@ -67,7 +67,7 @@
     <string name="name_garoivwork">Салтівська</string>
     <string name="name_studenstka">Студентська</string>
     <string name="name_akadempavl">Академіка Павлова</string>
-    <string name="name_barabashova">Академiка Барабашова</string>
+    <string name="name_barabashova">Академіка Барабашова</string>
     <string name="name_kievska">Київська</string>
     <string name="name_pushkinska">Ярослава Мудрого</string>
     <string name="name_univer">Університет</string>
@@ -83,7 +83,7 @@
     <string name="name_shulyavska">Шулявська</string>
     <string name="name_polytechnic_institute">Політехнічний інститут</string>
     <string name="name_station">Вокзальна</string>
-    <string name="name_university">Унiверситет</string>
+    <string name="name_university">Університет</string>
     <string name="name_theatrical">Театральна</string>
     <string name="name_khreshchatyk">Хрещатик</string>
     <string name="name_arsenal">Арсенальна</string>

@@ -2,7 +2,7 @@ package uniconteam.ukrainemetro.mapview
 
 object Const {
     // Hex colors
-    const val COLOR_TRANS = "#ff00ff"
+    const val COLOR_TRANS = "#CE93D8"
     const val COLOR_RECT_BG = "#c9c9c9"
     const val COLOR_RECT_TEXT = "#685661"
 

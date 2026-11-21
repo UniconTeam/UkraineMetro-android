@@ -188,4 +188,14 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetDebugOverlay(
     renderer->setDebugOverlay(enabled == JNI_TRUE, topMarginPx);
 }
 
+JNIEXPORT void JNICALL
+Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetTransferColor(
+    JNIEnv* /*env*/, jobject /*thiz*/, jlong handle, jint argb) {
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    renderer->setTransferColor(static_cast<uint32_t>(argb));
+}
+
 }  // extern "C"

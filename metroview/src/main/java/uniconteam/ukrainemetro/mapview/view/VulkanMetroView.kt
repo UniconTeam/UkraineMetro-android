@@ -241,6 +241,9 @@ class VulkanMetroView @JvmOverloads constructor(
         private set
     private var debugOverlayTopMargin = 0
 
+    var transferColor: Int = 0xFFCE93D8.toInt()
+        private set
+
     fun setDebugOverlay(enabled: Boolean, topMarginPx: Int = 0) {
         debugOverlayEnabled = enabled
         debugOverlayTopMargin = topMarginPx
@@ -248,6 +251,14 @@ class VulkanMetroView @JvmOverloads constructor(
             nativeSetDebugOverlay(nativeHandle, enabled, topMarginPx)
         }
         // Overlay on = continuous rendering for live FPS/graph.
+        pushView()
+    }
+
+    fun setTransferColor(argb: Int) {
+        transferColor = argb
+        if (nativeHandle != 0L) {
+            nativeSetTransferColor(nativeHandle, argb)
+        }
         pushView()
     }
 
@@ -517,6 +528,7 @@ class VulkanMetroView @JvmOverloads constructor(
         nativeSurfaceCreated(nativeHandle, holder.surface)
         nativeResize(nativeHandle, width.coerceAtLeast(1), height.coerceAtLeast(1))
         nativeSetDebugOverlay(nativeHandle, debugOverlayEnabled, debugOverlayTopMargin)
+        nativeSetTransferColor(nativeHandle, transferColor)
         if (pendingData) {
             pendingData = false
             pushData(
@@ -611,6 +623,7 @@ class VulkanMetroView @JvmOverloads constructor(
     )
     private external fun nativeRender(handle: Long): Boolean
     private external fun nativeSetDebugOverlay(handle: Long, enabled: Boolean, topMarginPx: Int)
+    private external fun nativeSetTransferColor(handle: Long, argb: Int)
 
     companion object {
         init {

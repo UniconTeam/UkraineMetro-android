@@ -67,7 +67,7 @@ class KharkivCity: City {
                         ), R.string.name_metrobud
                     )
                 ),
-                Color.parseColor("#379926")
+                Color.parseColor("#81C784")
             ),
             BranchElement(
                 listOf(
@@ -144,7 +144,7 @@ class KharkivCity: City {
                         ), R.string.name_industrial
                     )
                 ),
-                Color.parseColor("#f22718")
+                Color.parseColor("#E57373")
             ),
             BranchElement(
                 listOf(
@@ -205,7 +205,7 @@ class KharkivCity: City {
                         ), R.string.name_istormisei
                     )
                 ),
-                Color.parseColor("#1261ff")
+                Color.parseColor("#2196F3")
             ),
 
             TransElement(

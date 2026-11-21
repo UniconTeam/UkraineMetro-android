@@ -100,7 +100,7 @@ class KriviyRogCity: City {
                         ), R.string.name_kiltseva
                     ),
                 ),
-                Color.parseColor("#f22718")
+                Color.parseColor("#E57373")
             ),
         )
 }

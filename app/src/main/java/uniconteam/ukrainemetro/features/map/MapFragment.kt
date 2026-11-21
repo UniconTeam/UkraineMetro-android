@@ -30,6 +30,7 @@ import uniconteam.ukrainemetro.core.exceptions.Failure
 import uniconteam.ukrainemetro.core.extensions.failure
 import uniconteam.ukrainemetro.core.extensions.observe
 import uniconteam.ukrainemetro.mapview.entities.City
+import uniconteam.ukrainemetro.mapview.entities.elements.BranchElement
 
 @AndroidEntryPoint
 class MapFragment: BaseFragment() {
@@ -133,6 +134,7 @@ class MapFragment: BaseFragment() {
         binding.metroView.setMapInteraction(prefs.rotationEnabled, prefs.zoomLimitsEnabled)
         applyAdsVisibility()
         applyDebugOverlay()
+        pushMapData(force = false)
     }
 
     private fun updateNavBar(transparent: Boolean) {
@@ -202,6 +204,9 @@ class MapFragment: BaseFragment() {
         binding.adsSwitch.setOnCheckedChangeListener { _, checked ->
             prefs.adsEnabled = checked
         }
+        binding.originalColorsSwitch.setOnCheckedChangeListener { _, checked ->
+            prefs.originalColors = checked
+        }
         binding.debugOverlaySwitch.setOnCheckedChangeListener { _, checked ->
             prefs.debugOverlayEnabled = checked
         }
@@ -241,6 +246,7 @@ class MapFragment: BaseFragment() {
         binding.rotationSwitch.isChecked = prefs.rotationEnabled
         binding.zoomLimitsSwitch.isChecked = prefs.zoomLimitsEnabled
         binding.adsSwitch.isChecked = prefs.adsEnabled
+        binding.originalColorsSwitch.isChecked = prefs.originalColors
         binding.debugOverlaySwitch.isChecked = prefs.debugOverlayEnabled
     }
 
@@ -283,7 +289,34 @@ class MapFragment: BaseFragment() {
 
     private fun handleCity(city: City?) {
         if (city == null) return
-        binding.metroView.updateData(city.mapElements)
+        currentCity = city
+        pushMapData(force = true)
+    }
+
+    private fun pushMapData(force: Boolean) {
+        val city = currentCity ?: return
+        val original = prefs.originalColors
+        if (!force && lastColorMode == original) return
+        lastColorMode = original
+        binding.metroView.setTransferColor(
+            if (original) 0xFFFF00FF.toInt() else 0xFFCE93D8.toInt()
+        )
+        val elements = if (original) {
+            city.mapElements.map { el ->
+                if (el is BranchElement) BranchElement(el.points, mapToOriginal(el.color))
+                else el
+            }
+        } else {
+            city.mapElements
+        }
+        binding.metroView.updateData(elements)
+    }
+
+    private fun mapToOriginal(color: Int): Int = when (color) {
+        0xFFE57373.toInt() -> 0xFFF22718.toInt()
+        0xFF2196F3.toInt() -> 0xFF1261FF.toInt()
+        0xFF81C784.toInt() -> 0xFF379926.toInt()
+        else -> color
     }
 
     private fun handleFailure(failure: Failure?) {
@@ -311,6 +344,8 @@ class MapFragment: BaseFragment() {
         binding.adView.visibility = if (prefs.adsEnabled) View.VISIBLE else View.GONE
     }
 
+    private var currentCity: City? = null
+    private var lastColorMode: Boolean? = null
     private var overlayTopMargin = 0
 
     private fun applyDebugOverlay() {

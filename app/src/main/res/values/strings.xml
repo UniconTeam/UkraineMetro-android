@@ -17,6 +17,7 @@
     <string name="settings_rotation">Allow rotation</string>
     <string name="settings_zoom_limits">Limit zoom</string>
     <string name="settings_ads">Show ads</string>
+    <string name="settings_original_colors">Original station colors</string>
     <string name="settings_debug">Debug</string>
     <string name="settings_debug_overlay">Performance overlay</string>
     <string name="settings_debug_overlay_summary">FPS, frame time and draw stats on the map</string>

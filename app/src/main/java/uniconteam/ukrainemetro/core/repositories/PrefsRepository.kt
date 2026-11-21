@@ -58,6 +58,13 @@ class PrefsRepository(context: Context) {
             sharedPreferences.edit { putBoolean("ADS_ENABLED", value) }
         }
 
+    /** Use the original vivid station colors instead of pastels. */
+    var originalColors: Boolean
+        get() = sharedPreferences.getBoolean("ORIGINAL_COLORS", false)
+        set(value) {
+            sharedPreferences.edit { putBoolean("ORIGINAL_COLORS", value) }
+        }
+
     /** Vulkan performance overlay (FPS, frame graph, draw stats). */
     var debugOverlayEnabled: Boolean
         get() = sharedPreferences.getBoolean("DEBUG_OVERLAY", false)

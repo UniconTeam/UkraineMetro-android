@@ -123,7 +123,7 @@ class KyivCity: City {
                         ), R.string.name_lisova
                     ),
                 ),
-                Color.parseColor("#f22718")
+                Color.parseColor("#E57373")
             ),
             BranchElement(
                 listOf(
@@ -240,7 +240,7 @@ class KyivCity: City {
                         ), R.string.name_teremka
                     ),
                 ),
-                Color.parseColor("#1261ff")
+                Color.parseColor("#2196F3")
             ),
             BranchElement(
                 listOf(
@@ -347,7 +347,7 @@ class KyivCity: City {
                         ), R.string.name_chervonyykhutir
                     ),
                 ),
-                Color.parseColor("#379926")
+                Color.parseColor("#81C784")
             ),
             TransElement(
                 Vector(

@@ -17,6 +17,7 @@
     <string name="settings_rotation">Разрешить вращение</string>
     <string name="settings_zoom_limits">Ограничить масштаб</string>
     <string name="settings_ads">Показывать рекламу</string>
+    <string name="settings_original_colors">Оригинальные цвета</string>
     <string name="settings_debug">Отладка</string>
     <string name="settings_debug_overlay">Панель производительности</string>
     <string name="settings_debug_overlay_summary">FPS, время кадра и статистика на карте</string>

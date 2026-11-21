@@ -47,6 +47,7 @@ public:
     // Debug performance overlay (FPS, frame time + graph, draw stats),
     // top-left. topMarginPx reserves the status-bar area.
     void setDebugOverlay(bool enabled, int topMarginPx);
+    void setTransferColor(uint32_t argb);
     // Renders one frame on demand. Returns true while label animation is
     // still settling (caller should render another frame).
     bool render();
@@ -107,6 +108,7 @@ private:
     void uploadAtlas(const std::vector<uint8_t>& rgba);
     void uploadVertices();
     void rebuildLines();
+    void rebuildMapGeometry();
     bool rebuildLabelQuads();
     void recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex);
     void rebuildOverlay();
@@ -134,6 +136,15 @@ private:
     std::vector<TextVertex> textVerts_;
     std::vector<TextVertex> haloVerts_;
     std::vector<ColorVertex> leaderVerts_;
+    // Cached map geometry inputs so lines/markers can be rebuilt
+    // (transfer color change) without re-pushing from Kotlin.
+    std::vector<int32_t> branchColors_;
+    std::vector<float> branchPts_;
+    std::vector<int32_t> branchCounts_;
+    std::vector<float> transPts_;
+    std::vector<float> labelPosCache_;
+    std::vector<int32_t> labelColorsCache_;
+    uint32_t transferColor_ = 0xFFCE93D8u;
     std::vector<LabelBitmap> labelBitmaps_;
     std::vector<PlacedLabel> placedLabels_;
     std::vector<std::pair<float, float>> labelAnchors_;

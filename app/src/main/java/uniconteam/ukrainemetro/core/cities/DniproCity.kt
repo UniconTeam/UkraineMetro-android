@@ -54,7 +54,7 @@ class DniproCity: City {
                         ), R.string.name_vokzalna
                     ),
                 ),
-                Color.parseColor("#f22718")
+                Color.parseColor("#E57373")
             ),
         )
 }

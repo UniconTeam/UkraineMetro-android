@@ -906,37 +906,70 @@ void Renderer::resize(int w, int h) {
     render();
 }
 
+void Renderer::setTransferColor(uint32_t argb) {
+    if (argb == transferColor_) {
+        return;
+    }
+    transferColor_ = argb;
+    if (!branchPts_.empty() || !transPts_.empty()) {
+        rebuildMapGeometry();
+    }
+}
+
+void Renderer::rebuildMapGeometry() {
+    lineVerts_.clear();
+    const float* p = branchPts_.data();
+    for (size_t i = 0; i < branchCounts_.size(); ++i) {
+        float r, g, b, a;
+        colorIntToFloat(branchColors_[i], &r, &g, &b, &a);
+        appendSmoothPolyline(lineVerts_, p, branchCounts_[i], r, g, b, a,
+                             kLineWidthMap, kSmoothSubdiv);
+        p += static_cast<size_t>(branchCounts_[i]) * 2;
+    }
+    float tr, tg, tb, ta;
+    colorIntToFloat(static_cast<int32_t>(transferColor_), &tr, &tg, &tb, &ta);
+    const size_t segs = transPts_.size() / 4;
+    for (size_t i = 0; i < segs; ++i) {
+        appendSegment(lineVerts_, transPts_[4 * i], transPts_[4 * i + 1],
+                      transPts_[4 * i + 2], transPts_[4 * i + 3], tr, tg, tb,
+                      ta, kLineWidthMap);
+    }
+    // Station markers (white ring + branch-color center), drawn on top
+    // of the lines as part of the same vertex buffer.
+    const size_t labels = labelColorsCache_.size();
+    for (size_t i = 0; i < labels; ++i) {
+        const float x = labelPosCache_[2 * i];
+        const float y = labelPosCache_[2 * i + 1];
+        appendDisc(lineVerts_, x, y, kMarkerOuterR, 1.0f, 1.0f, 1.0f, 1.0f);
+        float r, g, b, a;
+        colorIntToFloat(labelColorsCache_[i], &r, &g, &b, &a);
+        appendDisc(lineVerts_, x, y, kMarkerInnerR, r, g, b, 1.0f);
+    }
+    dataDirty_ = true;
+}
+
 void Renderer::setData(const int32_t* branchColors, const float* branchPts,
                        const int32_t* branchCounts, int branchCount,
                        const float* transPts, int transSegCount,
                        const char* const* labelTexts, const float* labelPos,
                        const int32_t* labelColors, int labelCount) {
-    lineVerts_.clear();
-    const float* p = branchPts;
+    // Cache geometry inputs so the map can be rebuilt (transfer color
+    // change) without re-pushing everything from Kotlin.
+    branchColors_.assign(branchColors, branchColors + branchCount);
+    size_t ptsTotal = 0;
     for (int i = 0; i < branchCount; ++i) {
-        float r, g, b, a;
-        colorIntToFloat(branchColors[i], &r, &g, &b, &a);
-        appendSmoothPolyline(lineVerts_, p, branchCounts[i], r, g, b, a,
-                             kLineWidthMap, kSmoothSubdiv);
-        p += static_cast<size_t>(branchCounts[i]) * 2;
+        ptsTotal += static_cast<size_t>(branchCounts[i]) * 2;
     }
-    float tr, tg, tb, ta;
-    colorIntToFloat(0xFFFF00FF, &tr, &tg, &tb, &ta);  // COLOR_TRANS
-    for (int i = 0; i < transSegCount; ++i) {
-        appendSegment(lineVerts_, transPts[4 * i], transPts[4 * i + 1],
-                      transPts[4 * i + 2], transPts[4 * i + 3], tr, tg, tb, ta,
-                      kLineWidthMap);
+    branchPts_.assign(branchPts, branchPts + ptsTotal);
+    branchCounts_.assign(branchCounts, branchCounts + branchCount);
+    transPts_.assign(transPts, transPts + static_cast<size_t>(transSegCount) * 4);
+    labelPosCache_.assign(labelPos, labelPos + static_cast<size_t>(labelCount) * 2);
+    if (labelColors != nullptr) {
+        labelColorsCache_.assign(labelColors, labelColors + labelCount);
+    } else {
+        labelColorsCache_.assign(static_cast<size_t>(labelCount), 0);
     }
-    // Station markers (white ring + branch-color center), drawn on top
-    // of the lines as part of the same vertex buffer.
-    for (int i = 0; i < labelCount; ++i) {
-        const float x = labelPos[2 * i];
-        const float y = labelPos[2 * i + 1];
-        appendDisc(lineVerts_, x, y, kMarkerOuterR, 1.0f, 1.0f, 1.0f, 1.0f);
-        float r, g, b, a;
-        colorIntToFloat(labelColors != nullptr ? labelColors[i] : 0, &r, &g, &b, &a);
-        appendDisc(lineVerts_, x, y, kMarkerInnerR, r, g, b, 1.0f);
-    }
+    rebuildMapGeometry();
 
     labelBitmaps_.clear();
     labelAnchors_.clear();

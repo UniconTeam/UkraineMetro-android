@@ -75,6 +75,12 @@ class VulkanMetroView @JvmOverloads constructor(
         if (isDark(colorBg)) floatArrayOf(1f, 1f, 1f, 1f)
         else normal(Color.parseColor(Const.COLOR_RECT_TEXT))
     }
+    // Halo behind the glyphs: opposite of the text so it always reads
+    // (white halo would melt into white dark-theme text).
+    private val labelHalo: FloatArray by lazy {
+        if (isDark(colorBg)) floatArrayOf(0f, 0f, 0f, 1f)
+        else floatArrayOf(1f, 1f, 1f, 1f)
+    }
 
     private fun isDark(color: Int): Boolean {
         val r = Color.red(color)
@@ -267,7 +273,8 @@ class VulkanMetroView @JvmOverloads constructor(
         nativeSetView(
             nativeHandle, scrollXf, scrollYf, scaleFactor, angleRad,
             (width / 2f).coerceAtLeast(1f), (height / 2f).coerceAtLeast(1f),
-            labelText[0], labelText[1], labelText[2], labelText[3]
+            labelText[0], labelText[1], labelText[2], labelText[3],
+            labelHalo[0], labelHalo[1], labelHalo[2], labelHalo[3]
         )
         if (nativeRender(nativeHandle) && !animPending) {
             // Labels still easing toward their slots (or the debug
@@ -619,7 +626,8 @@ class VulkanMetroView @JvmOverloads constructor(
     private external fun nativeSetView(
         handle: Long, scrollX: Float, scrollY: Float, scale: Float, angle: Float,
         pivotX: Float, pivotY: Float,
-        textR: Float, textG: Float, textB: Float, textA: Float
+        textR: Float, textG: Float, textB: Float, textA: Float,
+        haloR: Float, haloG: Float, haloB: Float, haloA: Float
     )
     private external fun nativeRender(handle: Long): Boolean
     private external fun nativeSetDebugOverlay(handle: Long, enabled: Boolean, topMarginPx: Int)

@@ -43,7 +43,8 @@ public:
                  const int32_t* labelColors, int labelCount);
 
     void setView(float scrollX, float scrollY, float scale, float pivotX, float pivotY,
-                 float angle, float textR, float textG, float textB, float textA);
+                 float angle, float textR, float textG, float textB, float textA,
+                 float haloR, float haloG, float haloB, float haloA);
     // Debug performance overlay (FPS, frame time + graph, draw stats),
     // top-left. topMarginPx reserves the status-bar area.
     void setDebugOverlay(bool enabled, int topMarginPx);
@@ -131,6 +132,7 @@ private:
     float pivotY_ = 0.0f;
     float angleRad_ = 0.0f;
     float textColor_[4] = {0.41f, 0.34f, 0.38f, 1.0f};
+    float haloColor_[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
     std::vector<ColorVertex> lineVerts_;
     std::vector<TextVertex> textVerts_;

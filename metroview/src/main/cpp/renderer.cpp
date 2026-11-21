@@ -1014,7 +1014,8 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
 
 void Renderer::setView(float scrollX, float scrollY, float scale, float pivotX,
                        float pivotY, float angle, float textR, float textG,
-                       float textB, float textA) {
+                       float textB, float textA, float haloR, float haloG,
+                       float haloB, float haloA) {
     scrollX_ = scrollX;
     scrollY_ = scrollY;
     scale_ = scale;
@@ -1025,6 +1026,10 @@ void Renderer::setView(float scrollX, float scrollY, float scale, float pivotX,
     textColor_[1] = textG;
     textColor_[2] = textB;
     textColor_[3] = textA;
+    haloColor_[0] = haloR;
+    haloColor_[1] = haloG;
+    haloColor_[2] = haloB;
+    haloColor_[3] = haloA;
     // Label quads are laid out in screen space: any camera change moves them.
     textLayoutDirty_ = true;
 }
@@ -1679,14 +1684,14 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeText_);
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 pipeLayoutText_, 0, 1, &descSet_, 0, nullptr);
-        // White halo pass first: same glyphs, slightly expanded, so the
+        // Halo pass first: same glyphs, slightly expanded, so the
         // text reads over lines of any color (Google Maps style).
         if (!haloVerts_.empty()) {
             PushText ph = pt;
-            ph.textR = 1.0f;
-            ph.textG = 1.0f;
-            ph.textB = 1.0f;
-            ph.textA = 1.0f;
+            ph.textR = haloColor_[0];
+            ph.textG = haloColor_[1];
+            ph.textB = haloColor_[2];
+            ph.textA = haloColor_[3];
             vkCmdPushConstants(cmd, pipeLayoutText_,
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                                0, sizeof(ph), &ph);

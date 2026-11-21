@@ -158,13 +158,14 @@ JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetView(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle, jfloat scrollX,
     jfloat scrollY, jfloat scale, jfloat angle, jfloat pivotX, jfloat pivotY,
-    jfloat textR, jfloat textG, jfloat textB, jfloat textA) {
+    jfloat textR, jfloat textG, jfloat textB, jfloat textA, jfloat haloR,
+    jfloat haloG, jfloat haloB, jfloat haloA) {
     metro::Renderer* renderer = fromHandle(handle);
     if (renderer == nullptr) {
         return;
     }
     renderer->setView(scrollX, scrollY, scale, pivotX, pivotY, angle, textR,
-                      textG, textB, textA);
+                      textG, textB, textA, haloR, haloG, haloB, haloA);
 }
 
 JNIEXPORT jboolean JNICALL

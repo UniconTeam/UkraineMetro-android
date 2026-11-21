@@ -179,12 +179,26 @@
                                     android:orientation="horizontal"
                                     android:paddingHorizontal="20dp">
 
-                                <TextView
+                                <LinearLayout
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:text="@string/settings_rotation"
-                                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+                                        android:orientation="vertical">
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_rotation"
+                                            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_rotation_summary"
+                                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                </LinearLayout>
 
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                         android:id="@+id/rotationSwitch"
@@ -207,12 +221,26 @@
                                     android:orientation="horizontal"
                                     android:paddingHorizontal="20dp">
 
-                                <TextView
+                                <LinearLayout
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:text="@string/settings_zoom_limits"
-                                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+                                        android:orientation="vertical">
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_zoom_limits"
+                                            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_zoom_limits_summary"
+                                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                </LinearLayout>
 
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                         android:id="@+id/zoomLimitsSwitch"
@@ -235,12 +263,26 @@
                                     android:orientation="horizontal"
                                     android:paddingHorizontal="20dp">
 
-                                <TextView
+                                <LinearLayout
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:text="@string/settings_ads"
-                                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+                                        android:orientation="vertical">
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_ads"
+                                            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_ads_summary"
+                                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                </LinearLayout>
 
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                         android:id="@+id/adsSwitch"
@@ -263,12 +305,26 @@
                                     android:orientation="horizontal"
                                     android:paddingHorizontal="20dp">
 
-                                <TextView
+                                <LinearLayout
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:text="@string/settings_original_colors"
-                                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+                                        android:orientation="vertical">
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_original_colors"
+                                            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_original_colors_summary"
+                                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                </LinearLayout>
 
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                         android:id="@+id/originalColorsSwitch"
@@ -291,12 +347,26 @@
                                     android:orientation="horizontal"
                                     android:paddingHorizontal="20dp">
 
-                                <TextView
+                                <LinearLayout
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_weight="1"
-                                        android:text="@string/settings_bigger_labels"
-                                        android:textAppearance="?attr/textAppearanceBodyLarge" />
+                                        android:orientation="vertical">
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_bigger_labels"
+                                            android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+                                    <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="@string/settings_bigger_labels_summary"
+                                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                                </LinearLayout>
 
                                 <com.google.android.material.switchmaterial.SwitchMaterial
                                         android:id="@+id/biggerLabelsSwitch"

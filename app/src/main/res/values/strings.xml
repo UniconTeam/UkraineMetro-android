@@ -18,10 +18,15 @@
     <string name="settings_zoom_limits">Limit zoom</string>
     <string name="settings_ads">Show ads</string>
     <string name="settings_original_colors">Original station colors</string>
+    <string name="settings_original_colors_summary">Bright classic line colors</string>
     <string name="settings_bigger_labels">Bigger labels</string>
+    <string name="settings_bigger_labels_summary">Larger station names, easier to read</string>
+    <string name="settings_rotation_summary">Twist with two fingers to spin the map</string>
+    <string name="settings_zoom_limits_summary">Don\'t let the map get too big or too small</string>
+    <string name="settings_ads_summary">A small ad banner under the map</string>
     <string name="settings_debug">Debug</string>
     <string name="settings_debug_overlay">Performance overlay</string>
-    <string name="settings_debug_overlay_summary">FPS, frame time and draw stats on the map</string>
+    <string name="settings_debug_overlay_summary">Show speed and drawing info on the map</string>
     <string name="about_text">Application for viewing maps of the Kharkiv, Kyiv, Dnipro and Kryvorizky subways</string>
     <string name="close">Close</string>
 

@@ -18,10 +18,15 @@
     <string name="settings_zoom_limits">Обмежити масштаб</string>
     <string name="settings_ads">Показувати рекламу</string>
     <string name="settings_original_colors">Оригінальні кольори</string>
+    <string name="settings_original_colors_summary">Яскраві класичні кольори ліній</string>
     <string name="settings_bigger_labels">Більші підписи</string>
+    <string name="settings_bigger_labels_summary">Більші назви станцій, легше читати</string>
+    <string name="settings_rotation_summary">Обертайте мапу двома пальцями</string>
+    <string name="settings_zoom_limits_summary">Не давати мапі ставати занадто великою чи малою</string>
+    <string name="settings_ads_summary">Невеликий рекламний банер під мапою</string>
     <string name="settings_debug">Налагодження</string>
     <string name="settings_debug_overlay">Панель продуктивності</string>
-    <string name="settings_debug_overlay_summary">FPS, час кадру та статистика на мапі</string>
+    <string name="settings_debug_overlay_summary">Швидкість та службова інформація на мапі</string>
     <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
     <string name="close">Закрити</string>
 

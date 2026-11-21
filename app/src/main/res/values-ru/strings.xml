@@ -18,10 +18,15 @@
     <string name="settings_zoom_limits">Ограничить масштаб</string>
     <string name="settings_ads">Показывать рекламу</string>
     <string name="settings_original_colors">Оригинальные цвета</string>
+    <string name="settings_original_colors_summary">Яркие классические цвета линий</string>
     <string name="settings_bigger_labels">Более крупные подписи</string>
+    <string name="settings_bigger_labels_summary">Более крупные названия, легче читать</string>
+    <string name="settings_rotation_summary">Вращайте карту двумя пальцами</string>
+    <string name="settings_zoom_limits_summary">Не давать карте становиться слишком большой или маленькой</string>
+    <string name="settings_ads_summary">Небольшой рекламный банер под картой</string>
     <string name="settings_debug">Отладка</string>
     <string name="settings_debug_overlay">Панель производительности</string>
-    <string name="settings_debug_overlay_summary">FPS, время кадра и статистика на карте</string>
+    <string name="settings_debug_overlay_summary">Скорость и служебная информация на карте</string>
     <string name="about_text">Приложение для просмотра карт Харьковского, Киевского, Днепровского и Криворожского
         метро
     </string>

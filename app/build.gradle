@@ -16,7 +16,7 @@ android {
 
         versionCode 36
         versionName '3.1.3'
-        resourceConfigurations += ['en', 'uk', 'ru']
+        resourceConfigurations += ['en', 'uk', 'ru', 'pl']
 
     }
     packaging {

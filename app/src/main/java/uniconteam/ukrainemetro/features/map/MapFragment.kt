@@ -171,7 +171,8 @@ class MapFragment: BaseFragment() {
                     AppSettings.LANG_SYSTEM to getString(R.string.option_system),
                     "en" to "English",
                     "uk" to "Українська",
-                    "ru" to "Русский"
+                    "ru" to "Русский",
+                    "pl" to "Polski"
                 ),
                 current = prefs.language
             ) { tag ->
@@ -236,6 +237,7 @@ class MapFragment: BaseFragment() {
             "en" -> "English"
             "uk" -> "Українська"
             "ru" -> "Русский"
+            "pl" -> "Polski"
             else -> getString(R.string.option_system)
         }
         binding.themeValue.text = when (prefs.themeMode) {

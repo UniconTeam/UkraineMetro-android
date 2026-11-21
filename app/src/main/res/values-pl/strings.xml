@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Metro Ukrainy</string>
+
+    <string name="btn_googleplay">Aplikacja w Google Play</string>
+    <string name="btn_github">Kod źródłowy na Githubie</string>
+    <string name="btn_resetcity">Zmień miasto</string>
+    <string name="label_settings">Ustawienia</string>
+    <string name="settings_general">Ogólne</string>
+    <string name="settings_about">O aplikacji</string>
+    <string name="settings_version">Wersja</string>
+    <string name="settings_language">Język</string>
+    <string name="settings_theme">Motyw</string>
+    <string name="option_system">Domyślny systemowy</string>
+    <string name="option_light">Jasny</string>
+    <string name="option_dark">Ciemny</string>
+    <string name="settings_map">Mapa</string>
+    <string name="settings_rotation">Zezwalaj na obrót</string>
+    <string name="settings_zoom_limits">Ogranicz zoom</string>
+    <string name="settings_ads">Pokazuj reklamy</string>
+    <string name="settings_original_colors">Oryginalne kolory</string>
+    <string name="settings_original_colors_summary">Żywe, klasyczne kolory linii</string>
+    <string name="settings_bigger_labels">Większe etykiety</string>
+    <string name="settings_bigger_labels_summary">Większe, czytelniejsze nazwy stacji</string>
+    <string name="settings_rotation_summary">Obróć mapę dwoma palcami</string>
+    <string name="settings_zoom_limits_summary">Mapa nie będzie za duża ani za mała</string>
+    <string name="settings_ads_summary">Mały baner reklamowy pod mapą</string>
+    <string name="settings_debug">Debugowanie</string>
+    <string name="settings_debug_overlay">Nakładka wydajności</string>
+    <string name="settings_debug_overlay_summary">Pokaż szybkość i dane techniczne na mapie</string>
+    <string name="about_text">Aplikacja do przeglądania map metra w Charkowie, Kijowie, Dnieprze i Krzywym Rogu</string>
+    <string name="close">Zamknij</string>
+
+    <string name="label_select_city">Wybierz miasto</string>
+
+    <!-- cities -->
+    <string name="city_kharkiv">Charków</string>
+    <string name="city_kyiv">Kijów</string>
+    <string name="city_kriviyrig">Krzywy Róg</string>
+    <string name="city_dnipro">Dniepr</string>
+    <string name="btn_next">Dalej</string>
+
+    <!-- Kharkiv -->
+    <string name="name_peremoga">Peremoha</string>
+    <string name="name_olecsiivka">Ołeksijiwśka</string>
+    <string name="name_23serpnya">23 Serpnia</string>
+    <string name="name_botanichniysad">Botaniczny Sad</string>
+    <string name="name_naukova">Naukowa</string>
+    <string name="name_dergprom">Derżprom</string>
+    <string name="name_arh_beketova">Architektora Beketowa</string>
+    <string name="name_zah_ukr">Zachysnykiw Ukrajiny</string>
+    <string name="name_metrobud">Metrobudiwnykiw</string>
+
+    <string name="name_holodnagora">Chołodna Hora</string>
+    <string name="name_pivdvokzal">Wokzalna</string>
+    <string name="name_centrarinok">Centralnyj Rynok</string>
+    <string name="name_maydankonst">Majdan Konstytuciji</string>
+    <string name="name_prospect_gagarnina">Lewada</string>
+    <string name="name_sportivna">Sportywna</string>
+    <string name="name_zavimenimalisheva">Zawodśka</string>
+    <string name="name_turboatom">Turboatom</string>
+    <string name="name_palacsporta">Pałac Sportu</string>
+    <string name="name_armiyska">Armijśka</string>
+    <string name="name_imosmaselscogo">Im. O. S. Masełśkoho</string>
+    <string name="name_traktorzavod">Traktornyj Zawod</string>
+    <string name="name_industrial">Industrialna</string>
+
+    <string name="name_garoivwork">Sałtiwśka</string>
+    <string name="name_studenstka">Studenćka</string>
+    <string name="name_akadempavl">Akademika Pawłowa</string>
+    <string name="name_barabashova">Akademika Barabaszowa</string>
+    <string name="name_kievska">Kyjiwśka</string>
+    <string name="name_pushkinska">Jarosława Mudroho</string>
+    <string name="name_univer">Uniwersytet</string>
+    <string name="name_istormisei">Muzeum Historyczne</string>
+    <!-- Kharkiv end -->
+
+    <!-- Kyiv -->
+    <string name="name_akademistechko">Akademmistechko</string>
+    <string name="name_zhytomyr">Żytomyrśka</string>
+    <string name="name_svyatoshyn">Swiatoszyn</string>
+    <string name="name_nykvy">Nywky</string>
+    <string name="name_beresteyska">Berestejśka</string>
+    <string name="name_shulyavska">Szulawśka</string>
+    <string name="name_polytechnic_institute">Instytut Politechniczny</string>
+    <string name="name_station">Wokzalna</string>
+    <string name="name_university">Uniwersytet</string>
+    <string name="name_theatrical">Teatralna</string>
+    <string name="name_khreshchatyk">Chreszczatyk</string>
+    <string name="name_arsenal">Arsenalna</string>
+    <string name="name_dnipro">Dnipro</string>
+    <string name="name_hydropark">Hydropark</string>
+    <string name="name_leftbank">Liwobereżna</string>
+    <string name="name_darnytsy">Darnycia</string>
+    <string name="name_chernihivska">Czernihiwśka</string>
+    <string name="name_lisova">Lisowa</string>
+
+    <string name="name_heroes_dnipro">Herojiw Dnipra</string>
+    <string name="name_minsk">Mińśka</string>
+    <string name="name_obolon">Obołoń</string>
+    <string name="name_petrivka">Poczajna</string>
+    <string name="name_taras_sxhevchenko">Tarasa Szewczenki</string>
+    <string name="name_contract_area">Kontraktowa Płoszcza</string>
+    <string name="name_postal_square">Posztowa Płoszcza</string>
+    <string name="name_independence_square">Majdan Nezałeżnosti</string>
+    <string name="name_leotolstoysquare">Płoszcza Ukrajinśkych Herojiw</string>
+    <string name="name_olympic">Olimpijśka</string>
+    <string name="name_palaceukraine">Pałac Ukrajina</string>
+    <string name="name_lybidska">Łybidźka</string>
+    <string name="name_demiivska">Demijiwśka</string>
+    <string name="name_holosiivska">Hołosijiwśka</string>
+    <string name="name_vasylkivska">Wasyłkiwśka</string>
+    <string name="name_exhibitioncenter">Wystawkowe Centrum</string>
+    <string name="name_racetrack">Hipodrom</string>
+    <string name="name_teremka">Teremky</string>
+
+    <string name="name_syrets">Syreć</string>
+    <string name="name_dorohozhychi">Dorohożyczi</string>
+    <string name="name_lukyanivska">Łukjaniwśka</string>
+    <string name="name_zolotiVorota">Złote Wrota</string>
+    <string name="name_palatssportu">Pałac Sportu</string>
+    <string name="name_klovska">Kłowśka</string>
+    <string name="name_pecherska">Peczerska</string>
+    <string name="name_druzhbynarodiv">Zwirinećka</string>
+    <string name="name_vydubychi">Wydubyczi</string>
+    <string name="name_slavutych">Sławutycz</string>
+    <string name="name_mushrooms">Osokorky</string>
+    <string name="name_poznyaks">Poźniaky</string>
+    <string name="name_kharkivska">Charkiwśka</string>
+    <string name="name_vyrlitsa">Wyrłycia</string>
+    <string name="name_boryspilska">Boryspilśka</string>
+    <string name="name_chervonyykhutir">Czerwonyj Chutir</string>
+    <!-- Kyiv end -->
+
+    <!-- Kriviy rog -->
+    <string name="name_zarichna">Zariczna</string>
+    <string name="name_elektrozavodska">Elektrozawodśka</string>
+    <string name="name_industrialna">Industrialna</string>
+    <string name="name_soniachna">Soniaczna</string>
+    <string name="name_miskaLiakrnia">Szpital Miejski</string>
+    <string name="name_vechirniybulvar">Weczyrnij Bulwar</string>
+    <string name="name_mudriona">Mudriona</string>
+    <string name="name_budynokrad">Mijśka Rada</string>
+    <string name="name_prospektmetalurhiv">Prospekt Metałurgiw</string>
+    <string name="name_universytet">Uniwersytet</string>
+    <string name="name_vulytsiavitcyzny">Ul. Witczyzny</string>
+    <string name="name_tretiadilnytsia">3. Dzielnica</string>
+    <string name="name_kiltseamkr">Kilce AMKR</string>
+    <string name="name_maidanPratsi">Majdan Praci</string>
+    <string name="name_kiltseva">Kilcewa</string>
+    <!-- Kriviy rog end -->
+
+    <!-- Dnipro -->
+    <string name="name_pokrovska">Pokrowśka</string>
+    <string name="name_prospektSvobody">Prospekt Swobody</string>
+    <string name="name_zavodska">Zawodśka</string>
+    <string name="name_metalurhiv">Metałurgiw</string>
+    <string name="name_metrobudivnykiv">Metrobudiwnykiw</string>
+    <string name="name_vokzalna">Wokzalna</string>
+    <!-- Dnipro end -->
+
+    <string name="failure_unknown">Nieznany błąd</string>
+    <string name="failure_map_notselected">Błąd. Nie wybrano mapy</string>
+    <string name="action_select">Wybierz</string>
+    <string name="action_recenter">Wyśrodkuj mapę</string>
+    <string name="explore_tab">Odkrywaj</string>
+    <string name="settings_city">Miasto</string>
+</resources>

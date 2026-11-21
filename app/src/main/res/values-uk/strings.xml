@@ -4,6 +4,22 @@
     <string name="btn_googleplay">Додаток в Google Play</string>
     <string name="btn_github">Код додатку на Github</string>
     <string name="btn_resetcity">Змiнити мiсто</string>
+    <string name="label_settings">Налаштування</string>
+    <string name="settings_general">Загальне</string>
+    <string name="settings_about">Про додаток</string>
+    <string name="settings_version">Версія</string>
+    <string name="settings_language">Мова</string>
+    <string name="settings_theme">Тема</string>
+    <string name="option_system">За замовчуванням</string>
+    <string name="option_light">Світла</string>
+    <string name="option_dark">Темна</string>
+    <string name="settings_map">Мапа</string>
+    <string name="settings_rotation">Дозволити обертання</string>
+    <string name="settings_zoom_limits">Обмежити масштаб</string>
+    <string name="settings_ads">Показувати рекламу</string>
+    <string name="settings_debug">Налагодження</string>
+    <string name="settings_debug_overlay">Панель продуктивності</string>
+    <string name="settings_debug_overlay_summary">FPS, час кадру та статистика на мапі</string>
     <string name="about_text">Додаток для перегляду мап Харківського, Київського, Дніпровського та Криворізського метро</string>
     <string name="close">Закрити</string>
 
@@ -138,4 +154,7 @@
     <string name="failure_unknown">Невідома помилка</string>
     <string name="failure_map_notselected">Помилка. Місто не обране</string>
     <string name="action_select">Обрати</string>
+    <string name="action_recenter">Центрувати мапу</string>
+    <string name="explore_tab">Огляд</string>
+    <string name="settings_city">Місто</string>
 </resources>

@@ -2,6 +2,9 @@
     <style name="Theme.KharkivMetro" parent="@style/Theme.Material3.Dark.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
+        <!-- Same token as the bottom bar so the gesture area reads as
+             one block instead of a dead band. -->
+        <item name="android:windowBackground">?attr/colorSurfaceContainer</item>
     </style>
 
     <style name="MyPopupStyle" parent="android:TextAppearance.Holo.Widget.PopupMenu.Large">

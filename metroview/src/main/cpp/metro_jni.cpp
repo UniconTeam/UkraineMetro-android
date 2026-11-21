@@ -177,4 +177,15 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeRender(
     return renderer->render() ? JNI_TRUE : JNI_FALSE;
 }
 
+JNIEXPORT void JNICALL
+Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetDebugOverlay(
+    JNIEnv* /*env*/, jobject /*thiz*/, jlong handle, jboolean enabled,
+    jint topMarginPx) {
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    renderer->setDebugOverlay(enabled == JNI_TRUE, topMarginPx);
+}
+
 }  // extern "C"

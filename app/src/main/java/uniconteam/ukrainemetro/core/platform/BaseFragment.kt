@@ -17,7 +17,8 @@ import uniconteam.ukrainemetro.core.extensions.appContext
 @AndroidEntryPoint
 abstract class BaseFragment : Fragment() {
 
-    open fun onBackPressed() {}
+    /** @return true if the back press was consumed. */
+    open fun onBackPressed(): Boolean = false
 
     internal fun firstTimeCreated(savedInstanceState: Bundle?) = savedInstanceState == null
 

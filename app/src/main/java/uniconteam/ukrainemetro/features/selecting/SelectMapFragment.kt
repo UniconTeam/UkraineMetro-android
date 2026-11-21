@@ -9,9 +9,8 @@ import uniconteam.ukrainemetro.core.navigation.Navigator
 import uniconteam.ukrainemetro.core.platform.BaseFragment
 import javax.inject.Inject
 import androidx.fragment.app.viewModels
-import com.google.android.material.radiobutton.MaterialRadioButton
-import unicon.metro.kharkiv.R
 import unicon.metro.kharkiv.databinding.FragmentSelectmapBinding;
+import unicon.metro.kharkiv.databinding.ItemCityBinding
 import uniconteam.ukrainemetro.core.exceptions.Failure
 import uniconteam.ukrainemetro.core.extensions.failure
 import uniconteam.ukrainemetro.core.extensions.observe
@@ -44,22 +43,16 @@ class SelectMapFragment: BaseFragment() {
 
         viewModel.checkSelection()
         viewModel.fetchCities()
+    }
 
-        binding.nextButton.setOnClickListener {
-            if(binding.radioGroup.checkedRadioButtonId == -1)
-                return@setOnClickListener
-
-            val radioBtn = binding.root.findViewById<MaterialRadioButton>(binding.radioGroup.checkedRadioButtonId)
-            val cityId = radioBtn.tag.toString()
-            viewModel.setCity(cityId)
-
-            navigator.showMap()
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private fun handleCities(cities: List<City>?) {
         cities?.forEach {
-            addRadioButton(it)
+            addCityCard(it)
         }
     }
 
@@ -71,17 +64,21 @@ class SelectMapFragment: BaseFragment() {
     private fun handleFailure(failure: Failure?) {
         when (failure) {
             else -> {
-                notify(binding.root, R.string.failure_unknown)
+                notify(binding.root, unicon.metro.kharkiv.R.string.failure_unknown)
             }
         }
     }
 
-    private fun addRadioButton(city: City, isChecked: Boolean = false) {
-        val radioBtn = MaterialRadioButton(requireContext())
-        radioBtn.id = View.generateViewId()
-        radioBtn.text = resources.getString(city.name)
-        radioBtn.tag = city.id
-        radioBtn.isChecked = isChecked
-        binding.radioGroup.addView(radioBtn)
+    private fun addCityCard(city: City) {
+        val card = ItemCityBinding.inflate(layoutInflater, binding.citiesContainer, false)
+        card.cityName.text = resources.getString(city.name)
+        card.root.setOnClickListener {
+            // Single tap selects and opens the map — no separate
+            // confirmation step (Google Maps place-picker style).
+            card.cityRadio.isChecked = true
+            viewModel.setCity(city.id)
+            navigator.showMap()
+        }
+        binding.citiesContainer.addView(card.root)
     }
 }

@@ -22,3 +22,13 @@
 
 -keep class androidx.lifecycle.** { *; }
 -keep class uniconteam.ukrainemetro.** { *; }
+
+# WorkManager (pulled in by play-services-ads) + its Room database.
+-keep class androidx.work.** { *; }
+-keep class * extends androidx.work.Worker { *; }
+-keep class * extends androidx.work.ListenableWorker { *; }
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep @androidx.room.Dao class * { *; }
+-keep class androidx.room.** { *; }
+-keep class androidx.startup.** { *; }
+-keep class com.google.android.gms.ads.** { *; }

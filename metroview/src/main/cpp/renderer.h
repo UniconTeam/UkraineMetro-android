@@ -44,6 +44,9 @@ public:
 
     void setView(float scrollX, float scrollY, float scale, float pivotX, float pivotY,
                  float angle, float textR, float textG, float textB, float textA);
+    // Debug performance overlay (FPS, frame time + graph, draw stats),
+    // top-left. topMarginPx reserves the status-bar area.
+    void setDebugOverlay(bool enabled, int topMarginPx);
     // Renders one frame on demand. Returns true while label animation is
     // still settling (caller should render another frame).
     bool render();
@@ -64,6 +67,15 @@ private:
     // Kept larger than half the line width so dots read clearly.
     static constexpr float kMarkerOuterR = 6.0f;
     static constexpr float kMarkerInnerR = 4.0f;
+    // Debug overlay: CPU-composited RGBA panel (text + frame graph),
+    // shown at a fixed on-screen size in the top-left corner.
+    static constexpr int kOverlayW = 768;
+    static constexpr int kOverlayH = 384;
+    static constexpr int kOverlayDisplayW = 384;  // on-screen px
+    static constexpr int kOverlayDisplayH = 192;
+    static constexpr int kOverlayMargin = 12;  // px from the screen edges
+    static constexpr int kOverlayHistory = 120;  // frame-time samples kept
+    static constexpr float kOverlayGraphMaxMs = 40.0f;  // graph full-scale
 
     struct SwapSupport {
         VkSurfaceCapabilitiesKHR caps{};
@@ -95,6 +107,12 @@ private:
     void rebuildLines();
     bool rebuildLabelQuads();
     void recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex);
+    void rebuildOverlay();
+    void composeOverlay(float fps, float ms, size_t tris, size_t verts,
+                        size_t labelCount);
+    void uploadOverlay();
+    bool createOverlayResources();
+    bool createOverlayPipeline();
 
     // --- config / CPU state ---
     AAssetManager* assets_ = nullptr;
@@ -159,6 +177,7 @@ private:
     VkPipelineLayout pipeLayoutText_ = VK_NULL_HANDLE;
     VkPipeline pipeColor_ = VK_NULL_HANDLE;
     VkPipeline pipeText_ = VK_NULL_HANDLE;
+    VkPipeline pipeOverlay_ = VK_NULL_HANDLE;
     VkDescriptorPool descPool_ = VK_NULL_HANDLE;
     VkDescriptorSet descSet_ = VK_NULL_HANDLE;
     VkSampler sampler_ = VK_NULL_HANDLE;
@@ -180,6 +199,28 @@ private:
     VkBuffer leaderBuf_ = VK_NULL_HANDLE;
     VkDeviceMemory leaderMem_ = VK_NULL_HANDLE;
     VkDeviceSize leaderCap_ = 0;
+    // --- debug overlay state ---
+    bool debugOverlay_ = false;
+    int overlayTopMargin_ = 0;
+    std::vector<float> frameDts_;  // recent frame deltas, seconds (<= history)
+    std::chrono::steady_clock::time_point lastFrame_;
+    bool haveLastFrame_ = false;
+    std::vector<uint8_t> overlayRgba_;
+    std::vector<TextVertex> overlayVerts_;
+    std::chrono::steady_clock::time_point lastOverlayCompose_;
+    bool overlayTexDirty_ = false;
+    bool overlayCopyPending_ = false;
+    VkImageLayout overlayLayout_ = VK_IMAGE_LAYOUT_UNDEFINED;
+    VkImage overlayImage_ = VK_NULL_HANDLE;
+    VkDeviceMemory overlayMem_ = VK_NULL_HANDLE;
+    VkImageView overlayView_ = VK_NULL_HANDLE;
+    VkDescriptorSet overlayDescSet_ = VK_NULL_HANDLE;
+    VkBuffer overlayStaging_ = VK_NULL_HANDLE;
+    VkDeviceMemory overlayStagingMem_ = VK_NULL_HANDLE;
+    VkDeviceSize overlayStagingCap_ = 0;
+    VkBuffer overlayBuf_ = VK_NULL_HANDLE;
+    VkDeviceMemory overlayBufMem_ = VK_NULL_HANDLE;
+    VkDeviceSize overlayBufCap_ = 0;
     VkCommandPool cmdPool_ = VK_NULL_HANDLE;
     VkCommandBuffer cmdBuf_ = VK_NULL_HANDLE;
     VkSemaphore imgAvail_ = VK_NULL_HANDLE;

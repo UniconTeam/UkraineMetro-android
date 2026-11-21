@@ -5,7 +5,9 @@
 #include "renderer.h"
 
 #include <android/log.h>
+#include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 
 #define LOG_TAG "MetroVulkan"
@@ -407,10 +409,10 @@ bool Renderer::createDescriptorResources() {
 
     VkDescriptorPoolSize poolSize{};
     poolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSize.descriptorCount = 1;
+    poolSize.descriptorCount = 2;
     VkDescriptorPoolCreateInfo pi{};
     pi.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    pi.maxSets = 1;
+    pi.maxSets = 2;
     pi.poolSizeCount = 1;
     pi.pPoolSizes = &poolSize;
     VK_CHECK(vkCreateDescriptorPool(device_, &pi, nullptr, &descPool_));
@@ -427,6 +429,46 @@ bool Renderer::createDescriptorResources() {
     VkWriteDescriptorSet w{};
     w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     w.dstSet = descSet_;
+    w.descriptorCount = 1;
+    w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    w.pImageInfo = &img;
+    vkUpdateDescriptorSets(device_, 1, &w, 0, nullptr);
+    if (!createOverlayResources()) {
+        return false;
+    }
+    return true;
+}
+
+bool Renderer::createOverlayResources() {
+    if (!createImage(kOverlayW, kOverlayH, VK_FORMAT_R8G8B8A8_UNORM,
+                     VK_IMAGE_TILING_OPTIMAL,
+                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &overlayImage_,
+                     &overlayMem_)) {
+        return false;
+    }
+    VkImageViewCreateInfo vi{};
+    vi.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    vi.image = overlayImage_;
+    vi.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    vi.format = VK_FORMAT_R8G8B8A8_UNORM;
+    vi.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    vi.subresourceRange.levelCount = 1;
+    vi.subresourceRange.layerCount = 1;
+    VK_CHECK(vkCreateImageView(device_, &vi, nullptr, &overlayView_));
+    VkDescriptorSetAllocateInfo ai{};
+    ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    ai.descriptorPool = descPool_;
+    ai.descriptorSetCount = 1;
+    ai.pSetLayouts = &dsLayout_;
+    VK_CHECK(vkAllocateDescriptorSets(device_, &ai, &overlayDescSet_));
+    VkDescriptorImageInfo img{};
+    img.sampler = sampler_;
+    img.imageView = overlayView_;
+    img.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    VkWriteDescriptorSet w{};
+    w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    w.dstSet = overlayDescSet_;
     w.descriptorCount = 1;
     w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     w.pImageInfo = &img;
@@ -606,6 +648,114 @@ bool Renderer::createPipelines() {
     return true;
 }
 
+bool Renderer::createOverlayPipeline() {
+    std::vector<uint8_t> vert, frag;
+    if (!readAsset("shaders/overlay_vert.spv", &vert) ||
+        !readAsset("shaders/overlay_frag.spv", &frag)) {
+        return false;
+    }
+    VkShaderModule vertM, fragM;
+    if (!createShaderModule(vert, &vertM) ||
+        !createShaderModule(frag, &fragM)) {
+        return false;
+    }
+
+    VkVertexInputBindingDescription bind{};
+    bind.stride = sizeof(TextVertex);
+    bind.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    VkVertexInputAttributeDescription attr[2]{};
+    attr[0].location = 0;
+    attr[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attr[0].offset = 0;
+    attr[1].location = 1;
+    attr[1].format = VK_FORMAT_R32G32_SFLOAT;
+    attr[1].offset = 8;
+    VkPipelineVertexInputStateCreateInfo vin{};
+    vin.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vin.vertexBindingDescriptionCount = 1;
+    vin.pVertexBindingDescriptions = &bind;
+    vin.vertexAttributeDescriptionCount = 2;
+    vin.pVertexAttributeDescriptions = attr;
+
+    VkPipelineInputAssemblyStateCreateInfo inputAsm{};
+    inputAsm.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAsm.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    VkViewport vp{};
+    vp.width = 1.0f;
+    vp.height = 1.0f;
+    vp.maxDepth = 1.0f;
+    VkRect2D sc{};
+    sc.extent = {1, 1};
+    VkPipelineViewportStateCreateInfo vpState{};
+    vpState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    vpState.viewportCount = 1;
+    vpState.pViewports = &vp;
+    vpState.scissorCount = 1;
+    vpState.pScissors = &sc;
+
+    VkPipelineRasterizationStateCreateInfo rast{};
+    rast.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rast.polygonMode = VK_POLYGON_MODE_FILL;
+    rast.cullMode = VK_CULL_MODE_NONE;
+    rast.lineWidth = 1.0f;
+
+    VkPipelineMultisampleStateCreateInfo ms{};
+    ms.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    ms.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+    VkPipelineColorBlendAttachmentState blend{};
+    blend.blendEnable = VK_TRUE;
+    blend.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+    blend.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    blend.colorBlendOp = VK_BLEND_OP_ADD;
+    blend.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    blend.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    blend.alphaBlendOp = VK_BLEND_OP_ADD;
+    blend.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    VkPipelineColorBlendStateCreateInfo blendState{};
+    blendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    blendState.attachmentCount = 1;
+    blendState.pAttachments = &blend;
+
+    VkDynamicState dynStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+    VkPipelineDynamicStateCreateInfo dyn{};
+    dyn.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dyn.dynamicStateCount = 2;
+    dyn.pDynamicStates = dynStates;
+
+    VkPipelineShaderStageCreateInfo stages[2]{};
+    stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+    stages[0].module = vertM;
+    stages[0].pName = "main";
+    stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    stages[1].module = fragM;
+    stages[1].pName = "main";
+
+    VkGraphicsPipelineCreateInfo pi{};
+    pi.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pi.stageCount = 2;
+    pi.pStages = stages;
+    pi.pVertexInputState = &vin;
+    pi.pInputAssemblyState = &inputAsm;
+    pi.pViewportState = &vpState;
+    pi.pRasterizationState = &rast;
+    pi.pMultisampleState = &ms;
+    pi.pColorBlendState = &blendState;
+    pi.pDynamicState = &dyn;
+    pi.layout = pipeLayoutText_;
+    pi.renderPass = renderPass_;
+    VK_CHECK(vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pi, nullptr,
+                                       &pipeOverlay_));
+
+    vkDestroyShaderModule(device_, vertM, nullptr);
+    vkDestroyShaderModule(device_, fragM, nullptr);
+    return true;
+}
+
 bool Renderer::createSyncObjects() {
     VkCommandPoolCreateInfo pi{};
     pi.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -726,7 +876,7 @@ void Renderer::setSurface(ANativeWindow* window) {
         if (!pickPhysicalDevice() || !createDevice() || !chooseSwapFormat() ||
             !createRenderPass() || !createSwapchain() ||
             !createDescriptorResources() || !createPipelines() ||
-            !createSyncObjects()) {
+            !createOverlayPipeline() || !createSyncObjects()) {
             return;
         }
     } else if (!createSwapchain()) {
@@ -844,6 +994,17 @@ void Renderer::setView(float scrollX, float scrollY, float scale, float pivotX,
     textColor_[3] = textA;
     // Label quads are laid out in screen space: any camera change moves them.
     textLayoutDirty_ = true;
+}
+
+void Renderer::setDebugOverlay(bool enabled, int topMarginPx) {
+    debugOverlay_ = enabled;
+    overlayTopMargin_ = topMarginPx < 0 ? 0 : topMarginPx;
+    frameDts_.clear();
+    haveLastFrame_ = false;
+    overlayTexDirty_ = true;
+    if (enabled) {
+        overlayRgba_.assign(static_cast<size_t>(kOverlayW) * kOverlayH * 4, 0);
+    }
 }
 
 bool Renderer::rebuildLabelQuads() {
@@ -1038,6 +1199,235 @@ bool Renderer::rebuildLabelQuads() {
     return animating;
 }
 
+namespace {
+
+void fmtCount(size_t n, char* out, size_t cap) {
+    if (n < 1000) {
+        snprintf(out, cap, "%zu", n);
+    } else if (n < 1000000) {
+        snprintf(out, cap, "%.1fk", static_cast<double>(n) / 1000.0);
+    } else {
+        snprintf(out, cap, "%.2fM", static_cast<double>(n) / 1000000.0);
+    }
+}
+
+}  // namespace
+
+void Renderer::rebuildOverlay() {
+    overlayVerts_.clear();
+    if (!debugOverlay_ || scale_ <= 0.0f || viewW_ <= 0 || viewH_ <= 0) {
+        return;
+    }
+    float mean = 0.0f;
+    for (float d : frameDts_) {
+        mean += d;
+    }
+    float fps = 0.0f;
+    float ms = 0.0f;
+    if (!frameDts_.empty()) {
+        mean /= static_cast<float>(frameDts_.size());
+        if (mean > 1e-6f) {
+            fps = 1.0f / mean;
+            ms = mean * 1000.0f;
+        }
+    }
+    const size_t tris = (lineVerts_.size() + leaderVerts_.size() +
+                         textVerts_.size() + haloVerts_.size()) /
+                        3;
+    const size_t verts = lineVerts_.size() + leaderVerts_.size() +
+                         textVerts_.size() + haloVerts_.size();
+    const auto now = std::chrono::steady_clock::now();
+    const bool due =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now -
+                                                              lastOverlayCompose_)
+            .count() > 120;
+    if (overlayTexDirty_ || due) {
+        composeOverlay(fps, ms, tris, verts, placedLabels_.size());
+        lastOverlayCompose_ = now;
+        overlayTexDirty_ = false;
+        uploadOverlay();
+    }
+    // Screen-space panel rect back to map space (same trick as labels).
+    const float cx = static_cast<float>(viewW_) * 0.5f;
+    const float cy = static_cast<float>(viewH_) * 0.5f;
+    const float cosA = std::cos(angleRad_);
+    const float sinA = std::sin(angleRad_);
+    auto toMap = [&](float sx, float sy, float* mx, float* my) {
+        const float px = (sx - cx) / scale_;
+        const float py = (sy - cy) / scale_;
+        *mx = cosA * px + sinA * py + cx - scrollX_;
+        *my = -sinA * px + cosA * py + cy - scrollY_;
+    };
+    const float x0 = static_cast<float>(kOverlayMargin);
+    const float y0 =
+        static_cast<float>(overlayTopMargin_ + kOverlayMargin);
+    const float x1 = x0 + static_cast<float>(kOverlayDisplayW);
+    const float y1 = y0 + static_cast<float>(kOverlayDisplayH);
+    float qx[4], qy[4];
+    toMap(x0, y0, &qx[0], &qy[0]);
+    toMap(x0, y1, &qx[1], &qy[1]);
+    toMap(x1, y0, &qx[2], &qy[2]);
+    toMap(x1, y1, &qx[3], &qy[3]);
+    overlayVerts_.push_back({qx[0], qy[0], 0.0f, 0.0f});
+    overlayVerts_.push_back({qx[1], qy[1], 0.0f, 1.0f});
+    overlayVerts_.push_back({qx[2], qy[2], 1.0f, 0.0f});
+    overlayVerts_.push_back({qx[1], qy[1], 0.0f, 1.0f});
+    overlayVerts_.push_back({qx[3], qy[3], 1.0f, 1.0f});
+    overlayVerts_.push_back({qx[2], qy[2], 1.0f, 0.0f});
+}
+
+void Renderer::composeOverlay(float fps, float ms, size_t tris, size_t verts,
+                              size_t labelCount) {
+    const int W = kOverlayW;
+    const int H = kOverlayH;
+    if (overlayRgba_.size() != static_cast<size_t>(W) * H * 4) {
+        overlayRgba_.assign(static_cast<size_t>(W) * H * 4, 0);
+    }
+    auto dot = [&](int x, int y, uint8_t r, uint8_t g, uint8_t b,
+                   uint8_t a) {
+        if (x < 0 || y < 0 || x >= W || y >= H) {
+            return;
+        }
+        uint8_t* p = &overlayRgba_[(static_cast<size_t>(y) * W + x) * 4];
+        p[0] = r;
+        p[1] = g;
+        p[2] = b;
+        p[3] = a;
+    };
+    auto bar = [&](int x0, int y0, int x1, int y1, uint8_t r, uint8_t g,
+                   uint8_t b, uint8_t a) {
+        if (x0 > x1) {
+            const int t = x0;
+            x0 = x1;
+            x1 = t;
+        }
+        if (y0 > y1) {
+            const int t = y0;
+            y0 = y1;
+            y1 = t;
+        }
+        for (int y = y0; y <= y1; ++y) {
+            for (int x = x0; x <= x1; ++x) {
+                dot(x, y, r, g, b, a);
+            }
+        }
+    };
+    // Panel background + hairline border.
+    bar(0, 0, W - 1, H - 1, 9, 11, 17, 216);
+    bar(0, 0, W - 1, 1, 255, 255, 255, 36);
+    bar(0, H - 2, W - 1, H - 1, 255, 255, 255, 36);
+    bar(0, 0, 1, H - 1, 255, 255, 255, 36);
+    bar(W - 2, 0, W - 1, H - 1, 255, 255, 255, 36);
+    // Text lines (FreeType, same font as station labels).
+    auto blit = [&](const std::string& s, int ox, int oy) {
+        if (!ft_.hasFont() || s.empty()) {
+            return;
+        }
+        LabelBitmap bmp;
+        if (!ft_.rasterizeLabel(s, &bmp)) {
+            return;
+        }
+        for (int y = 0; y < bmp.h; ++y) {
+            for (int x = 0; x < bmp.w; ++x) {
+                const uint8_t g = bmp.px[static_cast<size_t>(y) * bmp.w + x];
+                if (g == 0) {
+                    continue;
+                }
+                const int dx = ox + x;
+                const int dy = oy + y;
+                if (dx < 0 || dy < 0 || dx >= W || dy >= H) {
+                    continue;
+                }
+                uint8_t* p =
+                    &overlayRgba_[(static_cast<size_t>(dy) * W + dx) * 4];
+                p[0] = 255;
+                p[1] = 255;
+                p[2] = 255;
+                if (g > p[3]) {
+                    p[3] = g;
+                }
+            }
+        }
+    };
+    char line1[96];
+    char line2[96];
+    char cTris[16];
+    char cVerts[16];
+    if (fps < 0.5f) {
+        snprintf(line1, sizeof(line1), "-- FPS  -- ms");
+    } else {
+        snprintf(line1, sizeof(line1), "%.0f FPS  %.1f ms", fps, ms);
+    }
+    fmtCount(tris, cTris, sizeof(cTris));
+    fmtCount(verts, cVerts, sizeof(cVerts));
+    snprintf(line2, sizeof(line2), "%s tris | %s verts | %zu lbl", cTris,
+             cVerts, labelCount);
+    blit(line1, 24, 18);
+    blit(line2, 24, 92);
+    // Frame-time graph: bars, green <= 16.7ms, yellow <= 33.3ms, red above.
+    const int gx0 = 24;
+    const int gx1 = W - 24;
+    const int gy0 = 182;
+    const int gy1 = H - 18;
+    const float y167 =
+        gy1 - (16.7f / kOverlayGraphMaxMs) * (gy1 - gy0);
+    for (int x = gx0; x <= gx1; ++x) {
+        dot(x, static_cast<int>(y167), 255, 255, 255, 56);
+    }
+    const size_t n = frameDts_.size();
+    for (size_t i = 0; i < n; ++i) {
+        const float sampleMs = frameDts_[i] * 1000.0f;
+        const int x = gx0 + static_cast<int>(i * (gx1 - gx0) /
+                                             (kOverlayHistory - 1));
+        float frac = sampleMs / kOverlayGraphMaxMs;
+        if (frac < 0.0f) {
+            frac = 0.0f;
+        }
+        if (frac > 1.0f) {
+            frac = 1.0f;
+        }
+        const int y = gy1 - static_cast<int>(frac * (gy1 - gy0));
+        uint8_t r = 74;
+        uint8_t g = 222;
+        uint8_t b = 128;
+        if (sampleMs > 33.3f) {
+            r = 248;
+            g = 113;
+            b = 113;
+        } else if (sampleMs > 16.7f) {
+            r = 250;
+            g = 204;
+            b = 21;
+        }
+        bar(x, y, x + 2, gy1, r, g, b, 255);
+    }
+}
+
+void Renderer::uploadOverlay() {
+    const VkDeviceSize need = overlayRgba_.size();
+    if (need == 0 || device_ == VK_NULL_HANDLE) {
+        return;
+    }
+    if (need > overlayStagingCap_ || overlayStaging_ == VK_NULL_HANDLE) {
+        if (overlayStaging_ != VK_NULL_HANDLE) {
+            vkDestroyBuffer(device_, overlayStaging_, nullptr);
+            vkFreeMemory(device_, overlayStagingMem_, nullptr);
+        }
+        overlayStagingCap_ = need;
+        if (!createBuffer(overlayStagingCap_, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                              VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                          &overlayStaging_, &overlayStagingMem_)) {
+            return;
+        }
+    }
+    void* dst = nullptr;
+    vkMapMemory(device_, overlayStagingMem_, 0, need, 0, &dst);
+    memcpy(dst, overlayRgba_.data(), need);
+    vkUnmapMemory(device_, overlayStagingMem_);
+    overlayCopyPending_ = true;
+}
+
 void Renderer::uploadVertices() {
     auto ensure = [&](VkBuffer& buf, VkDeviceMemory& mem, VkDeviceSize& cap,
                       VkDeviceSize need, VkBufferUsageFlags usage) {
@@ -1064,6 +1454,9 @@ void Renderer::uploadVertices() {
            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     ensure(haloBuf_, haloMem_, haloCap_, haloVerts_.size() * sizeof(TextVertex),
            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    ensure(overlayBuf_, overlayBufMem_, overlayBufCap_,
+           overlayVerts_.size() * sizeof(TextVertex),
+           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     auto copyTo = [&](VkBuffer buf, VkDeviceMemory mem, const void* data,
                       size_t bytes) {
         if (bytes == 0 || buf == VK_NULL_HANDLE) {
@@ -1082,6 +1475,8 @@ void Renderer::uploadVertices() {
            textVerts_.size() * sizeof(TextVertex));
     copyTo(haloBuf_, haloMem_, haloVerts_.data(),
            haloVerts_.size() * sizeof(TextVertex));
+    copyTo(overlayBuf_, overlayBufMem_, overlayVerts_.data(),
+           overlayVerts_.size() * sizeof(TextVertex));
 }
 
 void Renderer::uploadAtlas(const std::vector<uint8_t>& rgba) {
@@ -1146,6 +1541,45 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
                              0, nullptr, 1, &toRead);
         atlasLayout_ = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         atlasDirty_ = false;
+    }
+
+    if (overlayCopyPending_ && !overlayRgba_.empty() &&
+        overlayImage_ != VK_NULL_HANDLE) {
+        VkImageMemoryBarrier toDst{};
+        toDst.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        toDst.oldLayout = overlayLayout_;
+        toDst.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        toDst.srcAccessMask = overlayLayout_ == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                                  ? VK_ACCESS_SHADER_READ_BIT
+                                  : VkAccessFlags(0);
+        toDst.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        toDst.image = overlayImage_;
+        toDst.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        toDst.subresourceRange.levelCount = 1;
+        toDst.subresourceRange.layerCount = 1;
+        vkCmdPipelineBarrier(cmd,
+                             overlayLayout_ == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                                 ? VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                                 : VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
+                             nullptr, 1, &toDst);
+        VkBufferImageCopy region{};
+        region.imageExtent = {static_cast<uint32_t>(kOverlayW),
+                              static_cast<uint32_t>(kOverlayH), 1};
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.layerCount = 1;
+        vkCmdCopyBufferToImage(cmd, overlayStaging_, overlayImage_,
+                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        VkImageMemoryBarrier toRead = toDst;
+        toRead.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        toRead.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        toRead.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        toRead.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
+                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
+                             0, nullptr, 1, &toRead);
+        overlayLayout_ = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        overlayCopyPending_ = false;
     }
 
     VkRenderPassBeginInfo rp{};
@@ -1214,6 +1648,24 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
         vkCmdBindVertexBuffers(cmd, 0, 1, &textBuf_, &off);
         vkCmdDraw(cmd, static_cast<uint32_t>(textVerts_.size()), 1, 0, 0);
     }
+    // Debug overlay last: raw RGBA panel from its own texture.
+    if (debugOverlay_ && !overlayVerts_.empty() &&
+        overlayImage_ != VK_NULL_HANDLE) {
+        PushText pt{scrollX_, scrollY_, scale_, 0.0f /*_pad0*/,
+                    static_cast<float>(swapExtent_.width),
+                    static_cast<float>(swapExtent_.height), pivotX_, pivotY_,
+                    1.0f, 1.0f, 1.0f, 1.0f, angleRad_};
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeOverlay_);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipeLayoutText_, 0, 1, &overlayDescSet_, 0,
+                                nullptr);
+        vkCmdPushConstants(cmd, pipeLayoutText_,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0, sizeof(pt), &pt);
+        VkDeviceSize off = 0;
+        vkCmdBindVertexBuffers(cmd, 0, 1, &overlayBuf_, &off);
+        vkCmdDraw(cmd, static_cast<uint32_t>(overlayVerts_.size()), 1, 0, 0);
+    }
     vkCmdEndRenderPass(cmd);
     vkEndCommandBuffer(cmd);
 }
@@ -1221,6 +1673,25 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
 bool Renderer::render() {
     if (!ready_ || window_ == nullptr || viewW_ <= 0 || viewH_ <= 0) {
         return false;
+    }
+    const auto frameNow = std::chrono::steady_clock::now();
+    if (debugOverlay_) {
+        if (haveLastFrame_) {
+            const float dt =
+                std::chrono::duration<float>(frameNow - lastFrame_).count();
+            if (dt > 0.25f) {
+                frameDts_.clear();  // app was idle/backgrounded: fresh window
+            } else {
+                frameDts_.push_back(dt);
+                if (frameDts_.size() > kOverlayHistory) {
+                    frameDts_.erase(frameDts_.begin());
+                }
+            }
+        }
+        lastFrame_ = frameNow;
+        haveLastFrame_ = true;
+    } else {
+        haveLastFrame_ = false;
     }
     vkWaitForFences(device_, 1, &renderFence_, VK_TRUE, UINT64_MAX);
     vkResetFences(device_, 1, &renderFence_);
@@ -1235,6 +1706,9 @@ bool Renderer::render() {
         // Kotlin side can schedule the next frame.
         textLayoutDirty_ = animating;
     }
+    if (debugOverlay_) {
+        rebuildOverlay();
+    }
     uploadVertices();
     if (atlasDirty_) {
         uploadAtlas(atlasRgba_);
@@ -1248,11 +1722,11 @@ bool Renderer::render() {
         if (!createSwapchain()) {
             LOGE("swapchain recreate failed");
         }
-        return animating;
+        return animating || debugOverlay_;
     }
     if (acq != VK_SUCCESS && acq != VK_SUBOPTIMAL_KHR) {
         LOGE("acquire failed %d", acq);
-        return animating;
+        return animating || debugOverlay_;
     }
     recordCommandBuffer(cmdBuf_, imageIndex);
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -1267,7 +1741,7 @@ bool Renderer::render() {
     si.pSignalSemaphores = &renderDone_;
     if (vkQueueSubmit(gfxQueue_, 1, &si, renderFence_) != VK_SUCCESS) {
         LOGE("queue submit failed");
-        return animating;
+        return animating || debugOverlay_;
     }
     VkPresentInfoKHR pi{};
     pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -1284,7 +1758,7 @@ bool Renderer::render() {
         destroySwapchain();
         createSwapchain();
     }
-    return animating;
+    return animating || debugOverlay_;
 }
 
 void Renderer::destroy() {
@@ -1317,6 +1791,26 @@ void Renderer::destroy() {
         vkFreeMemory(device_, stagingMem_, nullptr);
         stagingBuf_ = VK_NULL_HANDLE;
     }
+    if (overlayStaging_ != VK_NULL_HANDLE) {
+        vkDestroyBuffer(device_, overlayStaging_, nullptr);
+        vkFreeMemory(device_, overlayStagingMem_, nullptr);
+        overlayStaging_ = VK_NULL_HANDLE;
+    }
+    if (overlayBuf_ != VK_NULL_HANDLE) {
+        vkDestroyBuffer(device_, overlayBuf_, nullptr);
+        vkFreeMemory(device_, overlayBufMem_, nullptr);
+        overlayBuf_ = VK_NULL_HANDLE;
+    }
+    if (overlayView_ != VK_NULL_HANDLE) {
+        vkDestroyImageView(device_, overlayView_, nullptr);
+        overlayView_ = VK_NULL_HANDLE;
+    }
+    if (overlayImage_ != VK_NULL_HANDLE) {
+        vkDestroyImage(device_, overlayImage_, nullptr);
+        vkFreeMemory(device_, overlayMem_, nullptr);
+        overlayImage_ = VK_NULL_HANDLE;
+    }
+    overlayDescSet_ = VK_NULL_HANDLE;
     if (atlasView_ != VK_NULL_HANDLE) {
         vkDestroyImageView(device_, atlasView_, nullptr);
         atlasView_ = VK_NULL_HANDLE;
@@ -1345,6 +1839,10 @@ void Renderer::destroy() {
     if (pipeText_ != VK_NULL_HANDLE) {
         vkDestroyPipeline(device_, pipeText_, nullptr);
         pipeText_ = VK_NULL_HANDLE;
+    }
+    if (pipeOverlay_ != VK_NULL_HANDLE) {
+        vkDestroyPipeline(device_, pipeOverlay_, nullptr);
+        pipeOverlay_ = VK_NULL_HANDLE;
     }
     if (pipeLayoutColor_ != VK_NULL_HANDLE) {
         vkDestroyPipelineLayout(device_, pipeLayoutColor_, nullptr);

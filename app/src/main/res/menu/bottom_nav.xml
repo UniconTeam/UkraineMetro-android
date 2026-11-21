@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+            android:id="@+id/tabExplore"
+            android:icon="@drawable/ic_explore_24"
+            android:title="@string/explore_tab" />
+    <item
+            android:id="@+id/tabSettings"
+            android:icon="@drawable/ic_settings_24"
+            android:title="@string/label_settings" />
+</menu>

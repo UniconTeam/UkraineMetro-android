@@ -4,6 +4,22 @@
     <string name="btn_googleplay">Приложение в Google Play</string>
     <string name="btn_github">Исходный код на Github</string>
     <string name="btn_resetcity">Сменить город</string>
+    <string name="label_settings">Настройки</string>
+    <string name="settings_general">Общее</string>
+    <string name="settings_about">О приложении</string>
+    <string name="settings_version">Версия</string>
+    <string name="settings_language">Язык</string>
+    <string name="settings_theme">Тема</string>
+    <string name="option_system">По умолчанию</string>
+    <string name="option_light">Светлая</string>
+    <string name="option_dark">Тёмная</string>
+    <string name="settings_map">Карта</string>
+    <string name="settings_rotation">Разрешить вращение</string>
+    <string name="settings_zoom_limits">Ограничить масштаб</string>
+    <string name="settings_ads">Показывать рекламу</string>
+    <string name="settings_debug">Отладка</string>
+    <string name="settings_debug_overlay">Панель производительности</string>
+    <string name="settings_debug_overlay_summary">FPS, время кадра и статистика на карте</string>
     <string name="about_text">Приложение для просмотра карт Харьковского, Киевского, Днепровского и Криворожского
         метро
     </string>
@@ -120,4 +136,7 @@
     <string name="failure_unknown">Неизвестная ошибка</string>
     <string name="failure_map_notselected">Ошибка. Карта не выбрана</string>
     <string name="action_select">Выбрать</string>
+    <string name="action_recenter">Центрировать карту</string>
+    <string name="explore_tab">Обзор</string>
+    <string name="settings_city">Город</string>
 </resources>

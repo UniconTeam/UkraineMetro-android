@@ -52,6 +52,8 @@ class VulkanMetroView @JvmOverloads constructor(
     private var lastActionDownTime = 0L
     private var scaleFactor = 1.0f
     private var angleRad = 0f
+    var rotationEnabled = true
+    var zoomLimitsEnabled = true
     private var zoomAnim: android.animation.ValueAnimator? = null
 
     private var mode = MODE_NONE
@@ -137,6 +139,8 @@ class VulkanMetroView @JvmOverloads constructor(
             mapCenterX = (maxX + minX) / 2f
             mapCenterY = (maxY + minY) / 2f
             hasCenter = true
+            if (width > 0) size.w = width
+            if (height > 0) size.h = height
             recenter()
         }
 
@@ -159,10 +163,60 @@ class VulkanMetroView @JvmOverloads constructor(
         )
     }
 
+    private var centeredOnce = false
+
     private fun recenter() {
         if (!hasCenter) return
-        scrollXf = size.w / 2f - mapCenterX
-        scrollYf = size.h / 2f - mapCenterY
+        // After a recreation (rotation, theme, locale change) the saved
+        // camera wins over the default centering, translated into the
+        // current size so the same map point stays under the center.
+        val saved = pendingCamera
+        if (saved != null) {
+            pendingCamera = null
+            scrollXf = size.w / 2f - saved.centerX
+            scrollYf = size.h / 2f - saved.centerY
+            scaleFactor = saved.scale
+            angleRad = saved.angle
+        } else {
+            scrollXf = size.w / 2f - mapCenterX
+            scrollYf = size.h / 2f - mapCenterY
+        }
+        centeredOnce = true
+    }
+
+    private data class SavedCamera(
+        val centerX: Float,
+        val centerY: Float,
+        val scale: Float,
+        val angle: Float
+    )
+    private var pendingCamera: SavedCamera? = null
+
+    override fun onSaveInstanceState(): android.os.Parcelable {
+        val superState = super.onSaveInstanceState()
+        return android.os.Bundle().apply {
+            putParcelable("super", superState)
+            // Persist the map point under the screen center, not the raw
+            // scroll: the view size may differ after recreation.
+            putFloat("centerX", size.w / 2f - scrollXf)
+            putFloat("centerY", size.h / 2f - scrollYf)
+            putFloat("scale", scaleFactor)
+            putFloat("angle", angleRad)
+        }
+    }
+
+    override fun onRestoreInstanceState(state: android.os.Parcelable?) {
+        if (state is android.os.Bundle) {
+            pendingCamera = SavedCamera(
+                state.getFloat("centerX", size.w / 2f - scrollXf),
+                state.getFloat("centerY", size.h / 2f - scrollYf),
+                state.getFloat("scale", scaleFactor),
+                state.getFloat("angle", angleRad)
+            )
+            super.onRestoreInstanceState(state.getParcelable("super"))
+        } else {
+            super.onRestoreInstanceState(state)
+        }
     }
     private var pendingBranchColors = IntArray(0)
     private var pendingBranchPts = FloatArray(0)
@@ -183,6 +237,20 @@ class VulkanMetroView @JvmOverloads constructor(
 
     // ----------------------------------------------------------------- view
 
+    var debugOverlayEnabled = false
+        private set
+    private var debugOverlayTopMargin = 0
+
+    fun setDebugOverlay(enabled: Boolean, topMarginPx: Int = 0) {
+        debugOverlayEnabled = enabled
+        debugOverlayTopMargin = topMarginPx
+        if (nativeHandle != 0L) {
+            nativeSetDebugOverlay(nativeHandle, enabled, topMarginPx)
+        }
+        // Overlay on = continuous rendering for live FPS/graph.
+        pushView()
+    }
+
     private fun pushView() {
         if (nativeHandle == 0L || !surfaceAvailable) return
         nativeSetView(
@@ -191,8 +259,9 @@ class VulkanMetroView @JvmOverloads constructor(
             labelText[0], labelText[1], labelText[2], labelText[3]
         )
         if (nativeRender(nativeHandle) && !animPending) {
-            // Labels still easing toward their slots: keep rendering
-            // until the native side reports they settled.
+            // Labels still easing toward their slots (or the debug
+            // overlay is live): keep rendering until the native side
+            // reports everything settled.
             animPending = true
             postOnAnimation {
                 animPending = false
@@ -249,13 +318,36 @@ class VulkanMetroView @JvmOverloads constructor(
     }
 
     private fun applyScale(newScale: Float, focusX: Float, focusY: Float) {
-        val k = newScale.coerceIn(Const.SCALE_FACTOR_MIN, Const.SCALE_FACTOR_MAX)
+        val k = coerceZoom(newScale)
         if (k == scaleFactor) return
         val (mx, my) = mapFromScreen(focusX, focusY)
         scaleFactor = k
         anchorScroll(mx, my, focusX, focusY, k, angleRad)
         pushView()
     }
+
+    fun setMapInteraction(rotation: Boolean, zoomLimited: Boolean) {
+        rotationEnabled = rotation
+        zoomLimitsEnabled = zoomLimited
+        // Turning rotation off straightens the map; turning limits back
+        // on pulls an out-of-range zoom back inside.
+        if (!rotation) angleRad = 0f
+        if (zoomLimited) scaleFactor = scaleFactor.coerceIn(
+            Const.SCALE_FACTOR_MIN, Const.SCALE_FACTOR_MAX)
+        pushView()
+    }
+
+    fun resetView() {
+        cancelZoomAnim()
+        if (hasCenter) recenter()
+        scaleFactor = 1.0f
+        angleRad = 0f
+        pushView()
+    }
+
+    private fun coerceZoom(v: Float): Float =
+        if (zoomLimitsEnabled) v.coerceIn(Const.SCALE_FACTOR_MIN, Const.SCALE_FACTOR_MAX)
+        else v.coerceIn(ZOOM_ABS_MIN, ZOOM_ABS_MAX)
 
     private fun cancelZoomAnim() {
         zoomAnim?.cancel()
@@ -313,11 +405,10 @@ class VulkanMetroView @JvmOverloads constructor(
         val (mx, my) = mapFromScreen(fx, fy)
         var k = scaleFactor
         if (prevSpan > 0f && span > 0f) {
-            k = (scaleFactor * (span / prevSpan))
-                .coerceIn(Const.SCALE_FACTOR_MIN, Const.SCALE_FACTOR_MAX)
+            k = coerceZoom(scaleFactor * (span / prevSpan))
         }
         scaleFactor = k
-        val a = wrapAngle(angleRad + wrapAngle(ang - prevAngle))
+        val a = if (rotationEnabled) wrapAngle(angleRad + wrapAngle(ang - prevAngle)) else angleRad
         angleRad = a
         anchorScroll(mx, my, fx, fy, k, a)
         prevFx = fx
@@ -344,11 +435,14 @@ class VulkanMetroView @JvmOverloads constructor(
                 pendingSync = false
                 // Double tap: smooth zoom in/out anchored at the tap point.
                 if (System.currentTimeMillis() - lastActionDownTime < doubleTapTime) {
-                    animateZoomTo(
+                    val target = if (zoomLimitsEnabled) {
                         if (scaleFactor == Const.SCALE_FACTOR_MAX)
-                            Const.SCALE_FACTOR_MIN else Const.SCALE_FACTOR_MAX,
-                        event.x, event.y
-                    )
+                            Const.SCALE_FACTOR_MIN else Const.SCALE_FACTOR_MAX
+                    } else {
+                        if (scaleFactor < ZOOM_ABS_MAX * 0.9f) scaleFactor * 2f
+                        else ZOOM_ABS_MIN
+                    }
+                    animateZoomTo(target, event.x, event.y)
                 }
                 lastActionDownTime = System.currentTimeMillis()
                 dX = event.rawX
@@ -422,6 +516,7 @@ class VulkanMetroView @JvmOverloads constructor(
         surfaceAvailable = true
         nativeSurfaceCreated(nativeHandle, holder.surface)
         nativeResize(nativeHandle, width.coerceAtLeast(1), height.coerceAtLeast(1))
+        nativeSetDebugOverlay(nativeHandle, debugOverlayEnabled, debugOverlayTopMargin)
         if (pendingData) {
             pendingData = false
             pushData(
@@ -435,9 +530,17 @@ class VulkanMetroView @JvmOverloads constructor(
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, w: Int, h: Int) {
+        // Preserve the map point under the screen center across resizes
+        // (panel resize, rotation) instead of jumping to the default view.
+        // Before the first centering there is nothing to preserve yet.
+        val cx = size.w / 2f - scrollXf
+        val cy = size.h / 2f - scrollYf
         size.w = w
         size.h = h
-        recenter()
+        if (centeredOnce) {
+            scrollXf = size.w / 2f - cx
+            scrollYf = size.h / 2f - cy
+        }
         if (nativeHandle != 0L && surfaceAvailable) {
             nativeResize(nativeHandle, w.coerceAtLeast(1), h.coerceAtLeast(1))
             pushView()
@@ -504,6 +607,7 @@ class VulkanMetroView @JvmOverloads constructor(
         textR: Float, textG: Float, textB: Float, textA: Float
     )
     private external fun nativeRender(handle: Long): Boolean
+    private external fun nativeSetDebugOverlay(handle: Long, enabled: Boolean, topMarginPx: Int)
 
     companion object {
         init {
@@ -513,5 +617,10 @@ class VulkanMetroView @JvmOverloads constructor(
         const val MODE_NONE = 0
         const val MODE_SINGLE = 1
         const val MODE_DUAL = 2
+
+        // Absolute safety caps when the user disables zoom limits
+        // (the map must never hit 0 or infinity).
+        const val ZOOM_ABS_MIN = 0.1f
+        const val ZOOM_ABS_MAX = 32.0f
     }
 }

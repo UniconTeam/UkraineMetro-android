@@ -18,6 +18,7 @@
     <string name="settings_zoom_limits">Обмежити масштаб</string>
     <string name="settings_ads">Показувати рекламу</string>
     <string name="settings_original_colors">Оригінальні кольори</string>
+    <string name="settings_bigger_labels">Більші підписи</string>
     <string name="settings_debug">Налагодження</string>
     <string name="settings_debug_overlay">Панель продуктивності</string>
     <string name="settings_debug_overlay_summary">FPS, час кадру та статистика на мапі</string>

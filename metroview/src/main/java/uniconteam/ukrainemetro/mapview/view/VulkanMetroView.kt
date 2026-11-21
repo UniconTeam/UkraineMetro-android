@@ -250,6 +250,9 @@ class VulkanMetroView @JvmOverloads constructor(
     var transferColor: Int = 0xFFCE93D8.toInt()
         private set
 
+    var bigLabels: Boolean = false
+        private set
+
     fun setDebugOverlay(enabled: Boolean, topMarginPx: Int = 0) {
         debugOverlayEnabled = enabled
         debugOverlayTopMargin = topMarginPx
@@ -264,6 +267,14 @@ class VulkanMetroView @JvmOverloads constructor(
         transferColor = argb
         if (nativeHandle != 0L) {
             nativeSetTransferColor(nativeHandle, argb)
+        }
+        pushView()
+    }
+
+    fun setBigLabels(enabled: Boolean) {
+        bigLabels = enabled
+        if (nativeHandle != 0L) {
+            nativeSetBigLabels(nativeHandle, enabled)
         }
         pushView()
     }
@@ -536,6 +547,7 @@ class VulkanMetroView @JvmOverloads constructor(
         nativeResize(nativeHandle, width.coerceAtLeast(1), height.coerceAtLeast(1))
         nativeSetDebugOverlay(nativeHandle, debugOverlayEnabled, debugOverlayTopMargin)
         nativeSetTransferColor(nativeHandle, transferColor)
+        nativeSetBigLabels(nativeHandle, bigLabels)
         if (pendingData) {
             pendingData = false
             pushData(
@@ -632,6 +644,7 @@ class VulkanMetroView @JvmOverloads constructor(
     private external fun nativeRender(handle: Long): Boolean
     private external fun nativeSetDebugOverlay(handle: Long, enabled: Boolean, topMarginPx: Int)
     private external fun nativeSetTransferColor(handle: Long, argb: Int)
+    private external fun nativeSetBigLabels(handle: Long, enabled: Boolean)
 
     companion object {
         init {

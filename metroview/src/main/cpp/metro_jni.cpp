@@ -199,4 +199,14 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetTransferColor
     renderer->setTransferColor(static_cast<uint32_t>(argb));
 }
 
+JNIEXPORT void JNICALL
+Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetBigLabels(
+    JNIEnv* /*env*/, jobject /*thiz*/, jlong handle, jboolean enabled) {
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    renderer->setBigLabels(enabled == JNI_TRUE);
+}
+
 }  // extern "C"

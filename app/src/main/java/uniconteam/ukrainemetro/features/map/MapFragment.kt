@@ -132,6 +132,7 @@ class MapFragment: BaseFragment() {
     private fun applyMapSettings() {
         if (_binding == null) return
         binding.metroView.setMapInteraction(prefs.rotationEnabled, prefs.zoomLimitsEnabled)
+        binding.metroView.setBigLabels(prefs.biggerLabels)
         applyAdsVisibility()
         applyDebugOverlay()
         pushMapData(force = false)
@@ -207,6 +208,9 @@ class MapFragment: BaseFragment() {
         binding.originalColorsSwitch.setOnCheckedChangeListener { _, checked ->
             prefs.originalColors = checked
         }
+        binding.biggerLabelsSwitch.setOnCheckedChangeListener { _, checked ->
+            prefs.biggerLabels = checked
+        }
         binding.debugOverlaySwitch.setOnCheckedChangeListener { _, checked ->
             prefs.debugOverlayEnabled = checked
         }
@@ -247,6 +251,7 @@ class MapFragment: BaseFragment() {
         binding.zoomLimitsSwitch.isChecked = prefs.zoomLimitsEnabled
         binding.adsSwitch.isChecked = prefs.adsEnabled
         binding.originalColorsSwitch.isChecked = prefs.originalColors
+        binding.biggerLabelsSwitch.isChecked = prefs.biggerLabels
         binding.debugOverlaySwitch.isChecked = prefs.debugOverlayEnabled
     }
 

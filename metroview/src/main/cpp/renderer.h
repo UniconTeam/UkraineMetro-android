@@ -49,6 +49,7 @@ public:
     // top-left. topMarginPx reserves the status-bar area.
     void setDebugOverlay(bool enabled, int topMarginPx);
     void setTransferColor(uint32_t argb);
+    void setBigLabels(bool enabled);
     // Renders one frame on demand. Returns true while label animation is
     // still settling (caller should render another frame).
     bool render();
@@ -59,6 +60,7 @@ private:
     // Label text is laid out in *screen* space (Google Maps style: fixed
     // on-screen size, always horizontal) and mapped back to map quads.
     static constexpr float kLabelTextPx = 26.0f;  // on-screen text height, px
+    static constexpr float kLabelTextPxBig = 34.0f;  // 'bigger labels' mode
     static constexpr float kLabelGapPx = 4.0f;    // gap between dot top and label, px
     static constexpr float kHaloPx = 2.0f;        // white outline width around glyphs, px
     static constexpr float kLineWidthMap = 7.0f;
@@ -147,6 +149,7 @@ private:
     std::vector<float> labelPosCache_;
     std::vector<int32_t> labelColorsCache_;
     uint32_t transferColor_ = 0xFFCE93D8u;
+    bool bigLabels_ = false;
     std::vector<LabelBitmap> labelBitmaps_;
     std::vector<PlacedLabel> placedLabels_;
     std::vector<std::pair<float, float>> labelAnchors_;

@@ -65,6 +65,13 @@ class PrefsRepository(context: Context) {
             sharedPreferences.edit { putBoolean("ORIGINAL_COLORS", value) }
         }
 
+    /** Larger station labels (34px instead of 26px). */
+    var biggerLabels: Boolean
+        get() = sharedPreferences.getBoolean("BIGGER_LABELS", false)
+        set(value) {
+            sharedPreferences.edit { putBoolean("BIGGER_LABELS", value) }
+        }
+
     /** Vulkan performance overlay (FPS, frame graph, draw stats). */
     var debugOverlayEnabled: Boolean
         get() = sharedPreferences.getBoolean("DEBUG_OVERLAY", false)

@@ -916,6 +916,15 @@ void Renderer::setTransferColor(uint32_t argb) {
     }
 }
 
+void Renderer::setBigLabels(bool enabled) {
+    if (enabled == bigLabels_) {
+        return;
+    }
+    bigLabels_ = enabled;
+    // Quads scale up; the atlas itself is reused as-is.
+    textLayoutDirty_ = true;
+}
+
 void Renderer::rebuildMapGeometry() {
     lineVerts_.clear();
     const float* p = branchPts_.data();
@@ -1075,7 +1084,8 @@ bool Renderer::rebuildLabelQuads() {
         *my = -sinA * px + cosA * py + cy - scrollY_;
     };
     // Fixed on-screen text size (Google Maps style), independent of zoom.
-    const float ds = kLabelTextPx / static_cast<float>(kFontPx);
+    const float ds = (bigLabels_ ? kLabelTextPxBig : kLabelTextPx) /
+                     static_cast<float>(kFontPx);
     const float dotR = kMarkerOuterR * scale_;
     struct Rect {
         float x0, y0, x1, y1;

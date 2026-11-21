@@ -32,11 +32,12 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:background="@drawable/bg_sheet_top_rounded"
-            android:clipToPadding="false">
+            android:orientation="vertical">
 
         <ScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 android:clipToPadding="false">
 
             <LinearLayout
@@ -45,9 +46,26 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:paddingBottom="24dp" />
+                    android:paddingBottom="8dp" />
 
         </ScrollView>
+
+        <LinearLayout
+                android:id="@+id/buttonBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                    android:id="@+id/selectButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/btn_next" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

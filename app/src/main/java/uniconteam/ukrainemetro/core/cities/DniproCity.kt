@@ -12,7 +12,7 @@ class DniproCity: City {
     override val id: String
         get() = javaClass.name
     override val name: Int
-        get() = R.string.name_dnipro
+        get() = R.string.city_dnipro
     override val mapElements: List<Element>
         get() = listOf(
             BranchElement(

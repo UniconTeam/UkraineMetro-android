@@ -2,4 +2,12 @@
 <resources>
     <dimen name="choice_row_min_height">56dp</dimen>
     <dimen name="choice_row_padding">16dp</dimen>
+
+    <style name="CityImageLeftRounded">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">16dp</item>
+        <item name="cornerSizeBottomLeft">16dp</item>
+        <item name="cornerSizeTopRight">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
 </resources>

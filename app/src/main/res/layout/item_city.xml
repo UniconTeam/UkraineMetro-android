@@ -16,14 +16,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:minHeight="72dp"
-            android:orientation="horizontal"
-            android:padding="16dp">
+            android:minHeight="64dp"
+            android:orientation="horizontal">
+
+        <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/cityImage"
+                android:layout_width="112dp"
+                android:layout_height="80dp"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/CityImageLeftRounded" />
 
         <TextView
                 android:id="@+id/cityName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
                 android:layout_weight="1"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 
@@ -31,6 +38,7 @@
                 android:id="@+id/cityRadio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
                 android:clickable="false"
                 android:focusable="false" />
 

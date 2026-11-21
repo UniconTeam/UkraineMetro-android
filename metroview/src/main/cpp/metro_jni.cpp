@@ -47,20 +47,18 @@ JNIEXPORT jlong JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeInit(
     JNIEnv* env, jobject /*thiz*/, jobject assetManager, jfloatArray colors) {
     auto* renderer = new metro::Renderer();
-    float clearRgba[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    float bubbleRgba[4] = {0.79f, 0.79f, 0.79f, 1.0f};
-    float textRgba[4] = {0.41f, 0.34f, 0.38f, 1.0f};
-    if (colors != nullptr && env->GetArrayLength(colors) >= 12) {
-        jfloat buf[12];
-        env->GetFloatArrayRegion(colors, 0, 12, buf);
+    float clearRgba[4] = {0.0f, 0.0f, 0.0f, 1.0f};
+    float textRgba[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+    if (colors != nullptr && env->GetArrayLength(colors) >= 8) {
+        jfloat buf[8];
+        env->GetFloatArrayRegion(colors, 0, 8, buf);
         for (int i = 0; i < 4; ++i) {
             clearRgba[i] = buf[i];
-            bubbleRgba[i] = buf[4 + i];
-            textRgba[i] = buf[8 + i];
+            textRgba[i] = buf[4 + i];
         }
     }
     AAssetManager* assets = AAssetManager_fromJava(env, assetManager);
-    renderer->init(assets, clearRgba, bubbleRgba, textRgba);
+    renderer->init(assets, clearRgba, textRgba);
     return reinterpret_cast<jlong>(renderer);
 }
 
@@ -106,7 +104,7 @@ JNIEXPORT void JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetData(
     JNIEnv* env, jobject /*thiz*/, jlong handle, jintArray branchColors,
     jfloatArray branchPts, jintArray branchCounts, jfloatArray transPts,
-    jobjectArray labelTexts, jfloatArray labelPos) {
+    jobjectArray labelTexts, jfloatArray labelPos, jintArray labelColors) {
     metro::Renderer* renderer = fromHandle(handle);
     if (renderer == nullptr) {
         return;
@@ -144,10 +142,16 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetData(
     for (const auto& t : texts) {
         cstrs.push_back(t.c_str());
     }
+    jsize colorLen = labelColors != nullptr ? env->GetArrayLength(labelColors) : 0;
+    std::vector<int32_t> lcolors(static_cast<size_t>(colorLen));
+    if (colorLen > 0) {
+        env->GetIntArrayRegion(labelColors, 0, colorLen,
+                               reinterpret_cast<jint*>(lcolors.data()));
+    }
     renderer->setData(colors.data(), pts.data(), counts.data(),
                       static_cast<int>(branchCount), trans.data(),
                       static_cast<int>(transLen / 4), cstrs.data(), pos.data(),
-                      static_cast<int>(texts.size()));
+                      lcolors.data(), static_cast<int>(texts.size()));
 }
 
 JNIEXPORT void JNICALL
@@ -163,14 +167,14 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetView(
                       textG, textB, textA);
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeRender(
     JNIEnv* /*env*/, jobject /*thiz*/, jlong handle) {
     metro::Renderer* renderer = fromHandle(handle);
     if (renderer == nullptr) {
-        return;
+        return JNI_FALSE;
     }
-    renderer->render();
+    return renderer->render() ? JNI_TRUE : JNI_FALSE;
 }
 
 }  // extern "C"

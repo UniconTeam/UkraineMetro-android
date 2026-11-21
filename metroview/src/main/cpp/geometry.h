@@ -37,6 +37,19 @@ struct AtlasRect {
 void appendPolyline(std::vector<ColorVertex>& out, const float* pts, int pointCount,
                     float r, float g, float b, float a, float width);
 
+// Appends a filled disc (triangle fan) — used for round line caps and
+// station marker dots.
+void appendDisc(std::vector<ColorVertex>& out, float cx, float cy, float radius,
+                float r, float g, float b, float a);
+
+// Expands a polyline into a smooth curve (centripetal Catmull-Rom through
+// every control point, `subdiv` samples per segment) as triangle quads,
+// plus round caps at both ends. Centripetal parameterization keeps wildly
+// uneven segments (a tiny jog between long straights) cusp-free, unlike
+// uniform Catmull-Rom. Stations stay exactly on the curve.
+void appendSmoothPolyline(std::vector<ColorVertex>& out, const float* pts, int pointCount,
+                          float r, float g, float b, float a, float width, int subdiv);
+
 // Expands a single segment with round caps (discs at both ends).
 void appendSegment(std::vector<ColorVertex>& out, float x0, float y0, float x1, float y1,
                    float r, float g, float b, float a, float width);

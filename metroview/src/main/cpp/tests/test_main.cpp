@@ -73,6 +73,124 @@ static void testSinglePoint() {
     CHECK(v.size() == 30);
 }
 
+static void testSmoothPolyline() {
+    // L-shape: spline must start exactly at the first point, end near the
+    // last, pass through the middle control point (stations stay on the
+    // curve), and turn gradually (no sharp kinks between samples).
+    std::vector<metro::ColorVertex> v;
+    const float pts[] = {0, 0, 10, 0, 10, 10};
+    metro::appendSmoothPolyline(v, pts, 3, 1, 0, 0, 1, 4.0f, 8);
+    // 2 segments * 8 quads * 6 verts + 2 endpoint cap discs * 30 verts.
+    // (No discs at interior points: the spline is C1-continuous there.)
+    CHECK(v.size() == 2 * 8 * 6 + 2 * 30);
+    // Centerline starts exactly at the first control point (vertex 0 is
+    // offset by half line width, so average the first edge).
+    CHECK(approx((v[0].x + v[1].x) * 0.5f, 0.0f) &&
+          approx((v[0].y + v[1].y) * 0.5f, 0.0f));
+    float nearCorner = 1e9f;
+    bool nan = false;
+    for (size_t q = 0; q < 16; ++q) {
+        // Centerline sample = midpoint of the quad's first edge.
+        const float mx = (v[q * 6].x + v[q * 6 + 1].x) * 0.5f;
+        const float my = (v[q * 6].y + v[q * 6 + 1].y) * 0.5f;
+        if (!(mx == mx && my == my)) {
+            nan = true;
+        }
+        const float d = std::hypot(mx - 10.0f, my - 0.0f);
+        if (d < nearCorner) {
+            nearCorner = d;
+        }
+    }
+    CHECK(!nan);
+    CHECK(nearCorner < 1e-3f);  // spline interpolates the control point
+    // Tangent direction between consecutive quad centerline samples must
+    // change smoothly (line body only: first 16 quads, station discs
+    // follow after them). Centerline sample = midpoint of each quad's
+    // first edge (verts 0 and 1 are the +/- normal offsets of one point).
+    // Note: secants around the joint sample overstate the true tangent
+    // turn, so the bound is generous; hairpins are ruled out separately
+    // by the no-reversal check and the uneven-spacing test below.
+    float maxTurn = 0.0f;
+    for (size_t q = 1; q + 1 < 16; ++q) {
+        const float ax = (v[(q - 1) * 6].x + v[(q - 1) * 6 + 1].x) * 0.5f;
+        const float ay = (v[(q - 1) * 6].y + v[(q - 1) * 6 + 1].y) * 0.5f;
+        const float bx = (v[q * 6].x + v[q * 6 + 1].x) * 0.5f;
+        const float by = (v[q * 6].y + v[q * 6 + 1].y) * 0.5f;
+        const float cx = (v[(q + 1) * 6].x + v[(q + 1) * 6 + 1].x) * 0.5f;
+        const float cy = (v[(q + 1) * 6].y + v[(q + 1) * 6 + 1].y) * 0.5f;
+        const float ux = bx - ax;
+        const float uy = by - ay;
+        const float vx = cx - bx;
+        const float vy = cy - by;
+        const float lu = std::hypot(ux, uy);
+        const float lv = std::hypot(vx, vy);
+        if (lu < 1e-6f || lv < 1e-6f) {
+            continue;
+        }
+        float dot = (ux * vx + uy * vy) / (lu * lv);
+        dot = dot > 1.0f ? 1.0f : (dot < -1.0f ? -1.0f : dot);
+        const float turn = std::acos(dot);
+        if (turn > maxTurn) {
+            maxTurn = turn;
+        }
+    }
+    CHECK(maxTurn < 0.75f);
+}
+
+static void testSmoothStraightStaysStraight() {
+    // Collinear points must not wobble off the line: the centerline stays
+    // at y=0, quad verts within half line width (2.0) of it.
+    std::vector<metro::ColorVertex> v;
+    const float pts[] = {0, 0, 5, 0, 10, 0};
+    metro::appendSmoothPolyline(v, pts, 3, 1, 1, 1, 1, 4.0f, 8);
+    for (const auto& p : v) {
+        CHECK(std::fabs(p.y) <= 2.0f + 1e-3f);
+    }
+}
+
+static void testUnevenSpacingNoCusp() {
+    // Mirrors the real 90-degree map corner: long, tiny, long segments.
+    // Centripetal parameterization must not cusp or loop there.
+    std::vector<metro::ColorVertex> v;
+    const float pts[] = {58, 0, 0, 0, -4, 4, -6, 64};
+    metro::appendSmoothPolyline(v, pts, 4, 1, 1, 1, 1, 4.0f, 12);
+    // 3 segments * 12 quads * 6 verts + 2 endpoint cap discs * 30 verts.
+    CHECK(v.size() == 3 * 12 * 6 + 2 * 30);
+    float maxTurn = 0.0f;
+    bool nan = false;
+    for (size_t q = 1; q + 1 < 3 * 12; ++q) {
+        const float ax = (v[(q - 1) * 6].x + v[(q - 1) * 6 + 1].x) * 0.5f;
+        const float ay = (v[(q - 1) * 6].y + v[(q - 1) * 6 + 1].y) * 0.5f;
+        const float bx = (v[q * 6].x + v[q * 6 + 1].x) * 0.5f;
+        const float by = (v[q * 6].y + v[q * 6 + 1].y) * 0.5f;
+        const float cx = (v[(q + 1) * 6].x + v[(q + 1) * 6 + 1].x) * 0.5f;
+        const float cy = (v[(q + 1) * 6].y + v[(q + 1) * 6 + 1].y) * 0.5f;
+        if (!(ax == ax && ay == ay && bx == bx && by == by && cx == cx && cy == cy)) {
+            nan = true;
+        }
+        const float ux = bx - ax;
+        const float uy = by - ay;
+        const float vx = cx - bx;
+        const float vy = cy - by;
+        const float lu = std::hypot(ux, uy);
+        const float lv = std::hypot(vx, vy);
+        if (lu < 1e-6f || lv < 1e-6f) {
+            continue;
+        }
+        float dot = (ux * vx + uy * vy) / (lu * lv);
+        dot = dot > 1.0f ? 1.0f : (dot < -1.0f ? -1.0f : dot);
+        // No hairpins: consecutive centerline tangents must never reverse.
+        CHECK(dot > -0.25f);
+        const float turn = std::acos(dot);
+        if (turn > maxTurn) {
+            maxTurn = turn;
+        }
+    }
+    CHECK(!nan);
+    // Tight but smooth corner, not a kinked cusp.
+    CHECK(maxTurn < 0.6f);
+}
+
 static void testRect() {
     std::vector<metro::ColorVertex> v;
     metro::appendRect(v, 1, 2, 5, 8, 1, 1, 1, 1);
@@ -168,6 +286,9 @@ int main() {
     testDegenerateSegment();
     testPolylineJoints();
     testSinglePoint();
+    testSmoothPolyline();
+    testSmoothStraightStaysStraight();
+    testUnevenSpacingNoCusp();
     testRect();
     testShelfPacker();
     testTransforms();

@@ -1,5 +1,6 @@
 #version 450
-// Glyph atlas sampling. Atlas stores white glyphs; tint with uniform text color.
+// Glyph atlas sampling. Atlas stores white glyphs; tint with the label
+// text color from push constants.
 layout(location = 0) in vec2 fragUV;
 layout(location = 0) out vec4 outColor;
 
@@ -11,6 +12,7 @@ layout(push_constant) uniform Push {
     vec2 viewSize;
     vec2 pivot;
     vec4 textColor;
+    float angle;
 } pc;
 
 void main() {

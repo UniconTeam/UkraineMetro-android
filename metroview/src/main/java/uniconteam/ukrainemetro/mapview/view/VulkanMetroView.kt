@@ -66,8 +66,20 @@ class VulkanMetroView @JvmOverloads constructor(
     private var prevAngle = 0f
 
     private val colorBg = resolveBackground()
-    private val colorBubble = Color.parseColor(Const.COLOR_RECT_BG)
-    private val colorText = Color.parseColor(Const.COLOR_RECT_TEXT)
+
+    // Google Maps style: plain text labels, no background bubbles.
+    // White on dark map backgrounds, dark on light ones.
+    private val labelText: FloatArray by lazy {
+        if (isDark(colorBg)) floatArrayOf(1f, 1f, 1f, 1f)
+        else normal(Color.parseColor(Const.COLOR_RECT_TEXT))
+    }
+
+    private fun isDark(color: Int): Boolean {
+        val r = Color.red(color)
+        val g = Color.green(color)
+        val b = Color.blue(color)
+        return (0.299f * r + 0.587f * g + 0.114f * b) < 128f
+    }
 
     init {
         holder.addCallback(this)
@@ -83,6 +95,7 @@ class VulkanMetroView @JvmOverloads constructor(
         val transPts = mutableListOf<Float>()
         val labelTexts = mutableListOf<String>()
         val labelPos = mutableListOf<Float>()
+        val labelColors = mutableListOf<Int>()
 
         var minX = Float.MAX_VALUE
         var minY = Float.MAX_VALUE
@@ -102,6 +115,7 @@ class VulkanMetroView @JvmOverloads constructor(
                         labelTexts.add(resources.getString(p.name!!))
                         labelPos.add(x)
                         labelPos.add(y)
+                        labelColors.add(el.color)
                     }
                     if (x < minX) minX = x
                     if (y < minY) minY = y
@@ -134,12 +148,14 @@ class VulkanMetroView @JvmOverloads constructor(
             pendingTransPts = transPts.toFloatArray()
             pendingLabelTexts = labelTexts.toTypedArray()
             pendingLabelPos = labelPos.toFloatArray()
+            pendingLabelColors = labelColors.toIntArray()
             return
         }
         pushData(
             branchColors.toIntArray(), branchPts.toFloatArray(),
             branchCounts.toIntArray(), transPts.toFloatArray(),
-            labelTexts.toTypedArray(), labelPos.toFloatArray()
+            labelTexts.toTypedArray(), labelPos.toFloatArray(),
+            labelColors.toIntArray()
         )
     }
 
@@ -154,12 +170,14 @@ class VulkanMetroView @JvmOverloads constructor(
     private var pendingTransPts = FloatArray(0)
     private var pendingLabelTexts = emptyArray<String>()
     private var pendingLabelPos = FloatArray(0)
+    private var pendingLabelColors = IntArray(0)
 
     private fun pushData(
         colors: IntArray, pts: FloatArray, counts: IntArray,
-        trans: FloatArray, texts: Array<String>, pos: FloatArray
+        trans: FloatArray, texts: Array<String>, pos: FloatArray,
+        labelColors: IntArray
     ) {
-        nativeSetData(nativeHandle, colors, pts, counts, trans, texts, pos)
+        nativeSetData(nativeHandle, colors, pts, counts, trans, texts, pos, labelColors)
         pushView()
     }
 
@@ -167,14 +185,22 @@ class VulkanMetroView @JvmOverloads constructor(
 
     private fun pushView() {
         if (nativeHandle == 0L || !surfaceAvailable) return
-        val c = normal(colorText)
         nativeSetView(
             nativeHandle, scrollXf, scrollYf, scaleFactor, angleRad,
             (width / 2f).coerceAtLeast(1f), (height / 2f).coerceAtLeast(1f),
-            c[0], c[1], c[2], c[3]
+            labelText[0], labelText[1], labelText[2], labelText[3]
         )
-        nativeRender(nativeHandle)
+        if (nativeRender(nativeHandle) && !animPending) {
+            // Labels still easing toward their slots: keep rendering
+            // until the native side reports they settled.
+            animPending = true
+            postOnAnimation {
+                animPending = false
+                if (surfaceAvailable && nativeHandle != 0L) pushView()
+            }
+        }
     }
+    private var animPending = false
 
     // ------------------------------------------------------------ camera
 
@@ -385,14 +411,11 @@ class VulkanMetroView @JvmOverloads constructor(
     override fun surfaceCreated(holder: SurfaceHolder) {
         if (nativeHandle == 0L) {
             val bg = normal(colorBg)
-            val bubble = normal(colorBubble)
-            val text = normal(colorText)
             nativeHandle = nativeInit(
                 context.assets,
                 floatArrayOf(
                     bg[0], bg[1], bg[2], bg[3],
-                    bubble[0], bubble[1], bubble[2], bubble[3],
-                    text[0], text[1], text[2], text[3]
+                    labelText[0], labelText[1], labelText[2], labelText[3]
                 )
             )
         }
@@ -403,7 +426,8 @@ class VulkanMetroView @JvmOverloads constructor(
             pendingData = false
             pushData(
                 pendingBranchColors, pendingBranchPts, pendingBranchCounts,
-                pendingTransPts, pendingLabelTexts, pendingLabelPos
+                pendingTransPts, pendingLabelTexts, pendingLabelPos,
+                pendingLabelColors
             )
         } else {
             pushView()
@@ -472,14 +496,14 @@ class VulkanMetroView @JvmOverloads constructor(
     private external fun nativeSetData(
         handle: Long, branchColors: IntArray, branchPts: FloatArray,
         branchCounts: IntArray, transPts: FloatArray,
-        labelTexts: Array<String>, labelPos: FloatArray
+        labelTexts: Array<String>, labelPos: FloatArray, labelColors: IntArray
     )
     private external fun nativeSetView(
         handle: Long, scrollX: Float, scrollY: Float, scale: Float, angle: Float,
         pivotX: Float, pivotY: Float,
         textR: Float, textG: Float, textB: Float, textA: Float
     )
-    private external fun nativeRender(handle: Long)
+    private external fun nativeRender(handle: Long): Boolean
 
     companion object {
         init {

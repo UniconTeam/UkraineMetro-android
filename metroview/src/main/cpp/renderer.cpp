@@ -5,6 +5,7 @@
 #include "renderer.h"
 
 #include <android/log.h>
+#include <cmath>
 #include <cstring>
 
 #define LOG_TAG "MetroVulkan"
@@ -95,13 +96,12 @@ bool Renderer::readAsset(const char* name, std::vector<uint8_t>* out) {
 }
 
 bool Renderer::init(AAssetManager* assets, const float clearRgba[4],
-                    const float bubbleRgba[4], const float textRgba[4]) {
+                    const float textRgba[4]) {
     assets_ = assets;
     clear_.color.float32[0] = clearRgba[0];
     clear_.color.float32[1] = clearRgba[1];
     clear_.color.float32[2] = clearRgba[2];
     clear_.color.float32[3] = clearRgba[3];
-    memcpy(bubbleColor_, bubbleRgba, sizeof(bubbleColor_));
     memcpy(textColor_, textRgba, sizeof(textColor_));
     if (!ft_.init()) {
         LOGE("FreeType init failed");
@@ -747,6 +747,7 @@ void Renderer::resize(int w, int h) {
     LOGI("resize %dx%d", w, h);
     viewW_ = w;
     viewH_ = h;
+    textLayoutDirty_ = true;
     vkDeviceWaitIdle(device_);
     destroySwapchain();
     if (!createSwapchain()) {
@@ -759,13 +760,14 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
                        const int32_t* branchCounts, int branchCount,
                        const float* transPts, int transSegCount,
                        const char* const* labelTexts, const float* labelPos,
-                       int labelCount) {
+                       const int32_t* labelColors, int labelCount) {
     lineVerts_.clear();
     const float* p = branchPts;
     for (int i = 0; i < branchCount; ++i) {
         float r, g, b, a;
         colorIntToFloat(branchColors[i], &r, &g, &b, &a);
-        appendPolyline(lineVerts_, p, branchCounts[i], r, g, b, a, kLineWidthMap);
+        appendSmoothPolyline(lineVerts_, p, branchCounts[i], r, g, b, a,
+                             kLineWidthMap, kSmoothSubdiv);
         p += static_cast<size_t>(branchCounts[i]) * 2;
     }
     float tr, tg, tb, ta;
@@ -774,6 +776,16 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
         appendSegment(lineVerts_, transPts[4 * i], transPts[4 * i + 1],
                       transPts[4 * i + 2], transPts[4 * i + 3], tr, tg, tb, ta,
                       kLineWidthMap);
+    }
+    // Station markers (white ring + branch-color center), drawn on top
+    // of the lines as part of the same vertex buffer.
+    for (int i = 0; i < labelCount; ++i) {
+        const float x = labelPos[2 * i];
+        const float y = labelPos[2 * i + 1];
+        appendDisc(lineVerts_, x, y, kMarkerOuterR, 1.0f, 1.0f, 1.0f, 1.0f);
+        float r, g, b, a;
+        colorIntToFloat(labelColors != nullptr ? labelColors[i] : 0, &r, &g, &b, &a);
+        appendDisc(lineVerts_, x, y, kMarkerInnerR, r, g, b, 1.0f);
     }
 
     labelBitmaps_.clear();
@@ -812,6 +824,9 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
     }
     dataDirty_ = true;
     labelsDirty_ = true;
+    textLayoutDirty_ = true;
+    anims_.clear();
+    snapLayout_ = true;
 }
 
 void Renderer::setView(float scrollX, float scrollY, float scale, float pivotX,
@@ -827,42 +842,200 @@ void Renderer::setView(float scrollX, float scrollY, float scale, float pivotX,
     textColor_[1] = textG;
     textColor_[2] = textB;
     textColor_[3] = textA;
+    // Label quads are laid out in screen space: any camera change moves them.
+    textLayoutDirty_ = true;
 }
 
-void Renderer::rebuildLabelQuads() {
-    bubbleVerts_.clear();
+bool Renderer::rebuildLabelQuads() {
     textVerts_.clear();
-    if (placedLabels_.empty() || scale_ <= 0.0f) {
-        return;
+    haloVerts_.clear();
+    leaderVerts_.clear();
+    if (placedLabels_.empty() || scale_ <= 0.0f || viewW_ <= 0 || viewH_ <= 0) {
+        return false;
     }
+    if (anims_.size() != placedLabels_.size()) {
+        anims_.assign(placedLabels_.size(), LabelAnim{});
+        snapLayout_ = true;
+    }
+    const float cx = static_cast<float>(viewW_) * 0.5f;
+    const float cy = static_cast<float>(viewH_) * 0.5f;
+    const float cosA = std::cos(angleRad_);
+    const float sinA = std::sin(angleRad_);
+    // Map <-> screen helpers for this frame's camera.
+    // screen = R(a) * ((map + scroll - c) * k) + c
+    auto toScreen = [&](float mx, float my, float* sx, float* sy) {
+        const float px = (mx + scrollX_ - cx) * scale_;
+        const float py = (my + scrollY_ - cy) * scale_;
+        *sx = cosA * px - sinA * py + cx;
+        *sy = sinA * px + cosA * py + cy;
+    };
+    auto toMap = [&](float sx, float sy, float* mx, float* my) {
+        const float px = (sx - cx) / scale_;
+        const float py = (sy - cy) / scale_;
+        *mx = cosA * px + sinA * py + cx - scrollX_;
+        *my = -sinA * px + cosA * py + cy - scrollY_;
+    };
+    // Fixed on-screen text size (Google Maps style), independent of zoom.
+    const float ds = kLabelTextPx / static_cast<float>(kFontPx);
+    const float dotR = kMarkerOuterR * scale_;
+    struct Rect {
+        float x0, y0, x1, y1;
+    };
+    std::vector<Rect> kept;
+    kept.reserve(placedLabels_.size());
+    bool animating = false;
     for (size_t i = 0; i < placedLabels_.size(); ++i) {
         const auto& pl = placedLabels_[i];
         const auto& bmp = labelBitmaps_[i];
-        // Bitmap px -> map units so text matches the old Canvas metrics.
-        const float mapPerPx = bmp.h > 0 ? (kLabelTextMapH / bmp.h) : 0.0f;
-        const float wMap = bmp.w * mapPerPx;
-        const float hMap = bmp.h * mapPerPx;
-        const float x0 = pl.anchorX - wMap * 0.5f - kBubblePadMap;
-        const float y0 = pl.anchorY - hMap * 0.5f - kBubblePadMap;
-        const float x1 = pl.anchorX + wMap * 0.5f + kBubblePadMap;
-        const float y1 = pl.anchorY + hMap * 0.5f + kBubblePadMap;
-        appendRect(bubbleVerts_, x0, y0, x1, y1, bubbleColor_[0], bubbleColor_[1],
-                   bubbleColor_[2], bubbleColor_[3]);
-        const float tx0 = x0 + kBubblePadMap;
-        const float ty0 = y0 + kBubblePadMap;
-        const float tx1 = tx0 + wMap;
-        const float ty1 = ty0 + hMap;
+        float ax, ay;
+        toScreen(pl.anchorX, pl.anchorY, &ax, &ay);
+        const float wPx = bmp.w * ds;
+        const float hPx = bmp.h * ds;
+        const float hw = wPx * 0.5f;
+        const float hh = hPx * 0.5f;
+        // 8 candidate slots around the station dot, best first: N, S, E, W,
+        // then diagonals. Centers are pushed out along each direction just
+        // far enough (support function) that the rect clears the dot by at
+        // least kLabelGapPx at any zoom.
+        const float inv = 0.70710678f;
+        const float dirs[8][2] = {{0.0f, -1.0f},
+                                  {0.0f, 1.0f},
+                                  {1.0f, 0.0f},
+                                  {-1.0f, 0.0f},
+                                  {inv, -inv},
+                                  {-inv, -inv},
+                                  {inv, inv},
+                                  {-inv, inv}};
+        int chosen = -1;
+        float x0 = 0.0f, y0 = 0.0f, x1 = 0.0f, y1 = 0.0f;
+        for (int s = 0; s < 8; ++s) {
+            const float dx = dirs[s][0];
+            const float dy = dirs[s][1];
+            const float ext = std::fabs(dx) * hw + std::fabs(dy) * hh;
+            const float dist = dotR + kLabelGapPx + ext;
+            const float cxr = ax + dx * dist;
+            const float cyr = ay + dy * dist;
+            const float rx0 = cxr - hw;
+            const float ry0 = cyr - hh;
+            const float rx1 = cxr + hw;
+            const float ry1 = cyr + hh;
+            bool overlaps = false;
+            for (const auto& r : kept) {
+                if (rx0 < r.x1 && rx1 > r.x0 && ry0 < r.y1 && ry1 > r.y0) {
+                    overlaps = true;
+                    break;
+                }
+            }
+            if (!overlaps) {
+                chosen = s;
+                x0 = rx0;
+                y0 = ry0;
+                x1 = rx1;
+                y1 = ry1;
+                break;
+            }
+        }
+        if (chosen < 0) {
+            continue;  // no free slot: skip the label entirely.
+        }
+        kept.push_back({x0, y0, x1, y1});
+        // Ease the per-label offset toward the chosen slot (screen px).
+        // The anchor tracks the camera exactly; only the offset glides,
+        // so labels don't lag behind fingers while panning.
+        const float tox = (x0 + x1) * 0.5f - ax;
+        const float toy = (y0 + y1) * 0.5f - ay;
+        LabelAnim& an = anims_[i];
+        float eox, eoy;
+        if (snapLayout_ || !an.live) {
+            eox = tox;
+            eoy = toy;
+            an.ox = tox;
+            an.oy = toy;
+            an.live = true;
+        } else {
+            eox = an.ox + (tox - an.ox) * kEaseRate;
+            eoy = an.oy + (toy - an.oy) * kEaseRate;
+            if (std::fabs(tox - eox) < kEaseSnapPx &&
+                std::fabs(toy - eoy) < kEaseSnapPx) {
+                eox = tox;
+                eoy = toy;
+            }
+            an.ox = eox;
+            an.oy = eoy;
+            if (eox != tox || eoy != toy) {
+                animating = true;
+            }
+        }
+        // Eased rect actually drawn this frame (declutter used targets).
+        const float ecx = ax + eox;
+        const float ecy = ay + eoy;
+        const float ex0 = ecx - hw;
+        const float ey0 = ecy - hh;
+        const float ex1 = ecx + hw;
+        const float ey1 = ecy + hh;
+        // Leader line: thin segment from the dot edge to the nearest
+        // point of the *eased* label rect, so it stays attached
+        // mid-glide. Skipped only when the eased rect already sits on
+        // the dot (default above-dot slot at rest).
+        {
+            float nx = ax < ex0 ? ex0 : (ax > ex1 ? ex1 : ax);
+            float ny = ay < ey0 ? ey0 : (ay > ey1 ? ey1 : ay);
+            const float ddx = nx - ax;
+            const float ddy = ny - ay;
+            const float ddl = std::sqrt(ddx * ddx + ddy * ddy);
+            if (ddl > dotR + 0.5f) {
+                float ux = ddx;
+                float uy = ddy;
+                if (ddl < 1e-6f) {
+                    ux = 0.0f;
+                    uy = -1.0f;
+                } else {
+                    ux /= ddl;
+                    uy /= ddl;
+                }
+                const float sx = ax + ux * (dotR + 1.0f);
+                const float sy = ay + uy * (dotR + 1.0f);
+                float p0x, p0y, p1x, p1y;
+                toMap(sx, sy, &p0x, &p0y);
+                toMap(nx, ny, &p1x, &p1y);
+                const float lw = kLeaderWidthPx / scale_;
+                appendSegment(leaderVerts_, p0x, p0y, p1x, p1y,
+                              kLeaderColor[0], kLeaderColor[1],
+                              kLeaderColor[2], kLeaderColor[3], lw);
+            }
+        }
+        // Eased corners back to map space (stays axis-aligned on screen).
+        float qx[4], qy[4];
+        toMap(ex0, ey0, &qx[0], &qy[0]);
+        toMap(ex0, ey1, &qx[1], &qy[1]);
+        toMap(ex1, ey0, &qx[2], &qy[2]);
+        toMap(ex1, ey1, &qx[3], &qy[3]);
+        // White halo: same glyph, slightly expanded, drawn first so the
+        // dark text sits on a readable outline (Google Maps style).
+        float hx[4], hy[4];
+        toMap(ex0 - kHaloPx, ey0 - kHaloPx, &hx[0], &hy[0]);
+        toMap(ex0 - kHaloPx, ey1 + kHaloPx, &hx[1], &hy[1]);
+        toMap(ex1 + kHaloPx, ey0 - kHaloPx, &hx[2], &hy[2]);
+        toMap(ex1 + kHaloPx, ey1 + kHaloPx, &hx[3], &hy[3]);
         const float u0 = pl.rect.x / static_cast<float>(kAtlasSize);
         const float v0 = pl.rect.y / static_cast<float>(kAtlasSize);
         const float u1 = (pl.rect.x + pl.rect.w) / static_cast<float>(kAtlasSize);
         const float v1 = (pl.rect.y + pl.rect.h) / static_cast<float>(kAtlasSize);
-        textVerts_.push_back({tx0, ty0, u0, v0});
-        textVerts_.push_back({tx0, ty1, u0, v1});
-        textVerts_.push_back({tx1, ty0, u1, v0});
-        textVerts_.push_back({tx0, ty1, u0, v1});
-        textVerts_.push_back({tx1, ty1, u1, v1});
-        textVerts_.push_back({tx1, ty0, u1, v0});
+        textVerts_.push_back({qx[0], qy[0], u0, v0});
+        textVerts_.push_back({qx[1], qy[1], u0, v1});
+        textVerts_.push_back({qx[2], qy[2], u1, v0});
+        textVerts_.push_back({qx[1], qy[1], u0, v1});
+        textVerts_.push_back({qx[3], qy[3], u1, v1});
+        textVerts_.push_back({qx[2], qy[2], u1, v0});
+        haloVerts_.push_back({hx[0], hy[0], u0, v0});
+        haloVerts_.push_back({hx[1], hy[1], u0, v1});
+        haloVerts_.push_back({hx[2], hy[2], u1, v0});
+        haloVerts_.push_back({hx[1], hy[1], u0, v1});
+        haloVerts_.push_back({hx[3], hy[3], u1, v1});
+        haloVerts_.push_back({hx[2], hy[2], u1, v0});
     }
+    snapLayout_ = false;
+    return animating;
 }
 
 void Renderer::uploadVertices() {
@@ -885,10 +1058,11 @@ void Renderer::uploadVertices() {
     };
     ensure(lineBuf_, lineMem_, lineCap_,
            lineVerts_.size() * sizeof(ColorVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    ensure(bubbleBuf_, bubbleMem_, bubbleCap_,
-           bubbleVerts_.size() * sizeof(ColorVertex),
-           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    ensure(leaderBuf_, leaderMem_, leaderCap_,
+           leaderVerts_.size() * sizeof(ColorVertex), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     ensure(textBuf_, textMem_, textCap_, textVerts_.size() * sizeof(TextVertex),
+           VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    ensure(haloBuf_, haloMem_, haloCap_, haloVerts_.size() * sizeof(TextVertex),
            VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     auto copyTo = [&](VkBuffer buf, VkDeviceMemory mem, const void* data,
                       size_t bytes) {
@@ -902,10 +1076,12 @@ void Renderer::uploadVertices() {
     };
     copyTo(lineBuf_, lineMem_, lineVerts_.data(),
            lineVerts_.size() * sizeof(ColorVertex));
-    copyTo(bubbleBuf_, bubbleMem_, bubbleVerts_.data(),
-           bubbleVerts_.size() * sizeof(ColorVertex));
+    copyTo(leaderBuf_, leaderMem_, leaderVerts_.data(),
+           leaderVerts_.size() * sizeof(ColorVertex));
     copyTo(textBuf_, textMem_, textVerts_.data(),
            textVerts_.size() * sizeof(TextVertex));
+    copyTo(haloBuf_, haloMem_, haloVerts_.data(),
+           haloVerts_.size() * sizeof(TextVertex));
 }
 
 void Renderer::uploadAtlas(const std::vector<uint8_t>& rgba) {
@@ -1002,10 +1178,10 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
         vkCmdBindVertexBuffers(cmd, 0, 1, &lineBuf_, &off);
         vkCmdDraw(cmd, static_cast<uint32_t>(lineVerts_.size()), 1, 0, 0);
     }
-    if (!bubbleVerts_.empty()) {
+    if (!leaderVerts_.empty()) {
         VkDeviceSize off = 0;
-        vkCmdBindVertexBuffers(cmd, 0, 1, &bubbleBuf_, &off);
-        vkCmdDraw(cmd, static_cast<uint32_t>(bubbleVerts_.size()), 1, 0, 0);
+        vkCmdBindVertexBuffers(cmd, 0, 1, &leaderBuf_, &off);
+        vkCmdDraw(cmd, static_cast<uint32_t>(leaderVerts_.size()), 1, 0, 0);
     }
     if (!textVerts_.empty()) {
         PushText pt{scrollX_, scrollY_, scale_, 0.0f /*_pad0*/,
@@ -1014,11 +1190,26 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
                     textColor_[0], textColor_[1], textColor_[2], textColor_[3],
                     angleRad_};
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeText_);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipeLayoutText_, 0, 1, &descSet_, 0, nullptr);
+        // White halo pass first: same glyphs, slightly expanded, so the
+        // text reads over lines of any color (Google Maps style).
+        if (!haloVerts_.empty()) {
+            PushText ph = pt;
+            ph.textR = 1.0f;
+            ph.textG = 1.0f;
+            ph.textB = 1.0f;
+            ph.textA = 1.0f;
+            vkCmdPushConstants(cmd, pipeLayoutText_,
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                               0, sizeof(ph), &ph);
+            VkDeviceSize off = 0;
+            vkCmdBindVertexBuffers(cmd, 0, 1, &haloBuf_, &off);
+            vkCmdDraw(cmd, static_cast<uint32_t>(haloVerts_.size()), 1, 0, 0);
+        }
         vkCmdPushConstants(cmd, pipeLayoutText_,
                            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
                            0, sizeof(pt), &pt);
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                pipeLayoutText_, 0, 1, &descSet_, 0, nullptr);
         VkDeviceSize off = 0;
         vkCmdBindVertexBuffers(cmd, 0, 1, &textBuf_, &off);
         vkCmdDraw(cmd, static_cast<uint32_t>(textVerts_.size()), 1, 0, 0);
@@ -1027,18 +1218,22 @@ void Renderer::recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex) {
     vkEndCommandBuffer(cmd);
 }
 
-void Renderer::render() {
+bool Renderer::render() {
     if (!ready_ || window_ == nullptr || viewW_ <= 0 || viewH_ <= 0) {
-        return;
+        return false;
     }
     vkWaitForFences(device_, 1, &renderFence_, VK_TRUE, UINT64_MAX);
     vkResetFences(device_, 1, &renderFence_);
     if (dataDirty_) {
         dataDirty_ = false;
     }
-    if (labelsDirty_) {
-        rebuildLabelQuads();
+    bool animating = false;
+    if (labelsDirty_ || textLayoutDirty_) {
+        animating = rebuildLabelQuads();
         labelsDirty_ = false;
+        // Keep rebuilding while the easing is still settling so the
+        // Kotlin side can schedule the next frame.
+        textLayoutDirty_ = animating;
     }
     uploadVertices();
     if (atlasDirty_) {
@@ -1053,11 +1248,11 @@ void Renderer::render() {
         if (!createSwapchain()) {
             LOGE("swapchain recreate failed");
         }
-        return;
+        return animating;
     }
     if (acq != VK_SUCCESS && acq != VK_SUBOPTIMAL_KHR) {
         LOGE("acquire failed %d", acq);
-        return;
+        return animating;
     }
     recordCommandBuffer(cmdBuf_, imageIndex);
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -1072,7 +1267,7 @@ void Renderer::render() {
     si.pSignalSemaphores = &renderDone_;
     if (vkQueueSubmit(gfxQueue_, 1, &si, renderFence_) != VK_SUCCESS) {
         LOGE("queue submit failed");
-        return;
+        return animating;
     }
     VkPresentInfoKHR pi{};
     pi.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -1089,6 +1284,7 @@ void Renderer::render() {
         destroySwapchain();
         createSwapchain();
     }
+    return animating;
 }
 
 void Renderer::destroy() {
@@ -1101,15 +1297,20 @@ void Renderer::destroy() {
         vkFreeMemory(device_, lineMem_, nullptr);
         lineBuf_ = VK_NULL_HANDLE;
     }
-    if (bubbleBuf_ != VK_NULL_HANDLE) {
-        vkDestroyBuffer(device_, bubbleBuf_, nullptr);
-        vkFreeMemory(device_, bubbleMem_, nullptr);
-        bubbleBuf_ = VK_NULL_HANDLE;
+    if (leaderBuf_ != VK_NULL_HANDLE) {
+        vkDestroyBuffer(device_, leaderBuf_, nullptr);
+        vkFreeMemory(device_, leaderMem_, nullptr);
+        leaderBuf_ = VK_NULL_HANDLE;
     }
     if (textBuf_ != VK_NULL_HANDLE) {
         vkDestroyBuffer(device_, textBuf_, nullptr);
         vkFreeMemory(device_, textMem_, nullptr);
         textBuf_ = VK_NULL_HANDLE;
+    }
+    if (haloBuf_ != VK_NULL_HANDLE) {
+        vkDestroyBuffer(device_, haloBuf_, nullptr);
+        vkFreeMemory(device_, haloMem_, nullptr);
+        haloBuf_ = VK_NULL_HANDLE;
     }
     if (stagingBuf_ != VK_NULL_HANDLE) {
         vkDestroyBuffer(device_, stagingBuf_, nullptr);

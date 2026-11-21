@@ -4,6 +4,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_BITMAP_H
 
 namespace metro {
 
@@ -208,6 +209,24 @@ bool FreeTypeText::loadSystemFont(int pixelSize) {
 
 bool FreeTypeText::hasFont() const { return impl_->ready; }
 
+namespace {
+
+// Loads and renders one codepoint, then faux-bolds the bitmap in place
+// (no bold system font is guaranteed on device: 1.5px horizontal and
+// 0.5px vertical at the raster size, in 26.6 fractional pixels).
+// Emboldening failures are tolerated: the plain bitmap is still usable.
+bool loadBoldGlyph(FT_Library lib, FT_Face face, uint32_t cp) {
+    if (FT_Load_Char(face, cp, FT_LOAD_RENDER) != 0) {
+        return false;
+    }
+    if (FT_GlyphSlot_Own_Bitmap(face->glyph) == 0) {
+        FT_Bitmap_Embolden(lib, &face->glyph->bitmap, 96, 32);
+    }
+    return true;
+}
+
+}  // namespace
+
 bool FreeTypeText::rasterizeLabel(const std::string& utf8, LabelBitmap* out) {
     if (!impl_->ready || out == nullptr) {
         return false;
@@ -229,20 +248,22 @@ bool FreeTypeText::rasterizeLabel(const std::string& utf8, LabelBitmap* out) {
                            FT_Get_Char_Index(face, cp), FT_KERNING_DEFAULT, &kern);
             penX += static_cast<int>(kern.x >> 6);
         }
-        if (FT_Load_Char(face, cp, FT_LOAD_RENDER) != 0) {
+        if (!loadBoldGlyph(impl_->library, face, cp)) {
             return false;
         }
-        const FT_GlyphSlot g = face->glyph;
-        const int y0 = -g->bitmap_top;
-        const int y1 = y0 + static_cast<int>(g->bitmap.rows);
-        if (y0 < minY) {
-            minY = y0;
+        {
+            const FT_GlyphSlot g = face->glyph;
+            const int y0 = -g->bitmap_top;
+            const int y1 = y0 + static_cast<int>(g->bitmap.rows);
+            if (y0 < minY) {
+                minY = y0;
+            }
+            if (y1 > maxY) {
+                maxY = y1;
+            }
+            penX += static_cast<int>(g->advance.x >> 6);
+            prev = cp;
         }
-        if (y1 > maxY) {
-            maxY = y1;
-        }
-        penX += static_cast<int>(g->advance.x >> 6);
-        prev = cp;
     }
     const int w = penX > 0 ? penX : 1;
     const int h = (maxY - minY) > 0 ? (maxY - minY) : 1;
@@ -261,7 +282,7 @@ bool FreeTypeText::rasterizeLabel(const std::string& utf8, LabelBitmap* out) {
                            FT_Get_Char_Index(face, cp), FT_KERNING_DEFAULT, &kern);
             penX += static_cast<int>(kern.x >> 6);
         }
-        if (FT_Load_Char(face, cp, FT_LOAD_RENDER) != 0) {
+        if (!loadBoldGlyph(impl_->library, face, cp)) {
             return false;
         }
         const FT_GlyphSlot g = face->glyph;

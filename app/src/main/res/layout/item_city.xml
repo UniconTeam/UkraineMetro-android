@@ -20,18 +20,10 @@
             android:orientation="horizontal"
             android:padding="16dp">
 
-        <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="?attr/colorSecondaryContainer"
-                android:padding="8dp"
-                android:src="@drawable/ic_location_city_24" />
-
         <TextView
                 android:id="@+id/cityName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
                 android:layout_weight="1"
                 android:textAppearance="?attr/textAppearanceTitleMedium" />
 

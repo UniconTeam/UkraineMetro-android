@@ -8,6 +8,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import uniconteam.ukrainemetro.core.navigation.Navigator
 import uniconteam.ukrainemetro.core.platform.BaseFragment
 import javax.inject.Inject
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.viewModels
 import unicon.metro.kharkiv.databinding.FragmentSelectmapBinding;
 import unicon.metro.kharkiv.databinding.ItemCityBinding
@@ -43,6 +46,16 @@ class SelectMapFragment: BaseFragment() {
 
         viewModel.checkSelection()
         viewModel.fetchCities()
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.citiesContainer) { v, insets ->
+            val base = (24 * resources.displayMetrics.density).toInt()
+            v.updatePadding(
+                bottom = base + insets.getInsets(
+                    WindowInsetsCompat.Type.navigationBars()
+                ).bottom
+            )
+            insets
+        }
     }
 
     override fun onDestroyView() {

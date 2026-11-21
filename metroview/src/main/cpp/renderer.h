@@ -60,7 +60,9 @@ private:
     static constexpr float kLabelGapPx = 4.0f;    // gap between dot top and label, px
     static constexpr float kHaloPx = 2.0f;        // white outline width around glyphs, px
     static constexpr float kLineWidthMap = 7.0f;
-    static constexpr float kLeaderWidthPx = 1.5f;  // leader line width, screen px
+    static constexpr float kLeaderWidthPx = 3.0f;  // leader shaft width, screen px
+    static constexpr float kLeaderArrowLenPx = 12.0f;  // arrowhead length, screen px
+    static constexpr float kLeaderArrowHalfPx = 6.0f;  // arrowhead half width, screen px
     static constexpr float kLeaderColor[4] = {0.55f, 0.55f, 0.55f, 0.9f};
     static constexpr int kSmoothSubdiv = 8;     // Catmull-Rom samples per segment
     // Station markers (white ring + branch-color center), in map units.

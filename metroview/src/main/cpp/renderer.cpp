@@ -1134,10 +1134,11 @@ bool Renderer::rebuildLabelQuads() {
         const float ey0 = ecy - hh;
         const float ex1 = ecx + hw;
         const float ey1 = ecy + hh;
-        // Leader line: thin segment from the dot edge to the nearest
-        // point of the *eased* label rect, so it stays attached
-        // mid-glide. Skipped only when the eased rect already sits on
-        // the dot (default above-dot slot at rest).
+        // Leader arrow: thick shaft from the dot edge to the nearest
+        // point of the *eased* label rect, with an arrowhead pointing at
+        // the station, so it stays attached mid-glide. Skipped only when
+        // the eased rect already sits on the dot (default above-dot slot
+        // at rest).
         {
             float nx = ax < ex0 ? ex0 : (ax > ex1 ? ex1 : ax);
             float ny = ay < ey0 ? ey0 : (ay > ey1 ? ey1 : ay);
@@ -1163,6 +1164,25 @@ bool Renderer::rebuildLabelQuads() {
                 appendSegment(leaderVerts_, p0x, p0y, p1x, p1y,
                               kLeaderColor[0], kLeaderColor[1],
                               kLeaderColor[2], kLeaderColor[3], lw);
+                // Arrowhead: tip at the dot edge, base pushed toward the
+                // label, wings perpendicular to the shaft.
+                const float bx = sx + ux * kLeaderArrowLenPx;
+                const float by = sy + uy * kLeaderArrowLenPx;
+                const float wx = -uy * kLeaderArrowHalfPx;
+                const float wy = ux * kLeaderArrowHalfPx;
+                float tx, ty, b1x, b1y, b2x, b2y;
+                toMap(sx, sy, &tx, &ty);
+                toMap(bx + wx, by + wy, &b1x, &b1y);
+                toMap(bx - wx, by - wy, &b2x, &b2y);
+                leaderVerts_.push_back(
+                    {tx, ty, kLeaderColor[0], kLeaderColor[1],
+                     kLeaderColor[2], kLeaderColor[3]});
+                leaderVerts_.push_back(
+                    {b1x, b1y, kLeaderColor[0], kLeaderColor[1],
+                     kLeaderColor[2], kLeaderColor[3]});
+                leaderVerts_.push_back(
+                    {b2x, b2y, kLeaderColor[0], kLeaderColor[1],
+                     kLeaderColor[2], kLeaderColor[3]});
             }
         }
         // Eased corners back to map space (stays axis-aligned on screen).

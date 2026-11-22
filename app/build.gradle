@@ -36,6 +36,18 @@ android {
         }
     }
 
+    bundle {
+        language {
+            // Ship every locale inside the base APK/AAB instead of
+            // per-language split APKs. The app has its own in-app language
+            // picker (system/en/uk/ru/pl) and follows the device locale by
+            // default, so a missing language split (locale changed after
+            // install, sideloaded base APK, partial Play delivery) would
+            // silently fall back to English. Strings weigh almost nothing.
+            enableSplit = false
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17

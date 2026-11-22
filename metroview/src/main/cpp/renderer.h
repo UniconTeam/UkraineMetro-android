@@ -55,7 +55,7 @@ public:
     bool render();
     void destroy();
 private:
-    static constexpr int kAtlasSize = 1024;
+    static constexpr int kAtlasSize = 2048;
     static constexpr int kFontPx = 56;  // FreeType raster size, px
     // Label text is laid out in *screen* space (Google Maps style: fixed
     // on-screen size, always horizontal) and mapped back to map quads.

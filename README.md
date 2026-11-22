@@ -3,6 +3,7 @@ Open source application for viewing maps of all subways of Ukraine.<br>
 Implemented using Kotlin, MVVM, Clean Architecture and Hilt.
 
 <a href="https://play.google.com/store/apps/details?id=unicon.metro.kharkiv">⬇️️ Google Play</a><br>
+<a href="docs/contributing.md">🤝 How to contribute</a><br>
 <a href="https://github.com/kotleni/Kharkiv-Metro">📒 Old project </a>
 
 ### Motivation

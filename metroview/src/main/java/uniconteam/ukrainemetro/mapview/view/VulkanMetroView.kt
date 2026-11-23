@@ -138,10 +138,18 @@ class VulkanMetroView @JvmOverloads constructor(
                 transPts.add(el.from.y.toFloat())
                 transPts.add(el.to.x.toFloat())
                 transPts.add(el.to.y.toFloat())
+                if (el.from.x < minX) minX = el.from.x.toFloat()
+                if (el.from.y < minY) minY = el.from.y.toFloat()
+                if (el.from.x > maxX) maxX = el.from.x.toFloat()
+                if (el.from.y > maxY) maxY = el.from.y.toFloat()
+                if (el.to.x < minX) minX = el.to.x.toFloat()
+                if (el.to.y < minY) minY = el.to.y.toFloat()
+                if (el.to.x > maxX) maxX = el.to.x.toFloat()
+                if (el.to.y > maxY) maxY = el.to.y.toFloat()
             }
         }
 
-        if (minX <= maxX && minY <= maxY) {
+        if (!centerLocked && minX <= maxX && minY <= maxY) {
             mapCenterX = (maxX + minX) / 2f
             mapCenterY = (maxY + minY) / 2f
             hasCenter = true
@@ -170,6 +178,13 @@ class VulkanMetroView @JvmOverloads constructor(
     }
 
     private var centeredOnce = false
+
+    /**
+     * When true, [updateData] pushes new geometry without moving the camera.
+     * Used by lineart video playback so every 30fps frame doesn't snap
+     * the user's pan/zoom back to the default view.
+     */
+    var centerLocked = false
 
     private fun recenter() {
         if (!hasCenter) return
@@ -371,6 +386,25 @@ class VulkanMetroView @JvmOverloads constructor(
         if (hasCenter) recenter()
         scaleFactor = 1.0f
         angleRad = 0f
+        pushView()
+    }
+
+    /**
+     * Fits a map of the given size into the view (aspect-preserving) and
+     * centers it. Used by lineart video playback so the video fills the
+     * screen and sits in the middle instead of 1:1 scale.
+     */
+    fun zoomToFit(mapW: Float, mapH: Float) {
+        if (width <= 0 || height <= 0 || mapW <= 0f || mapH <= 0f) return
+        cancelZoomAnim()
+        scaleFactor = minOf(width / mapW, height / mapH)
+            .coerceIn(ZOOM_ABS_MIN, ZOOM_ABS_MAX)
+        size.w = width
+        size.h = height
+        mapCenterX = mapW / 2f
+        mapCenterY = mapH / 2f
+        hasCenter = true
+        recenter()
         pushView()
     }
 

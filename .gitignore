@@ -6,3 +6,6 @@ metroview/.cxx/
 .gradle/
 
 local.properties
+
+# Bad Apple source video (re-downloaded by tools/bad_apple.py)
+tools/badapple.mp4

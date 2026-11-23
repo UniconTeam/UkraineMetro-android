@@ -118,6 +118,7 @@ class SelectMapFragment: BaseFragment() {
         R.string.city_kyiv -> R.drawable.city_kyiv
         R.string.city_dnipro -> R.drawable.city_dnipro
         R.string.city_kriviyrig -> R.drawable.city_kriviy_rih
+        R.string.city_bad_apple -> R.drawable.city_bad_apple
         else -> 0 // no photo: text-only card
     }
 

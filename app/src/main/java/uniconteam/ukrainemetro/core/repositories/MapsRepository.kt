@@ -1,5 +1,6 @@
 package uniconteam.ukrainemetro.core.repositories
 
+import uniconteam.ukrainemetro.core.cities.BadAppleCity
 import uniconteam.ukrainemetro.core.cities.DniproCity
 import uniconteam.ukrainemetro.core.cities.KharkivCity
 import uniconteam.ukrainemetro.core.cities.KriviyRogCity
@@ -12,7 +13,8 @@ class MapsRepository {
         KharkivCity(),
         KyivCity(),
         DniproCity(),
-        KriviyRogCity()
+        KriviyRogCity(),
+        BadAppleCity()
     )
 
     fun fetchAllCities(): List<City> {

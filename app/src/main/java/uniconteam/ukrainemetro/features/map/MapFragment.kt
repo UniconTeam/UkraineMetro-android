@@ -29,6 +29,7 @@ import unicon.metro.kharkiv.databinding.LayoutChoiceSheetBinding
 import uniconteam.ukrainemetro.core.exceptions.Failure
 import uniconteam.ukrainemetro.core.extensions.failure
 import uniconteam.ukrainemetro.core.extensions.observe
+import uniconteam.ukrainemetro.core.cities.BadAppleCity
 import uniconteam.ukrainemetro.mapview.entities.City
 import uniconteam.ukrainemetro.mapview.entities.elements.BranchElement
 
@@ -89,10 +90,21 @@ class MapFragment: BaseFragment() {
             applyMapSettings()
             refreshSummaries()
             syncSwitches()
+            // Resume lineart playback after backgrounding (onPause stops it
+            // so audio never leaks into the background).
+            if (currentCity is BadAppleCity) startBadApple()
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        badApplePlayer?.stop()
+        badApplePlayer = null
+    }
+
     override fun onDestroyView() {
+        badApplePlayer?.stop()
+        badApplePlayer = null
         super.onDestroyView()
         _binding = null
     }
@@ -297,11 +309,38 @@ class MapFragment: BaseFragment() {
     private fun handleCity(city: City?) {
         if (city == null) return
         currentCity = city
-        pushMapData(force = true)
+        if (city is BadAppleCity) {
+            startBadApple()
+        } else {
+            stopBadApple()
+            pushMapData(force = true)
+        }
+    }
+
+    // Bad Apple lineart video mode: the Vulkan renderer draws outline
+    // segments instead of a metro map, with audio at 40% and no controls.
+    private fun startBadApple() {
+        if (_binding == null) return
+        stopBadApple()
+        lastColorMode = null // force a normal push when leaving video mode
+        binding.metroView.setTransferColor(0xFF000000.toInt())
+        val player = BadApplePlayer(requireContext(), binding.metroView)
+        if (!player.isAvailable()) {
+            notify(binding.root, R.string.failure_unknown)
+            return
+        }
+        badApplePlayer = player
+        player.start()
+    }
+
+    private fun stopBadApple() {
+        badApplePlayer?.stop()
+        badApplePlayer = null
     }
 
     private fun pushMapData(force: Boolean) {
         val city = currentCity ?: return
+        if (city is BadAppleCity) return // video mode owns the renderer
         val original = prefs.originalColors
         if (!force && lastColorMode == original) return
         lastColorMode = original
@@ -352,6 +391,7 @@ class MapFragment: BaseFragment() {
     }
 
     private var currentCity: City? = null
+    private var badApplePlayer: BadApplePlayer? = null
     private var lastColorMode: Boolean? = null
     private var overlayTopMargin = 0
 

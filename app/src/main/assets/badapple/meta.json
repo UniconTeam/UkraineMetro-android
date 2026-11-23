@@ -1,0 +1,9 @@
+{
+  "width": 256,
+  "height": 192,
+  "fps": 30,
+  "frames": 6962,
+  "polys": 122091,
+  "points": 725135,
+  "format": "BAPL v2: u16 polyCount; per poly u16 ptCount + u8 x,y points"
+}

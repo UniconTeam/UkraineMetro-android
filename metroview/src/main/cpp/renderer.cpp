@@ -1160,6 +1160,16 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
     labelAnchors_.clear();
     placedLabels_.clear();
     atlasRgba_.clear();
+    buildLabelAtlas(labelTexts, labelPos, labelCount);
+    dataDirty_ = true;
+    labelsDirty_ = true;
+    textLayoutDirty_ = true;
+    anims_.clear();
+    snapLayout_ = true;
+}
+
+void Renderer::buildLabelAtlas(const char* const* labelTexts,
+                               const float* labelPos, int labelCount) {
     if (labelCount > 0 && ft_.hasFont()) {
         int nonEmpty = 0;
         labelBitmaps_.reserve(static_cast<size_t>(labelCount));
@@ -1195,11 +1205,55 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
             LOGE("no labels rasterized out of %d", labelCount);
         }
     }
-    dataDirty_ = true;
+}
+
+void Renderer::initLabels(const char* const* labelTexts, int labelCount) {
+    labelBitmaps_.clear();
+    labelAnchors_.clear();
+    placedLabels_.clear();
+    atlasRgba_.clear();
+    // Placeholder anchors: the first setFrame parks every slot for real.
+    std::vector<float> origin(static_cast<size_t>(labelCount) * 2, 0.0f);
+    buildLabelAtlas(labelTexts, origin.data(), labelCount);
     labelsDirty_ = true;
     textLayoutDirty_ = true;
     anims_.clear();
     snapLayout_ = true;
+}
+
+void Renderer::setFrame(const int32_t* branchColors, const float* branchPts,
+                        const int32_t* branchCounts, int branchCount,
+                        const float* transPts, int transSegCount,
+                        const float* markerPos, const int32_t* markerColors,
+                        int markerCount, const float* labelPos,
+                        int labelAnchorCount) {
+    branchColors_.assign(branchColors, branchColors + branchCount);
+    size_t ptsTotal = 0;
+    for (int i = 0; i < branchCount; ++i) {
+        ptsTotal += static_cast<size_t>(branchCounts[i]) * 2;
+    }
+    branchPts_.assign(branchPts, branchPts + ptsTotal);
+    branchCounts_.assign(branchCounts, branchCounts + branchCount);
+    transPts_.assign(transPts, transPts + static_cast<size_t>(transSegCount) * 4);
+    labelPosCache_.assign(markerPos, markerPos + static_cast<size_t>(markerCount) * 2);
+    if (markerColors != nullptr) {
+        labelColorsCache_.assign(markerColors, markerColors + markerCount);
+    } else {
+        labelColorsCache_.assign(static_cast<size_t>(markerCount), 0);
+    }
+    rebuildMapGeometry();
+    // Anchors only: the glyph atlas built by initLabels is reused untouched.
+    if (labelAnchorCount == static_cast<int>(labelAnchors_.size()) &&
+        labelAnchorCount == static_cast<int>(placedLabels_.size())) {
+        for (int i = 0; i < labelAnchorCount; ++i) {
+            labelAnchors_[i].first = labelPos[2 * i];
+            labelAnchors_[i].second = labelPos[2 * i + 1];
+            placedLabels_[i].anchorX = labelPos[2 * i];
+            placedLabels_[i].anchorY = labelPos[2 * i + 1];
+        }
+    }
+    dataDirty_ = true;
+    textLayoutDirty_ = true;
 }
 
 void Renderer::setView(float scrollX, float scrollY, float scale, float pivotX,

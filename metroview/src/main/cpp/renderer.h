@@ -42,6 +42,19 @@ public:
                  int transSegCount, const char* const* labelTexts, const float* labelPos,
                  const int32_t* labelColors, int labelCount);
 
+    // Builds the label glyph atlas once from a fixed text pool (video mode).
+    // Per-frame label motion then flows through setFrame as anchor positions
+    // only: no re-rasterization, no atlas re-upload.
+    void initLabels(const char* const* labelTexts, int labelCount);
+    // Per-frame update for video mode: geometry + marker dots + label anchor
+    // positions. labelPos must hold exactly the initLabels count (unused
+    // slots are parked offscreen). Never touches the glyph atlas.
+    void setFrame(const int32_t* branchColors, const float* branchPts,
+                  const int32_t* branchCounts, int branchCount,
+                  const float* transPts, int transSegCount,
+                  const float* markerPos, const int32_t* markerColors,
+                  int markerCount, const float* labelPos, int labelAnchorCount);
+
     void setView(float scrollX, float scrollY, float scale, float pivotX, float pivotY,
                  float angle, float textR, float textG, float textB, float textA,
                  float haloR, float haloG, float haloB, float haloA);
@@ -116,6 +129,8 @@ private:
                            VkSurfaceTransformFlagBitsKHR* pre);
     bool recreateDevice();
     bool rebuildLabelQuads();
+    void buildLabelAtlas(const char* const* labelTexts, const float* labelPos,
+                         int labelCount);
     void recordCommandBuffer(VkCommandBuffer cmd, uint32_t imageIndex);
     void rebuildOverlay();
     void composeOverlay(float fps, float ms, size_t tris, size_t verts,

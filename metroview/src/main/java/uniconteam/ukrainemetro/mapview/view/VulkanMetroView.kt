@@ -135,9 +135,10 @@ class VulkanMetroView @JvmOverloads constructor(
         }
         for (el in arr) {
             if (el is MarkerElement) {
-                // Station dot without text: empty label keeps the marker
-                // (native side skips blank glyphs) while drawing nothing.
-                labelTexts.add("")
+                // Station dot; a null label keeps it textless (the native
+                // side skips blank glyphs) while a real name gets the full
+                // label treatment with leader arrows.
+                labelTexts.add(el.label ?: "")
                 labelPos.add(el.pos.x.toFloat())
                 labelPos.add(el.pos.y.toFloat())
                 labelColors.add(el.color)
@@ -175,6 +176,9 @@ class VulkanMetroView @JvmOverloads constructor(
 
         if (nativeHandle == 0L) {
             pendingData = true
+            // A normal map replaces any stashed video frame.
+            pendingFrameBranchCounts = IntArray(0)
+            pendingFrameLabelPos = FloatArray(0)
             pendingBranchColors = branchColors.toIntArray()
             pendingBranchPts = branchPts.toFloatArray()
             pendingBranchCounts = branchCounts.toIntArray()
@@ -265,6 +269,109 @@ class VulkanMetroView @JvmOverloads constructor(
     private var pendingLabelTexts = emptyArray<String>()
     private var pendingLabelPos = FloatArray(0)
     private var pendingLabelColors = IntArray(0)
+
+    // Video-mode pending state (fixed label atlas + anchor-only frames).
+    private var pendingFixedLabels: Array<String>? = null
+    private var pendingFrameBranchColors = IntArray(0)
+    private var pendingFrameBranchPts = FloatArray(0)
+    private var pendingFrameBranchCounts = IntArray(0)
+    private var pendingFrameTransPts = FloatArray(0)
+    private var pendingFrameMarkerPos = FloatArray(0)
+    private var pendingFrameMarkerColors = IntArray(0)
+    private var pendingFrameLabelPos = FloatArray(0)
+
+    /**
+     * Builds the label glyph atlas once from a fixed text pool (video mode).
+     * Per-frame label motion then flows through [updateFrameData] as anchor
+     * positions only: no re-rasterization, no atlas re-upload.
+     */
+    fun setFixedLabels(texts: Array<String>) {
+        if (nativeHandle == 0L) {
+            pendingFixedLabels = texts
+            return
+        }
+        nativeInitLabels(nativeHandle, texts)
+        pushView()
+    }
+
+    /**
+     * Per-frame video update: geometry + marker dots + label anchors.
+     * [labelPos] must hold exactly the [setFixedLabels] count (unused slots
+     * parked offscreen); bounds/centering use only the real geometry.
+     */
+    fun updateFrameData(
+        branches: List<BranchElement>,
+        markers: List<MarkerElement>,
+        transfers: List<TransElement>,
+        labelPos: FloatArray,
+    ) {
+        val branchColors = IntArray(branches.size) { branches[it].color }
+        val branchPts = mutableListOf<Float>()
+        val branchCounts = IntArray(branches.size)
+        var minX = Float.MAX_VALUE
+        var minY = Float.MAX_VALUE
+        var maxX = -Float.MAX_VALUE
+        var maxY = -Float.MAX_VALUE
+        fun extend(x: Float, y: Float) {
+            if (x < minX) minX = x
+            if (y < minY) minY = y
+            if (x > maxX) maxX = x
+            if (y > maxY) maxY = y
+        }
+        branches.forEachIndexed { i, b ->
+            branchCounts[i] = b.points.size
+            for (p in b.points) {
+                val x = p.pos.x.toFloat()
+                val y = p.pos.y.toFloat()
+                branchPts.add(x)
+                branchPts.add(y)
+                extend(x, y)
+            }
+        }
+        val markerPos = FloatArray(markers.size * 2)
+        val markerColors = IntArray(markers.size)
+        markers.forEachIndexed { i, m ->
+            markerPos[2 * i] = m.pos.x.toFloat()
+            markerPos[2 * i + 1] = m.pos.y.toFloat()
+            markerColors[i] = m.color
+            extend(markerPos[2 * i], markerPos[2 * i + 1])
+        }
+        val transPts = FloatArray(transfers.size * 4)
+        transfers.forEachIndexed { i, t ->
+            transPts[4 * i] = t.from.x.toFloat()
+            transPts[4 * i + 1] = t.from.y.toFloat()
+            transPts[4 * i + 2] = t.to.x.toFloat()
+            transPts[4 * i + 3] = t.to.y.toFloat()
+            extend(transPts[4 * i], transPts[4 * i + 1])
+            extend(transPts[4 * i + 2], transPts[4 * i + 3])
+        }
+
+        if (!centerLocked && minX <= maxX && minY <= maxY) {
+            mapCenterX = (maxX + minX) / 2f
+            mapCenterY = (maxY + minY) / 2f
+            hasCenter = true
+            if (width > 0) size.w = width
+            if (height > 0) size.h = height
+            recenter()
+        }
+
+        if (nativeHandle == 0L) {
+            pendingData = true
+            pendingFrameBranchColors = branchColors
+            pendingFrameBranchPts = branchPts.toFloatArray()
+            pendingFrameBranchCounts = branchCounts
+            pendingFrameTransPts = transPts
+            pendingFrameMarkerPos = markerPos
+            pendingFrameMarkerColors = markerColors
+            pendingFrameLabelPos = labelPos
+            return
+        }
+        nativeSetFrameData(
+            nativeHandle, branchColors, branchPts.toFloatArray(),
+            branchCounts, transPts, markerPos, markerColors, labelPos,
+        )
+        pushView()
+    }
 
     private fun pushData(
         colors: IntArray, pts: FloatArray, counts: IntArray,
@@ -603,14 +710,39 @@ class VulkanMetroView @JvmOverloads constructor(
         nativeSetBigLabels(nativeHandle, bigLabels)
         if (pendingData) {
             pendingData = false
-            pushData(
-                pendingBranchColors, pendingBranchPts, pendingBranchCounts,
-                pendingTransPts, pendingLabelTexts, pendingLabelPos,
-                pendingLabelColors
-            )
+            val fixed = pendingFixedLabels
+            if (fixed != null) {
+                pendingFixedLabels = null
+                nativeInitLabels(nativeHandle, fixed)
+            }
+            // A video frame was stashed before the surface existed.
+            if (pendingFrameLabelPos.isNotEmpty() || pendingFrameBranchCounts.isNotEmpty()) {
+                pushFramePending()
+            } else {
+                pushData(
+                    pendingBranchColors, pendingBranchPts, pendingBranchCounts,
+                    pendingTransPts, pendingLabelTexts, pendingLabelPos,
+                    pendingLabelColors
+                )
+            }
         } else {
+            val fixed = pendingFixedLabels
+            if (fixed != null) {
+                pendingFixedLabels = null
+                nativeInitLabels(nativeHandle, fixed)
+            }
             pushView()
         }
+    }
+
+    private fun pushFramePending() {
+        nativeSetFrameData(
+            nativeHandle, pendingFrameBranchColors, pendingFrameBranchPts,
+            pendingFrameBranchCounts, pendingFrameTransPts,
+            pendingFrameMarkerPos, pendingFrameMarkerColors,
+            pendingFrameLabelPos,
+        )
+        pushView()
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, w: Int, h: Int) {
@@ -698,6 +830,12 @@ class VulkanMetroView @JvmOverloads constructor(
     private external fun nativeSetDebugOverlay(handle: Long, enabled: Boolean, topMarginPx: Int)
     private external fun nativeSetTransferColor(handle: Long, argb: Int)
     private external fun nativeSetBigLabels(handle: Long, enabled: Boolean)
+    private external fun nativeInitLabels(handle: Long, texts: Array<String>)
+    private external fun nativeSetFrameData(
+        handle: Long, branchColors: IntArray, branchPts: FloatArray,
+        branchCounts: IntArray, transPts: FloatArray,
+        markerPos: FloatArray, markerColors: IntArray, labelPos: FloatArray,
+    )
 
     companion object {
         init {

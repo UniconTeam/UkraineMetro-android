@@ -56,6 +56,20 @@ class BadApplePlayer(
         private const val LINK_PX = 9.0
         private const val MAX_LINKS = 40
 
+        /** Fixed pool of station names, one label slot per name per frame. */
+        private val NAMES = arrayOf(
+            "Apple", "Shadow", "Mirror", "Spirit",
+            "Night", "Dream", "Circle", "Star",
+            "Moon", "Wind", "Leaf", "River",
+        )
+
+        /** Parking spot for unused label slots (map units, far offscreen). */
+        private const val OFFSCREEN = -1e9f
+
+        /** Centroid match radius between frames, in video px. */
+        private const val MATCH_PX = 30.0
+        private const val MAX_TRACKS = 12
+
         private val MAGIC = byteArrayOf(0x42, 0x41, 0x50, 0x4C) // "BAPL"
     }
 
@@ -71,6 +85,9 @@ class BadApplePlayer(
     private val handler = Handler(Looper.getMainLooper())
     private var startUptime = 0L
     private var running = false
+
+    /** Contour tracks from the previous frame: centroid + palette slot. */
+    private var tracks = mutableListOf<Triple<Double, Double, Int>>()
 
     private val tick = object : Runnable {
         override fun run() {
@@ -108,8 +125,12 @@ class BadApplePlayer(
     fun start() {
         if (running) return
         if (!loadFrames()) return
+        // Glyph atlas for the fixed label pool, built once: every later
+        // frame only moves anchors, so labels cost no re-rasterization.
+        view.setFixedLabels(NAMES)
         running = true
         fitted = false
+        tracks.clear()
         // First frame centers via updateData; tick() then recenters on
         // every frame's content (unless the user is interacting).
         // Afterwards the camera is the user's.
@@ -177,14 +198,25 @@ class BadApplePlayer(
         val elapsed = SystemClock.uptimeMillis() - startUptime
         val base = if (startUptime == 0L) 0 else (elapsed * fps / 1000L)
         val index = (((base % frameCount) + frameCount) % frameCount).toInt()
-        view.updateData(decodeFrame(data, index))
+        val plan = decodeFrame(data, index)
+        view.updateFrameData(plan.branches, plan.markers, plan.transfers, plan.labelPos)
     }
 
-    private fun decodeFrame(data: ByteBuffer, index: Int): List<Element> {
+    private class FramePlan(
+        val branches: List<BranchElement>,
+        val markers: List<MarkerElement>,
+        val transfers: List<TransElement>,
+        /** One anchor per fixed label slot ([NAMES] order), offscreen-padded. */
+        val labelPos: FloatArray,
+    )
+
+    private fun decodeFrame(data: ByteBuffer, index: Int): FramePlan {
         val dup = data.duplicate().order(ByteOrder.LITTLE_ENDIAN)
         dup.position(frameOffsets[index])
         val polyCount = dup.short.toInt() and 0xFFFF
-        if (polyCount == 0) return emptyList()
+        if (polyCount == 0) {
+            return FramePlan(emptyList(), emptyList(), emptyList(), blankAnchors())
+        }
 
         // Raw contours in video pixels.
         val raw = ArrayList<IntArray>(polyCount)
@@ -202,32 +234,49 @@ class BadApplePlayer(
             raw.add(arr)
         }
 
-        // Biggest contour rides the red line, then cycle the metro palette.
+        // Biggest contour first; colors stick to contours across frames
+        // via centroid tracking below, so lines don't strobe.
         val order = raw.indices.sortedByDescending { raw[it].size }
-        val out = ArrayList<Element>(polyCount * 2)
+        val slots = trackSlots(raw)
+        val branches = ArrayList<BranchElement>(polyCount)
+        val markers = ArrayList<MarkerElement>()
+        val transfers = ArrayList<TransElement>()
         val ends = ArrayList<Triple<Int, Int, Int>>() // x, y, polyIdx
-        order.forEachIndexed { rank, pi ->
+        val labelPos = blankAnchors()
+        var labelsPlaced = 0
+        order.forEachIndexed { _, pi ->
             val arr = raw[pi]
             if (arr.isEmpty()) return@forEachIndexed
-            val color = PALETTE[rank % PALETTE.size]
+            val color = PALETTE[slots[pi] % PALETTE.size]
             val pts = ArrayList<Point>(arr.size / 2)
             for (i in arr.indices step 2) {
                 pts.add(Point(Vector(arr[i] * SCALE, arr[i + 1] * SCALE), null))
             }
-            // No labels (name = null): the native renderer smooths each
+            // No point names (name = null): the native renderer smooths each
             // polyline with Catmull-Rom, so curves stay curves.
-            out.add(BranchElement(pts, color))
-            // Stations: a marker dot every few px of arc length.
-            out.add(MarkerElement(Vector(arr[0] * SCALE, arr[1] * SCALE), color))
+            branches.add(BranchElement(pts, color))
+            // Stations: a marker dot every few px of arc length. The first
+            // dots of the biggest contours feed the fixed label slots, which
+            // the renderer draws with leader arrows.
+            var firstStation = true
             var acc = 0.0
-            for (i in 2 until arr.size step 2) {
-                val dx = (arr[i] - arr[i - 2]).toDouble()
-                val dy = (arr[i + 1] - arr[i - 1]).toDouble()
-                acc += hypot(dx, dy)
-                if (acc >= STATION_EVERY_PX) {
+            for (i in arr.indices step 2) {
+                if (i > 0) {
+                    val dx = (arr[i] - arr[i - 2]).toDouble()
+                    val dy = (arr[i + 1] - arr[i - 1]).toDouble()
+                    acc += hypot(dx, dy)
+                    if (acc < STATION_EVERY_PX) continue
                     acc = 0.0
-                    out.add(MarkerElement(Vector(arr[i] * SCALE, arr[i + 1] * SCALE), color))
                 }
+                if (firstStation && labelsPlaced < NAMES.size) {
+                    // Map units: Point/MarkerElement double coords (big-map
+                    // hack), so double the anchor to match.
+                    labelPos[2 * labelsPlaced] = (arr[i] * SCALE * 2).toFloat()
+                    labelPos[2 * labelsPlaced + 1] = (arr[i + 1] * SCALE * 2).toFloat()
+                    labelsPlaced++
+                }
+                firstStation = false
+                markers.add(MarkerElement(Vector(arr[i] * SCALE, arr[i + 1] * SCALE), color))
             }
             ends.add(Triple(arr[0], arr[1], pi))
             ends.add(Triple(arr[arr.size - 2], arr[arr.size - 1], pi))
@@ -243,7 +292,7 @@ class BadApplePlayer(
                 val b = ends[j]
                 if (a.third == b.third) continue
                 if (hypot((a.first - b.first).toDouble(), (a.second - b.second).toDouble()) > LINK_PX) continue
-                out.add(
+                transfers.add(
                     TransElement(
                         Vector(a.first * SCALE, a.second * SCALE),
                         Vector(b.first * SCALE, b.second * SCALE),
@@ -252,7 +301,91 @@ class BadApplePlayer(
                 links++
             }
         }
-        return out
+        return FramePlan(branches, markers, transfers, labelPos)
+    }
+
+    private fun blankAnchors(): FloatArray =
+        FloatArray(NAMES.size * 2) { OFFSCREEN }
+
+    /**
+     * Palette slot per contour, stable across frames: each contour keeps
+     * the slot of the nearest previous-frame contour within [MATCH_PX],
+     * so lines hold their color instead of strobing with size rank.
+     * New contours take the least-used free slot (or the nearest slot's
+     * color when the palette is exhausted, for spatial coherence).
+     */
+    private fun trackSlots(raw: List<IntArray>): IntArray {
+        val n = raw.size
+        val cx = DoubleArray(n)
+        val cy = DoubleArray(n)
+        for (i in 0 until n) {
+            val arr = raw[i]
+            if (arr.isEmpty()) continue
+            var sx = 0.0
+            var sy = 0.0
+            val m = arr.size / 2
+            for (j in arr.indices step 2) {
+                sx += arr[j]
+                sy += arr[j + 1]
+            }
+            cx[i] = sx / m
+            cy[i] = sy / m
+        }
+        val slots = IntArray(n) { -1 }
+        val used = BooleanArray(tracks.size)
+        val usage = IntArray(PALETTE.size)
+        // Largest contours pick first: they matter most visually.
+        val order = (0 until n).filter { raw[it].isNotEmpty() }
+            .sortedByDescending { raw[it].size }
+        for (i in order) {
+            var best = -1
+            var bestD = MATCH_PX
+            for (t in tracks.indices) {
+                if (used[t]) continue
+                val d = hypot(cx[i] - tracks[t].first, cy[i] - tracks[t].second)
+                if (d < bestD) {
+                    bestD = d
+                    best = t
+                }
+            }
+            if (best >= 0) {
+                used[best] = true
+                slots[i] = tracks[best].third
+                usage[slots[i] % PALETTE.size]++
+            } else {
+                // Fresh contour: least-used slot, tie-broken by rank so a
+                // brand-new scene still spreads across the palette.
+                var slot = 0
+                for (s in 1 until PALETTE.size) {
+                    if (usage[s] < usage[slot]) slot = s
+                }
+                slots[i] = slot
+                usage[slot]++
+            }
+        }
+        // Refresh tracks from this frame (cap: biggest contours win).
+        val next = order.take(MAX_TRACKS).map { Triple(cx[it], cy[it], slots[it]) }
+        tracks = next.toMutableList()
+        // Anything unmatched (empty or beyond cap) borrows the nearest
+        // tracked color for spatial coherence.
+        for (i in 0 until n) {
+            if (slots[i] >= 0) continue
+            if (raw[i].isEmpty()) {
+                slots[i] = 0
+                continue
+            }
+            var best = 0
+            var bestD = Double.MAX_VALUE
+            for (t in tracks.indices) {
+                val d = hypot(cx[i] - tracks[t].first, cy[i] - tracks[t].second)
+                if (d < bestD) {
+                    bestD = d
+                    best = tracks[t].third
+                }
+            }
+            slots[i] = best
+        }
+        return slots
     }
 
     private fun startAudio() {

@@ -209,4 +209,75 @@ Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetBigLabels(
     renderer->setBigLabels(enabled == JNI_TRUE);
 }
 
+JNIEXPORT void JNICALL
+Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeInitLabels(
+    JNIEnv* env, jobject /*thiz*/, jlong handle, jobjectArray labelTexts) {
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    std::vector<std::string> texts = toStrings(env, labelTexts);
+    std::vector<const char*> cstrs;
+    cstrs.reserve(texts.size());
+    for (const auto& t : texts) {
+        cstrs.push_back(t.c_str());
+    }
+    renderer->initLabels(cstrs.data(), static_cast<int>(texts.size()));
+}
+
+JNIEXPORT void JNICALL
+Java_uniconteam_ukrainemetro_mapview_view_VulkanMetroView_nativeSetFrameData(
+    JNIEnv* env, jobject /*thiz*/, jlong handle, jintArray branchColors,
+    jfloatArray branchPts, jintArray branchCounts, jfloatArray transPts,
+    jfloatArray markerPos, jintArray markerColors, jfloatArray labelPos) {
+    metro::Renderer* renderer = fromHandle(handle);
+    if (renderer == nullptr) {
+        return;
+    }
+    jsize branchCount = branchCounts != nullptr ? env->GetArrayLength(branchCounts) : 0;
+    std::vector<int32_t> colors(static_cast<size_t>(branchCount));
+    std::vector<int32_t> counts(static_cast<size_t>(branchCount));
+    if (branchCount > 0) {
+        env->GetIntArrayRegion(branchColors, 0, branchCount,
+                               reinterpret_cast<jint*>(colors.data()));
+        env->GetIntArrayRegion(branchCounts, 0, branchCount,
+                               reinterpret_cast<jint*>(counts.data()));
+    }
+    jsize ptsLen = branchPts != nullptr ? env->GetArrayLength(branchPts) : 0;
+    std::vector<float> pts(static_cast<size_t>(ptsLen));
+    if (ptsLen > 0) {
+        env->GetFloatArrayRegion(branchPts, 0, ptsLen,
+                                 reinterpret_cast<jfloat*>(pts.data()));
+    }
+    jsize transLen = transPts != nullptr ? env->GetArrayLength(transPts) : 0;
+    std::vector<float> trans(static_cast<size_t>(transLen));
+    if (transLen > 0) {
+        env->GetFloatArrayRegion(transPts, 0, transLen,
+                                 reinterpret_cast<jfloat*>(trans.data()));
+    }
+    jsize markerLen = markerPos != nullptr ? env->GetArrayLength(markerPos) : 0;
+    std::vector<float> mpos(static_cast<size_t>(markerLen));
+    if (markerLen > 0) {
+        env->GetFloatArrayRegion(markerPos, 0, markerLen,
+                                 reinterpret_cast<jfloat*>(mpos.data()));
+    }
+    const int markerCount = static_cast<int>(markerLen / 2);
+    std::vector<int32_t> mcolors(static_cast<size_t>(markerCount));
+    if (markerCount > 0 && markerColors != nullptr) {
+        env->GetIntArrayRegion(markerColors, 0, markerCount,
+                               reinterpret_cast<jint*>(mcolors.data()));
+    }
+    jsize anchorLen = labelPos != nullptr ? env->GetArrayLength(labelPos) : 0;
+    std::vector<float> anchors(static_cast<size_t>(anchorLen));
+    if (anchorLen > 0) {
+        env->GetFloatArrayRegion(labelPos, 0, anchorLen,
+                                 reinterpret_cast<jfloat*>(anchors.data()));
+    }
+    renderer->setFrame(colors.data(), pts.data(), counts.data(),
+                       static_cast<int>(branchCount), trans.data(),
+                       static_cast<int>(transLen / 4), mpos.data(), mcolors.data(),
+                       markerCount, anchors.data(),
+                       static_cast<int>(anchorLen / 2));
+}
+
 }  // extern "C"

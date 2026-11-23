@@ -11,6 +11,7 @@ import uniconteam.ukrainemetro.mapview.Const
 import uniconteam.ukrainemetro.mapview.entities.Size
 import uniconteam.ukrainemetro.mapview.entities.elements.BranchElement
 import uniconteam.ukrainemetro.mapview.entities.elements.Element
+import uniconteam.ukrainemetro.mapview.entities.elements.MarkerElement
 import uniconteam.ukrainemetro.mapview.entities.elements.TransElement
 import kotlin.math.PI
 import kotlin.math.atan2
@@ -133,6 +134,20 @@ class VulkanMetroView @JvmOverloads constructor(
             }
         }
         for (el in arr) {
+            if (el is MarkerElement) {
+                // Station dot without text: empty label keeps the marker
+                // (native side skips blank glyphs) while drawing nothing.
+                labelTexts.add("")
+                labelPos.add(el.pos.x.toFloat())
+                labelPos.add(el.pos.y.toFloat())
+                labelColors.add(el.color)
+                if (el.pos.x < minX) minX = el.pos.x.toFloat()
+                if (el.pos.y < minY) minY = el.pos.y.toFloat()
+                if (el.pos.x > maxX) maxX = el.pos.x.toFloat()
+                if (el.pos.y > maxY) maxY = el.pos.y.toFloat()
+            }
+        }
+        for (el in arr) {
             if (el is TransElement) {
                 transPts.add(el.from.x.toFloat())
                 transPts.add(el.from.y.toFloat())
@@ -179,10 +194,14 @@ class VulkanMetroView @JvmOverloads constructor(
 
     private var centeredOnce = false
 
+    val isUserInteracting: Boolean
+        get() = mode != MODE_NONE
+
     /**
      * When true, [updateData] pushes new geometry without moving the camera.
-     * Used by lineart video playback so every 30fps frame doesn't snap
-     * the user's pan/zoom back to the default view.
+     * Used by lineart video playback so frames don't snap the camera while
+     * the user is panning/zooming; otherwise every frame recenters on its
+     * own content, keeping off-center compositions centered.
      */
     var centerLocked = false
 

@@ -11,16 +11,20 @@ import uniconteam.ukrainemetro.mapview.entities.Point
 import uniconteam.ukrainemetro.mapview.entities.Vector
 import uniconteam.ukrainemetro.mapview.entities.elements.BranchElement
 import uniconteam.ukrainemetro.mapview.entities.elements.Element
+import uniconteam.ukrainemetro.mapview.entities.elements.MarkerElement
+import uniconteam.ukrainemetro.mapview.entities.elements.TransElement
 import uniconteam.ukrainemetro.mapview.view.VulkanMetroView
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.hypot
 
 /**
  * Plays Bad Apple as lineart through [VulkanMetroView].
  *
  * Frames come from `assets/badapple/frames.bin` (see `tools/bad_apple.py`):
- * each frame is a list of 1px outline segments pushed as [TransElement]s,
- * which the native renderer draws as plain lines. No labels, no branches.
+ * each frame becomes a mini metro map — contours ride colored lines,
+ * station dots sit along them, and near-touching endpoints are joined
+ * with interchange links in the transfer color.
  *
  * Audio (`assets/badapple/audio.m4a`) autoplays with [MediaPlayer] at 40%
  * volume. No play/stop buttons by design: playback starts with the city
@@ -37,6 +41,20 @@ class BadApplePlayer(
 
         /** Map units per video pixel (Point applies the x2 big-map hack). */
         private const val SCALE = 2 // 256x192 -> 1024x768 map units after x2
+
+        /** Metro palette cycled across a frame's contours, biggest first. */
+        private val PALETTE = intArrayOf(
+            0xFFE57373.toInt(), // red line
+            0xFF2196F3.toInt(), // blue line
+            0xFF81C784.toInt(), // green line
+        )
+
+        /** Arc-length spacing between station dots, in video px. */
+        private const val STATION_EVERY_PX = 14.0
+
+        /** Max endpoint gap closed by an interchange link, in video px. */
+        private const val LINK_PX = 9.0
+        private const val MAX_LINKS = 40
 
         private val MAGIC = byteArrayOf(0x42, 0x41, 0x50, 0x4C) // "BAPL"
     }
@@ -57,6 +75,9 @@ class BadApplePlayer(
     private val tick = object : Runnable {
         override fun run() {
             if (!running) return
+            // Follow the content: recenter on every frame unless the user
+            // is mid-gesture (then their fingers win until release).
+            view.centerLocked = view.isUserInteracting
             pushCurrentFrame()
             fitOnce()
             // Schedule from the wall clock so a slow frame doesn't drift us.
@@ -89,11 +110,11 @@ class BadApplePlayer(
         if (!loadFrames()) return
         running = true
         fitted = false
-        // First frame centers the map; fitOnce() then fills the screen.
+        // First frame centers via updateData; tick() then recenters on
+        // every frame's content (unless the user is interacting).
         // Afterwards the camera is the user's.
         view.centerLocked = false
         pushCurrentFrame()
-        view.centerLocked = true
         fitOnce()
         startAudio()
         startUptime = SystemClock.uptimeMillis()
@@ -162,21 +183,74 @@ class BadApplePlayer(
     private fun decodeFrame(data: ByteBuffer, index: Int): List<Element> {
         val dup = data.duplicate().order(ByteOrder.LITTLE_ENDIAN)
         dup.position(frameOffsets[index])
-        val polys = dup.short.toInt() and 0xFFFF
-        if (polys == 0) return emptyList()
-        val out = ArrayList<Element>(polys)
-        repeat(polys) {
+        val polyCount = dup.short.toInt() and 0xFFFF
+        if (polyCount == 0) return emptyList()
+
+        // Raw contours in video pixels.
+        val raw = ArrayList<IntArray>(polyCount)
+        repeat(polyCount) {
             val n = dup.short.toInt() and 0xFFFF
-            if (n == 0) return@repeat
-            val pts = ArrayList<Point>(n)
-            repeat(n) {
-                val x = (dup.get().toInt() and 0xFF) * SCALE
-                val y = (dup.get().toInt() and 0xFF) * SCALE
-                pts.add(Point(Vector(x, y), null))
+            if (n == 0) {
+                raw.add(IntArray(0))
+                return@repeat
             }
-            // No labels (name = null): no text, no station dots — and the
-            // native renderer smooths each polyline with Catmull-Rom.
-            out.add(BranchElement(pts, 0xFF000000.toInt()))
+            val arr = IntArray(n * 2)
+            for (i in 0 until n) {
+                arr[2 * i] = dup.get().toInt() and 0xFF
+                arr[2 * i + 1] = dup.get().toInt() and 0xFF
+            }
+            raw.add(arr)
+        }
+
+        // Biggest contour rides the red line, then cycle the metro palette.
+        val order = raw.indices.sortedByDescending { raw[it].size }
+        val out = ArrayList<Element>(polyCount * 2)
+        val ends = ArrayList<Triple<Int, Int, Int>>() // x, y, polyIdx
+        order.forEachIndexed { rank, pi ->
+            val arr = raw[pi]
+            if (arr.isEmpty()) return@forEachIndexed
+            val color = PALETTE[rank % PALETTE.size]
+            val pts = ArrayList<Point>(arr.size / 2)
+            for (i in arr.indices step 2) {
+                pts.add(Point(Vector(arr[i] * SCALE, arr[i + 1] * SCALE), null))
+            }
+            // No labels (name = null): the native renderer smooths each
+            // polyline with Catmull-Rom, so curves stay curves.
+            out.add(BranchElement(pts, color))
+            // Stations: a marker dot every few px of arc length.
+            out.add(MarkerElement(Vector(arr[0] * SCALE, arr[1] * SCALE), color))
+            var acc = 0.0
+            for (i in 2 until arr.size step 2) {
+                val dx = (arr[i] - arr[i - 2]).toDouble()
+                val dy = (arr[i + 1] - arr[i - 1]).toDouble()
+                acc += hypot(dx, dy)
+                if (acc >= STATION_EVERY_PX) {
+                    acc = 0.0
+                    out.add(MarkerElement(Vector(arr[i] * SCALE, arr[i + 1] * SCALE), color))
+                }
+            }
+            ends.add(Triple(arr[0], arr[1], pi))
+            ends.add(Triple(arr[arr.size - 2], arr[arr.size - 1], pi))
+        }
+        // Interchange connections: link endpoints of different contours
+        // that nearly touch, drawn in the transfer color.
+        var links = 0
+        for (i in ends.indices) {
+            if (links >= MAX_LINKS) break
+            for (j in i + 1 until ends.size) {
+                if (links >= MAX_LINKS) break
+                val a = ends[i]
+                val b = ends[j]
+                if (a.third == b.third) continue
+                if (hypot((a.first - b.first).toDouble(), (a.second - b.second).toDouble()) > LINK_PX) continue
+                out.add(
+                    TransElement(
+                        Vector(a.first * SCALE, a.second * SCALE),
+                        Vector(b.first * SCALE, b.second * SCALE),
+                    )
+                )
+                links++
+            }
         }
         return out
     }

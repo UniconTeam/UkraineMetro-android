@@ -1161,11 +1161,16 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
     placedLabels_.clear();
     atlasRgba_.clear();
     if (labelCount > 0 && ft_.hasFont()) {
+        int nonEmpty = 0;
         labelBitmaps_.reserve(static_cast<size_t>(labelCount));
         for (int i = 0; i < labelCount; ++i) {
             LabelBitmap bmp;
             const char* text = labelTexts[i] != nullptr ? labelTexts[i] : "";
-            if (text[0] == '\0' || !ft_.rasterizeLabel(text, &bmp)) {
+            if (text[0] == '\0') {
+                continue;  // marker-only entry: dot without text
+            }
+            ++nonEmpty;
+            if (!ft_.rasterizeLabel(text, &bmp)) {
                 continue;  // one bad label must not kill the whole atlas
             }
             labelBitmaps_.push_back(std::move(bmp));
@@ -1186,7 +1191,7 @@ void Renderer::setData(const int32_t* branchColors, const float* branchPts,
                 LOGE("labels do not fit the %dx%d atlas", kAtlasSize, kAtlasSize);
             }
         }
-        if (labelBitmaps_.empty()) {
+        if (labelBitmaps_.empty() && nonEmpty > 0) {
             LOGE("no labels rasterized out of %d", labelCount);
         }
     }

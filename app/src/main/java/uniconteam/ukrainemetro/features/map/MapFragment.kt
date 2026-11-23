@@ -317,13 +317,13 @@ class MapFragment: BaseFragment() {
         }
     }
 
-    // Bad Apple lineart video mode: the Vulkan renderer draws outline
-    // segments instead of a metro map, with audio at 40% and no controls.
+    // Bad Apple metro-map video mode: the Vulkan renderer draws contour
+    // lines, station dots and interchange links instead of a static map.
     private fun startBadApple() {
         if (_binding == null) return
         stopBadApple()
         lastColorMode = null // force a normal push when leaving video mode
-        binding.metroView.setTransferColor(0xFF000000.toInt())
+        binding.metroView.setTransferColor(0xFFCE93D8.toInt())
         val player = BadApplePlayer(requireContext(), binding.metroView)
         if (!player.isAvailable()) {
             notify(binding.root, R.string.failure_unknown)

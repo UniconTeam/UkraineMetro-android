@@ -25,11 +25,26 @@ android {
         }
     }
 
+    signingConfigs {
+        release {
+            // Filled only when -PreleaseStoreFile etc. are passed (see build_release.sh).
+            // Relative paths resolve against the project root, so
+            // -PreleaseStoreFile=release.jks finds ./release.jks.
+            def propFile = findProperty('releaseStoreFile')
+            if (propFile) {
+                storeFile rootProject.file(propFile.toString())
+                storePassword findProperty('releaseStorePassword')
+                keyAlias findProperty('releaseKeyAlias') ?: 'unicon'
+                keyPassword findProperty('releaseKeyPassword')
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Debug keystore signing so the APK installs directly
-            // (tap-to-install, no adb needed).
-            signingConfig signingConfigs.debug
+            // Real release key when props are provided, otherwise debug so a
+            // plain ./gradlew assembleRelease still works locally.
+            signingConfig findProperty('releaseStoreFile') ? signingConfigs.release : signingConfigs.debug
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'

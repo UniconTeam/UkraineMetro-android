@@ -12,7 +12,6 @@
             android:localeConfig="@xml/locales_config"
             android:name="uniconteam.ukrainemetro.App">
         <activity
-                android:screenOrientation="sensor"
                 android:name="uniconteam.ukrainemetro.core.navigation.RouteActivity"
                 android:exported="true">
             <intent-filter>
